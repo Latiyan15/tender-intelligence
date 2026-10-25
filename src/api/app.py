@@ -759,8 +759,20 @@ def create_source(req: SourceCreateRequest):
     return {"success": True, "source": new_source}
 
 
+@app.post("/api/sources/scan/reset")
+def reset_scan_state():
+    """Manually reset or cancel the scanner state back to idle."""
+    discovery_service._stop_requested = True
+    discovery_service.scan_state["is_scanning"] = False
+    discovery_service.scan_state["status"] = "idle"
+    discovery_service.scan_state["active_source"] = None
+    discovery_service.scan_state["finished_at"] = datetime.utcnow().isoformat() + "Z"
+    discovery_service.scan_state["message"] = "Scanner ready."
+    return {"status": "reset", "message": "Scanner reset to ready."}
+
+
 @app.post("/api/sources/scan")
-def trigger_all_scan(background_tasks: BackgroundTasks, max_per_source: int = 1500):
+def trigger_all_scan(background_tasks: BackgroundTasks, max_per_source: int = 500):
     """Triggers discovery scan across all registered live scrapable sources across all available pages."""
     discovery_service.scan_state["is_scanning"] = True
     discovery_service.scan_state["status"] = "running"

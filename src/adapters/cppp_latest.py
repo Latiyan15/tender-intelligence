@@ -58,7 +58,7 @@ class CpppLatestTendersAdapter(BaseAdapter):
         b64 = base64.b64encode(target.encode('utf-8')).decode('utf-8')
         return f"{base_url}?url={quote(b64)}"
 
-    def discover_tenders(self, max_tenders: int = 1500, pages: int = 50, **kwargs) -> List[TenderRecord]:
+    def discover_tenders(self, max_tenders: int = 1500, pages: int = 5, **kwargs) -> List[TenderRecord]:
         """Discover tenders from CPPP across extensive multi-page depth (Central, State, and GeM listings)."""
         all_tenders = []
 
@@ -143,23 +143,33 @@ class CpppLatestTendersAdapter(BaseAdapter):
 
         return page_tenders
 
-    def _scrape_latest_tenders(self, base_url: str, source_type: str, max_pages: int = 50) -> List[TenderRecord]:
-        """Scrape tenders from a CPPP latest tenders portal in parallel across all requested pages."""
-        from concurrent.futures import ThreadPoolExecutor, as_completed
+    def _scrape_latest_tenders(self, base_url: str, source_type: str, max_pages: int = 5) -> List[TenderRecord]:
+        """Scrape tenders from a CPPP latest tenders portal with fast-fail on maintenance or access restriction."""
+        # Check page 1 first to avoid hammering portal if it is in maintenance mode
+        first_page = self._scrape_page(base_url, source_type, 1)
+        if not first_page:
+            logger.info(f"CPPP {source_type} page 1 returned no active tenders (portal may be in maintenance mode). Skipping remaining pages.")
+            return []
 
-        tenders = []
-        # Run parallel workers to fetch pages swiftly without stalling
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        tenders = list(first_page)
+        self.stats['listings_retrieved'] += len(first_page)
+
+        if max_pages <= 1:
+            return tenders
+
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        with ThreadPoolExecutor(max_workers=5) as executor:
             future_to_page = {
                 executor.submit(self._scrape_page, base_url, source_type, page): page
-                for page in range(1, max_pages + 1)
+                for page in range(2, max_pages + 1)
             }
             for future in as_completed(future_to_page):
                 page = future_to_page[future]
                 try:
                     page_tenders = future.result()
-                    tenders.extend(page_tenders)
-                    self.stats['listings_retrieved'] += len(page_tenders)
+                    if page_tenders:
+                        tenders.extend(page_tenders)
+                        self.stats['listings_retrieved'] += len(page_tenders)
                 except Exception as e:
                     logger.debug(f"Page {page} fetch exception: {e}")
                     self.stats['errors'] += 1

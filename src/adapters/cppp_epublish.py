@@ -33,7 +33,7 @@ class CpppEpublishAdapter(BaseAdapter):
         super().__init__("CPPP_ePublish", "https://eprocure.gov.in/epublish", http_client)
         self.http_client = http_client
 
-    def discover_tenders(self, max_tenders: int = 500, pages: int = 20, **kwargs) -> List[TenderRecord]:
+    def discover_tenders(self, max_tenders: int = 500, pages: int = 5, **kwargs) -> List[TenderRecord]:
         """Discover tenders from ePublish home feed and the GeM-CPPP State Tenders portal across multiple pages."""
         all_tenders = []
 
@@ -43,11 +43,14 @@ class CpppEpublishAdapter(BaseAdapter):
         all_tenders.extend(home_tenders)
         logger.info(f"Found {len(home_tenders)} tenders from home page feed")
 
-        # Strategy 2: Scrape the GeM-CPPP State Tenders portal across multiple pages
-        logger.info(f"Fetching CPPP State ePublish tenders across {pages} pages...")
-        state_tenders = self._scrape_gem_cppp_state(max_pages=pages)
-        all_tenders.extend(state_tenders)
-        logger.info(f"Found {len(state_tenders)} tenders from CPPP state feed")
+        # Strategy 2: Scrape the GeM-CPPP State Tenders portal across multiple pages (only if portal is reachable)
+        if home_tenders:
+            logger.info(f"Fetching CPPP State ePublish tenders across {pages} pages...")
+            state_tenders = self._scrape_gem_cppp_state(max_pages=pages)
+            all_tenders.extend(state_tenders)
+            logger.info(f"Found {len(state_tenders)} tenders from CPPP state feed")
+        else:
+            logger.info("ePublish home returned 0 tenders (portal may be in maintenance mode). Skipping secondary feed.")
 
         # Deduplicate
         seen_ids = set()

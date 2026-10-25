@@ -153,8 +153,12 @@ class DiscoveryService:
             "jk_tenders": "Jammu & Kashmir Tenders (jktenders.gov.in)",
         }
 
+        self._stop_requested = False
         try:
             for src_name in self.sources:
+                if getattr(self, "_stop_requested", False):
+                    logger.info("Discovery scan stopped early upon request.")
+                    break
                 desc = source_descriptions.get(src_name, src_name)
                 self.scan_state["active_source"] = src_name
                 self.scan_state["message"] = f"Scanning {desc}..."

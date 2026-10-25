@@ -26,9 +26,9 @@ class HttpClient:
     }
 
     def __init__(self, cache_dir: str = "data/cache",
-                 rate_limit_seconds: float = 2.0,
-                 max_retries: int = 3,
-                 timeout: int = 30,
+                 rate_limit_seconds: float = 1.0,
+                 max_retries: int = 1,
+                 timeout: int = 10,
                  cache_ttl_hours: int = 24):
         self.cache_dir = cache_dir
         self.rate_limit = rate_limit_seconds

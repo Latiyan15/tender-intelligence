@@ -2426,7 +2426,7 @@ function handleScanStatusUpdate(data) {
       if (bannerTitle) bannerTitle.textContent = 'Multi-Page Discovery Scan in Progress';
       if (bannerSub) bannerSub.textContent = data.message || `Traversing ${activeSrc} across all available pages${scannedText}...`;
       if (bannerTag) bannerTag.textContent = `Scraper: ${activeSrc}`;
-      if (bannerDismiss) bannerDismiss.style.display = 'none';
+      if (bannerDismiss) { bannerDismiss.style.display = 'inline-flex'; bannerDismiss.title = 'Stop / Cancel Scan'; }
     }
 
     // 3. Header refresh spin
@@ -2513,10 +2513,17 @@ function handleScanStatusUpdate(data) {
   }
 }
 
-function dismissScanBanner() {
+async function dismissScanBanner() {
   const banner = document.getElementById('live-scan-banner');
   if (banner) banner.style.display = 'none';
   if (dismissBannerTimer) clearTimeout(dismissBannerTimer);
+  try {
+    await fetch(`${API_BASE}/api/sources/scan/reset`, { method: 'POST' });
+    showToast('Scan cancelled / dismissed.');
+    await checkScanStatus();
+  } catch (e) {
+    console.debug('Error resetting scan:', e);
+  }
 }
 
 function handleScanPillClick() {
@@ -2561,7 +2568,7 @@ function triggerDiscoveryScan(sourceId) {
     if (bannerSub) bannerSub.textContent = `Initiating scraper for ${srcName} and matching Tier A–D keywords...`;
     if (bannerTag) bannerTag.textContent = `Scraper: ${srcName}`;
     const bannerDismiss = document.getElementById('btn-banner-dismiss');
-    if (bannerDismiss) bannerDismiss.style.display = 'none';
+    if (bannerDismiss) { bannerDismiss.style.display = 'inline-flex'; bannerDismiss.title = 'Stop / Cancel Scan'; }
   }
   if (refreshBtn) refreshBtn.classList.add('spinning');
 
