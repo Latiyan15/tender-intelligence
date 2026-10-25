@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nikom Tender Intelligence — Tender Discovery & Document Extraction</title>
+  <meta name="description"
+    content="Automated tender discovery, tiered keyword intelligence, and structured document extraction for Nikom InfraSolutions Pvt. Ltd.">
+
+  <!-- Inter & Plus Jakarta Sans Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="icon" type="image/png" href="/static/images/nikom_emblem.png">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20261025_v9_logo">
+</head>
+
+<body>
+  <div class="app-layout">
+
+    <!-- ════════════════════════════════════════════════════════════════════════
+         LEFT SIDEBAR NAVIGATION
+         ════════════════════════════════════════════════════════════════════════ -->
+    <aside class="sidebar">
+      <!-- Logo Branding -->
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-collapsed" title="Nikom InfraSolutions">
+          <img src="/static/images/nikom_emblem.png" alt="Nikom Emblem" class="brand-emblem-img">
+        </div>
+        <div class="sidebar-brand-expanded">
+          <div class="brand-badge-card">
+            <img src="/static/images/nikom_logo_badge.png" alt="Nikom - building trust..." class="brand-full-logo-img">
+          </div>
+          <div class="brand-subtitle">Tender Intelligence</div>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-nav="dashboard">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#tenders" class="nav-item" data-nav="tenders">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Tenders</span>
+          <span class="nav-badge" id="nav-tender-count">295</span>
+        </a>
+        <a href="#sources" class="nav-item" data-nav="sources">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+              </path>
+            </svg>
+          </span>
+          <span class="nav-label">Sources</span>
+        </a>
+        <a href="#keywords" class="nav-item" data-nav="keywords">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Keywords</span>
+        </a>
+        <a href="#documents" class="nav-item" data-nav="documents">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Documents</span>
+        </a>
+        <a href="#reports" class="nav-item" data-nav="reports">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Reports</span>
+        </a>
+        <a href="#watchlist" class="nav-item" data-nav="watchlist">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+              </polygon>
+            </svg>
+          </span>
+          <span class="nav-label">Watchlist</span>
+        </a>
+
+        <!-- Management Section from Image 1 -->
+        <div class="sidebar-section-title">MANAGEMENT</div>
+        <a href="#runs" class="nav-item" data-nav="runs">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Collection Runs</span>
+        </a>
+        <a href="#team" class="nav-item" data-nav="team">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Team</span>
+        </a>
+        <a href="#settings" class="nav-item" data-nav="settings">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+          </span>
+          <span class="nav-label">Settings</span>
+        </a>
+      </nav>
+
+      <!-- System Online Glowing Card from Image 1 -->
+      <div class="system-online-card">
+        <div class="system-online-header">
+          <span class="pulse-indicator"></span>
+          <span class="system-online-title">System Online</span>
+        </div>
+        <div class="system-online-sub">Last updated <strong id="sidebar-updated-time">Today, 10:42 AM</strong></div>
+        <svg class="system-waveform" viewBox="0 0 120 22" fill="none" preserveAspectRatio="none">
+          <path d="M0 11 Q 15 2, 30 11 T 60 11 T 90 4 T 120 11" stroke="#22C55E" stroke-width="2.2"
+            stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <!-- Monitored sources removed from sidebar to prevent duplication with Portal Health -->
+    </aside>
+
+    <!-- ════════════════════════════════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ════════════════════════════════════════════════════════════════════════ -->
+    <div class="main-viewport">
+
+      <!-- Top Application Header Bar -->
+      <header class="top-header">
+        <div class="header-search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="global-search"
+            placeholder="Search tenders, organisations, locations, keywords, tender ID..." autocomplete="off">
+          <span class="kbd-badge">⌘ K</span>
+        </div>
+
+        <div class="top-header-right">
+          <!-- Dynamic Scanner Status Pill (Pulsing live badge) -->
+          <div class="scan-status-pill idle" id="scan-status-pill" onclick="handleScanPillClick()" title="Discovery Scanner Status (Click to scan)">
+            <span class="scan-pulse-dot"></span>
+            <span id="scan-status-label">Scanner: Ready</span>
+          </div>
+
+          <!-- Live Feed Last Updated Tag -->
+          <div class="last-updated-tag" id="last-updated-container" title="Real-time Feed Status">
+            <span class="pulse-indicator"></span>
+            <span>Last updated <strong id="last-updated-text">Just now</strong></span>
+          </div>
+
+          <!-- Refresh Button -->
+          <button class="btn-icon" id="btn-refresh" title="Refresh Feed" onclick="refreshDashboard()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+
+          <!-- Theme Toggle Button (Sun / Moon) -->
+          <button class="btn-icon theme-toggle-btn" id="btn-theme-toggle" onclick="toggleTheme()"
+            title="Toggle Midnight / Daylight Theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+
+          <button class="btn-icon notification-bell" title="Notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="bell-badge">12</span>
+          </button>
+
+          <div class="user-profile-widget">
+            <div class="user-avatar">U</div>
+            <div class="user-meta">
+              <span class="user-name">User</span>
+              <span class="user-org">Nikom Group</span>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="color: var(--text-3); margin-left: 2px;">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Main View Container -->
+      <main class="page-content">
+
+        <!-- Live Discovery Scan Notification Banner -->
+        <div id="live-scan-banner" class="live-scan-banner" style="display: none;">
+          <div class="banner-inner">
+            <div class="banner-left">
+              <div class="scan-spinner-ring" id="banner-spinner"></div>
+              <div class="banner-text-block">
+                <div class="banner-title" id="banner-title">Portal Discovery Scan Active</div>
+                <div class="banner-subtitle" id="banner-subtitle">Searching official procurement portals and matching
+                  Nikom Tier A–D keywords...</div>
+              </div>
+            </div>
+            <div class="banner-right">
+              <span class="banner-source-tag" id="banner-source-tag">Portals: All</span>
+              <button class="banner-dismiss-btn" id="btn-banner-dismiss" onclick="dismissScanBanner()"
+                title="Dismiss Banner">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 1: DASHBOARD
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page active" id="view-dashboard">
+          <!-- Page Title & Quick Actions Row -->
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Tender <span class="discovery-gradient">Discovery</span></h1>
+              <p class="page-subtitle" id="discovery-feed-subtitle">All relevant tenders published in the last 24 hours across monitored portals</p>
+            </div>
+
+            <div class="page-controls">
+              <!-- Pill Select (Image 2 style) -->
+              <div class="pill-select-wrapper">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <select id="time-window-select" onchange="handleTimeWindowChange(this.value)">
+                  <option value="24h" selected>Last 24 hours</option>
+                  <option value="48h">Last 48 hours</option>
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="all">All Discovered</option>
+                </select>
+              </div>
+
+              <!-- Primary CTA: Run Discovery Now (Glowing Pill Button) -->
+              <button class="btn-primary-run" onclick="triggerDiscoveryScan()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Run Discovery Now</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 5 KPI Metrics Row with Sparklines (Image 1) -->
+          <div class="kpi-grid">
+            <!-- Total Tenders -->
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-blue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="kpi-number" id="metric-total">295</div>
+                    <div class="kpi-label">Total Tenders</div>
+                  </div>
+                </div>
+                <div class="kpi-trend">↑ 18%</div>
+              </div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                <path d="M0 18 Q 20 6, 40 14 T 70 8 T 100 4 L 100 24 L 0 24 Z" fill="rgba(56, 189, 248, 0.12)" />
+                <path d="M0 18 Q 20 6, 40 14 T 70 8 T 100 4" fill="none" stroke="#38BDF8" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <!-- Tier A: Cyber Security -->
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-red">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z">
+                      </path>
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="kpi-number" id="metric-tier-a">0</div>
+                    <div class="kpi-label">Tier A <span class="kpi-sub">Cyber Security</span></div>
+                  </div>
+                </div>
+                <div class="kpi-trend">↑ 22%</div>
+              </div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                <path d="M0 20 Q 25 15, 50 18 T 80 8 T 100 5 L 100 24 L 0 24 Z" fill="rgba(244, 63, 94, 0.12)" />
+                <path d="M0 20 Q 25 15, 50 18 T 80 8 T 100 5" fill="none" stroke="#F43F5E" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <!-- Tier B: IT Infrastructure -->
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-cyan">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                      </path>
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="kpi-number" id="metric-tier-b">0</div>
+                    <div class="kpi-label">Tier B <span class="kpi-sub">IT Infrastructure</span></div>
+                  </div>
+                </div>
+                <div class="kpi-trend">↑ 12%</div>
+              </div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                <path d="M0 16 Q 30 18, 50 10 T 80 14 T 100 6 L 100 24 L 0 24 Z" fill="rgba(59, 130, 246, 0.12)" />
+                <path d="M0 16 Q 30 18, 50 10 T 80 14 T 100 6" fill="none" stroke="#3B82F6" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <!-- Tier C: Cloud -->
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-green">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="kpi-number" id="metric-tier-c">0</div>
+                    <div class="kpi-label">Tier C <span class="kpi-sub">Cloud</span></div>
+                  </div>
+                </div>
+                <div class="kpi-trend">↑ 17%</div>
+              </div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                <path d="M0 19 Q 20 16, 40 10 T 70 14 T 100 5 L 100 24 L 0 24 Z" fill="rgba(16, 185, 129, 0.12)" />
+                <path d="M0 19 Q 20 16, 40 10 T 70 14 T 100 5" fill="none" stroke="#10B981" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <!-- Tier D: Non-IT Infrastructure & Services -->
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-purple">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="2" x2="12" y2="22"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="kpi-number" id="metric-tier-d">0</div>
+                    <div class="kpi-label">Tier D <span class="kpi-sub">Non-IT Infra & Services</span></div>
+                  </div>
+                </div>
+                <div class="kpi-trend">↑ 7%</div>
+              </div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                <path d="M0 14 Q 25 18, 55 12 T 85 16 T 100 9 L 100 24 L 0 24 Z" fill="rgba(139, 92, 246, 0.12)" />
+                <path d="M0 14 Q 25 18, 55 12 T 85 16 T 100 9" fill="none" stroke="#8B5CF6" stroke-width="2"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- 2-Column Dashboard Grid: Main Analytics+Table on Left, Side Widgets on Right -->
+          <div class="dashboard-grid-layout">
+
+            <!-- Left Main Column -->
+            <div class="dashboard-main-col">
+
+              <!-- Visual Analytics Row (3 Cards) -->
+              <div class="analytics-row">
+
+                <!-- Widget 1: Tenders by Source (Donut Chart) -->
+                <div class="analytics-card" id="sources-donut-card">
+                  <div class="card-header-row">
+                    <h3 class="analytics-title">Tenders by Source</h3>
+                    <a href="#sources" onclick="navigateTo('sources'); return false;" class="card-link">View all &rarr;</a>
+                  </div>
+
+                  <div class="donut-chart-container">
+                    <div class="donut-svg-wrapper">
+                      <svg class="donut-chart" viewBox="0 0 100 100" width="130" height="130">
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255, 255, 255, 0.06)" stroke-width="12"></circle>
+                        <g id="donut-segments-group"></g>
+                      </svg>
+                      <div class="donut-center-text">
+                        <span class="center-count" id="donut-center-total">0</span>
+                        <span class="center-label">TENDERS</span>
+                      </div>
+                    </div>
+
+                    <div class="donut-legend" id="donut-legend-container">
+                      <!-- Dynamic legend rows populated via renderDonutChart() in app.js -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Widget 2: Tenders by Keyword Tier -->
+                <div class="analytics-card">
+                  <div class="card-header-row">
+                    <h3 class="analytics-title">Tenders by Keyword Tier</h3>
+                    <a href="#keywords" class="card-link">View all &rarr;</a>
+                  </div>
+                  <div class="tier-bars-list" id="tier-bars-container">
+                    <div class="bar-item">
+                      <div class="bar-labels">
+                        <span class="bar-title"><strong>Tier A</strong> <span class="muted">Cyber Security</span></span>
+                        <span class="bar-count" id="tier-a-bar-count">0</span>
+                      </div>
+                      <div class="bar-track">
+                        <div class="bar-fill fill-red" id="tier-a-bar-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+
+                    <div class="bar-item">
+                      <div class="bar-labels">
+                        <span class="bar-title"><strong>Tier B</strong> <span class="muted">IT Infrastructure</span></span>
+                        <span class="bar-count" id="tier-b-bar-count">0</span>
+                      </div>
+                      <div class="bar-track">
+                        <div class="bar-fill fill-blue" id="tier-b-bar-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+
+                    <div class="bar-item">
+                      <div class="bar-labels">
+                        <span class="bar-title"><strong>Tier C</strong> <span class="muted">Cloud</span></span>
+                        <span class="bar-count" id="tier-c-bar-count">0</span>
+                      </div>
+                      <div class="bar-track">
+                        <div class="bar-fill fill-green" id="tier-c-bar-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+
+                    <div class="bar-item">
+                      <div class="bar-labels">
+                        <span class="bar-title"><strong>Tier D</strong> <span class="muted">Non-IT Infra & Services</span></span>
+                        <span class="bar-count" id="tier-d-bar-count">0</span>
+                      </div>
+                      <div class="bar-track">
+                        <div class="bar-fill fill-purple" id="tier-d-bar-fill" style="width: 0%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Widget 3: Tenders by Sector (Matching Reference Design) -->
+                <div class="analytics-card sources-bar-card" id="sectors-bar-card">
+                  <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
+                    <div>
+                      <h3 class="analytics-title" style="margin-bottom: 2px;">Tenders by Sector</h3>
+                      <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Distribution across monitored sectors</p>
+                    </div>
+                    <div class="card-header-icon" style="color: var(--primary); display: flex; align-items: center; padding: 2px;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20V10M18 20V4M6 20v-4"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="source-bars-list" id="sector-bars-container">
+                    <!-- Populated dynamically via renderSectorBars() in app.js -->
+                  </div>
+
+                  <div class="card-footer-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                    <span class="footer-count-text" id="sector-bars-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">5 sectors shown</span>
+                    <a href="#tenders" class="card-link" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
+                      View all &rarr;
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Tenders Data Table Section -->
+              <section class="tenders-section" id="dashboard-tenders-section">
+                <div class="table-header-row">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <h2 class="section-title">
+                      Tenders (<span id="table-total-count">0</span>)
+                    </h2>
+                    <span id="table-scan-indicator" class="table-scan-indicator" style="display: none;">
+                      <span class="mini-spin-dot"></span>
+                      <span id="table-scan-indicator-text">Scanning portals...</span>
+                    </span>
+                  </div>
+
+                  <div class="table-search-tools">
+                    <div class="search-mini">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                      <input type="text" id="table-search" placeholder="Search in results...">
+                    </div>
+
+                    <!-- Image 2 Pill Buttons Toolbar -->
+                    <div class="pill-btn-group">
+                      <button class="btn-subtle-pill" onclick="toggleFilterBar()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>Filters</span>
+                      </button>
+
+                      <button class="btn-subtle-pill" onclick="toggleSortDirection()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        <span id="sort-btn-label">Sort</span>
+                      </button>
+
+                      <button class="btn-subtle-pill"
+                        onclick="alert('Table displays 11 columns matching enterprise spec.')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="3" y1="9" x2="21" y2="9"></line>
+                          <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        <span>Columns</span>
+                      </button>
+
+                      <button class="btn-subtle-pill" onclick="exportTendersCSV()" title="Export CSV">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="7 10 12 15 17 10"></polyline>
+                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Export</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Workflow Lifecycle & Segregation Bar -->
+                <div class="workflow-segregation-bar" id="workflow-segregation-bar">
+                  <button class="wf-tab active" data-status="all" onclick="setWorkflowFilter('all')">
+                    <span>All Discovered</span>
+                    <span class="wf-count" id="wf-count-all">334</span>
+                  </button>
+                  <button class="wf-tab wf-tab-watchlist" data-status="watchlist" onclick="setWorkflowFilter('watchlist')">
+                    <span class="wf-tab-star">★</span>
+                    <span>Watchlist</span>
+                    <span class="wf-count" id="wf-count-watchlist">0</span>
+                  </button>
+                  <button class="wf-tab wf-tab-considered" data-status="considered" onclick="setWorkflowFilter('considered')">
+                    <span class="wf-dot considered"></span>
+                    <span>Considered / Shortlist</span>
+                    <span class="wf-count" id="wf-count-considered">0</span>
+                  </button>
+                  <button class="wf-tab wf-tab-review" data-status="under_review" onclick="setWorkflowFilter('under_review')">
+                    <span class="wf-dot review"></span>
+                    <span>Under Review</span>
+                    <span class="wf-count" id="wf-count-under_review">0</span>
+                  </button>
+                  <button class="wf-tab wf-tab-reviewed" data-status="reviewed" onclick="setWorkflowFilter('reviewed')">
+                    <span class="wf-dot reviewed"></span>
+                    <span>Reviewed / Held</span>
+                    <span class="wf-count" id="wf-count-reviewed">0</span>
+                  </button>
+                  <button class="wf-tab wf-tab-rejected" data-status="rejected" onclick="setWorkflowFilter('rejected')">
+                    <span class="wf-dot rejected"></span>
+                    <span>Disqualified / Rejected</span>
+                    <span class="wf-count" id="wf-count-rejected">0</span>
+                  </button>
+                  <button class="wf-tab wf-tab-expired" data-status="expired" onclick="setWorkflowFilter('expired')">
+                    <span class="wf-dot expired"></span>
+                    <span>Closed / Expired</span>
+                    <span class="wf-count" id="wf-count-expired">0</span>
+                  </button>
+                </div>
+
+                <div class="filter-toolbar">
+                  <!-- Tier Filter Pills (Image 1 & 2) -->
+                  <div class="tier-pills-group">
+                    <button class="pill-btn active" data-tier="all">
+                      All <span class="pill-count" id="pill-all-count">0</span>
+                    </button>
+                    <button class="pill-btn pill-tier-a" data-tier="A">
+                      Tier A <span class="pill-count" id="pill-a-count">0</span>
+                    </button>
+                    <button class="pill-btn pill-tier-b" data-tier="B">
+                      Tier B <span class="pill-count" id="pill-b-count">0</span>
+                    </button>
+                    <button class="pill-btn pill-tier-c" data-tier="C">
+                      Tier C <span class="pill-count" id="pill-c-count">0</span>
+                    </button>
+                    <button class="pill-btn pill-tier-d" data-tier="D">
+                      Tier D <span class="pill-count" id="pill-d-count">0</span>
+                    </button>
+                  </div>
+
+                  <div class="filter-dropdowns-group">
+                    <div class="dropdown-wrapper">
+                      <select id="filter-source" onchange="applyFilters()">
+                        <option value="">Source: All Portals (42)</option>
+                        <option value="gem">Government e-Marketplace (GeM)</option>
+                        <option value="cppp_latest">CPPP Central Active Tenders</option>
+                        <option value="cppp_epublish">CPPP ePublishing Portal</option>
+                        <option value="up_tenders">Uttar Pradesh eProcurement</option>
+                        <option value="mahatenders">Maharashtra MahaTenders</option>
+                        <option value="karnataka_eproc">Karnataka eProcurement</option>
+                        <option value="tn_tenders">Tamil Nadu TNTenders</option>
+                        <option value="gujarat_nprocure">Gujarat nProcure</option>
+                        <option value="rajasthan_eproc">Rajasthan eProcurement</option>
+                        <option value="mp_tenders">Madhya Pradesh MP Tenders</option>
+                        <option value="haryana_tenders">Haryana eProcurement</option>
+                        <option value="delhi_tenders">Delhi Govt Procurement</option>
+                        <option value="punjab_eproc">Punjab eProcurement</option>
+                        <option value="uk_tenders">Uttarakhand UK Tenders</option>
+                        <option value="wb_tenders">West Bengal WB Tenders</option>
+                        <option value="kerala_tenders">Kerala e-Tenders</option>
+                        <option value="odisha_tenders">Odisha Tenders</option>
+                        <option value="jharkhand_tenders">Jharkhand Tenders</option>
+                        <option value="hp_tenders">Himachal Pradesh HP Tenders</option>
+                        <option value="chhattisgarh_eproc">Chhattisgarh eProc</option>
+                        <option value="jk_tenders">Jammu & Kashmir JK Tenders</option>
+                        <option value="assam_tenders">Assam Tenders (GePNIC)</option>
+                        <option value="andaman_tenders">Andaman & Nicobar Islands</option>
+                        <option value="arunachal_tenders">Arunachal Pradesh Tenders</option>
+                        <option value="bihar_eprocurement">Bihar eProcurement</option>
+                        <option value="ap_eprocurement">Andhra Pradesh eProcurement</option>
+                        <option value="aiims_kalyani_ewizard">AIIMS Kalyani (eWizard)</option>
+                        <option value="aera_ewizard">AERA India (eWizard)</option>
+                        <option value="bcpl_ewizard">Bengal Chemicals (eWizard)</option>
+                        <option value="becil_ewizard">BECIL India (eWizard)</option>
+                        <option value="aiims_tenderwizard">AIIMS (TenderWizard)</option>
+                        <option value="bhel_tenderwizard">BHEL (TenderWizard)</option>
+                        <option value="aiims_guwahati">AIIMS Guwahati</option>
+                        <option value="bel">Bharat Electronics (BEL)</option>
+                        <option value="bhel">Bharat Heavy Electricals (BHEL)</option>
+                        <option value="bpcl">Bharat Petroleum (BPCL)</option>
+                        <option value="iocl">Indian Oil (IOCL)</option>
+                        <option value="beml">BEML Limited</option>
+                        <option value="bial">Bangalore Airport (BIAL)</option>
+                        <option value="bnpm">Bank Note Paper Mill (BNPM)</option>
+                        <option value="bharat_ets">Bharat ElectronicTender (ETS)</option>
+                        <option value="asrtu">State Road Transport (ASRTU)</option>
+                      </select>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+                      <select id="filter-state" onchange="applyFilters()">
+                        <option value="">State: All</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                      </select>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+                      <select id="filter-sector" onchange="applyFilters()">
+                        <option value="">Sector: All</option>
+                        <option value="Government">Government</option>
+                        <option value="Defence">Defence</option>
+                        <option value="Enterprise / Commercial">Enterprise / Commercial</option>
+                        <option value="Energy & Utilities">Energy & Utilities</option>
+                        <option value="Transport">Transport</option>
+                      </select>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+                      <select id="filter-value" onchange="applyFilters()">
+                        <option value="">Value: All</option>
+                        <option value="5cr">₹ 5 Cr+</option>
+                        <option value="25cr">₹ 25 Cr+</option>
+                        <option value="50cr">₹ 50 Cr+</option>
+                      </select>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+                      <select id="filter-expiry" onchange="applyFilters()">
+                        <option value="all">Bids: All Statuses</option>
+                        <option value="active">Bids: Open / Active Only</option>
+                        <option value="expired">Bids: Closed / Expired Only</option>
+                      </select>
+                    </div>
+
+                    <button class="btn-reset" onclick="resetFilters()">Reset</button>
+                  </div>
+                </div>
+
+                <div class="table-responsive-container">
+                  <table class="tenders-table" id="tenders-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 36px;"><input type="checkbox" id="select-all-tenders" title="Select all visible tenders"></th>
+                        <th style="width: 32px; text-align: center; color: #f59e0b;" title="Executive Watchlist (Star to Pin)">★</th>
+                        <th>Title & Reference</th>
+                        <th>Source</th>
+                        <th>Buyer Organisation</th>
+                        <th>Location</th>
+                        <th>Value</th>
+                        <th>Key Systems</th>
+                        <th>Deadline</th>
+                        <th>Tier</th>
+                        <th>Workflow Status</th>
+                        <th style="width: 44px; text-align: center;">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tenders-tbody">
+                      <!-- Dynamically populated by app.js -->
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+            </div>
+
+            <!-- Right Side Column (Recent Tenders & Portal Health) -->
+            <div class="dashboard-side-col">
+
+              <!-- Recent Tenders Widget -->
+              <div class="analytics-card side-widget-card">
+                <div class="card-header-row">
+                  <h3 class="analytics-title">Recent Tenders</h3>
+                  <a href="#tenders" class="card-link">View all &rarr;</a>
+                </div>
+                <div class="recent-tenders-list" id="dashboard-recent-tenders">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <!-- Portal Ingestion Health Widget -->
+              <div class="analytics-card side-widget-card" id="dashboard-portal-health-card">
+                <div class="card-header-row">
+                  <h3 class="analytics-title" style="display: flex; align-items: center; gap: 6px;">Portal Ingestion Health</h3>
+                  <a href="#sources" onclick="navigateTo('sources'); return false;" class="card-link" style="color: var(--primary); font-size: 11.5px; font-weight: 700;">View all 42 &rarr;</a>
+                </div>
+                <div class="portal-health-list" id="dashboard-portal-health">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 2: TENDERS (FULL SCREEN WORKBENCH)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-tenders" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Tenders Intelligence Explorer</h1>
+              <p class="page-subtitle">Search, filter and analyze all discovered tenders with tiered categorization</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-secondary" onclick="exportTendersCSV()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                  <span>Core DC</span>
+                </div>
+              </div>
+              <div class="kpi-number" id="tenders-view-direct">232</div>
+              <div class="kpi-label">Direct Matches (Core DC & Multi-Tier B)</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 20 Q 25 18, 50 12 T 100 4" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                  <span>Review</span>
+                </div>
+              </div>
+              <div class="kpi-number" id="tenders-view-indirect">63</div>
+              <div class="kpi-label">Indirect Signals (Review List)</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 18 Q 25 22, 50 14 T 100 6" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive">
+                  <span>Suppressed</span>
+                </div>
+              </div>
+              <div class="kpi-number" id="tenders-view-unmatched">0</div>
+              <div class="kpi-label">General Procurement (Noise Filtered)</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 22 Q 25 16, 50 18 T 100 10" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                  <span>Active</span>
+                </div>
+              </div>
+              <div class="kpi-number" style="color: #10b981;" id="tenders-view-value">₹ 1,480.20 Cr</div>
+              <div class="kpi-label">Qualified Pipeline Value (INR)</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 20 Q 25 15, 50 8 T 100 2" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tenders Table Placeholder (Mirrors high-density table) -->
+          <div id="tenders-view-table-mount"></div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 3: SOURCES (MONITORED PORTALS & HEALTH)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-sources" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Monitored Sources & Portal Health</h1>
+              <p class="page-subtitle">Real-time sync status, schedules, and connectivity for Indian tender portals</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-panel-primary" style="flex: none; padding: 8px 16px;" onclick="triggerDiscoveryScan()">
+                <span>🔄 Scan All Portals Now</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Filter Chips Bar -->
+          <div class="sources-filter-chips-bar" id="sources-category-chips">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Categorized Collapsible Portal Groups Container -->
+          <div class="sources-grouped-container" id="sources-cards-container">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Recent Runs History -->
+          <div class="analytics-card" style="margin-top: 24px;">
+            <h3 class="analytics-title">Recent Automated Discovery Runs</h3>
+            <div class="table-responsive-container">
+              <table class="tenders-table">
+                <thead>
+                  <tr>
+                    <th>Portal Source</th>
+                    <th>Status</th>
+                    <th>Started At</th>
+                    <th>Finished At</th>
+                    <th>Scanned</th>
+                    <th>Discovered</th>
+                    <th>Qualified</th>
+                  </tr>
+                </thead>
+                <tbody id="sources-runs-tbody">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 4: KEYWORDS (KEYWORD INTELLIGENCE & RULE TESTER)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-keywords" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Keyword Intelligence Workbench</h1>
+              <p class="page-subtitle">Rule definitions, tier weighting, context verification, and interactive matching
+                tester</p>
+            </div>
+          </div>
+
+          <!-- Interactive Rule Tester Card -->
+          <div class="tenders-section" style="height: auto; max-height: none; margin-bottom: 24px;">
+            <h3 class="analytics-title" style="margin-bottom: 6px;">🧪 Live Keyword Match Tester</h3>
+            <p style="font-size: 12.5px; color: var(--text-2); margin-bottom: 14px;">
+              Paste any tender title or RFP specification below to test against Tier A (Cyber Security), Tier B (IT Infrastructure), Tier C (Cloud), and Tier D (Non-IT Infrastructure & Services) rules in real-time.
+            </p>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+              <textarea id="kw-test-input" rows="3"
+                style="flex: 1; padding: 12px 16px; background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); border-radius: 16px; font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.2s;"
+                placeholder="Example: Supply, installation and commissioning of Next-Generation Firewall (NGFW), SOC SIEM integration, 42U Server Racks, Enterprise SAN Storage, Cloud Migration, and 3-Year Comprehensive Annual Maintenance (CAMC)..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button class="btn-secondary" onclick="loadSampleText()">Load Sample</button>
+              <button class="btn-panel-primary" style="flex: none; padding: 8px 18px;" onclick="runKeywordTest()">
+                Run Test Match
+              </button>
+            </div>
+
+            <!-- Test Result Box -->
+            <div id="kw-test-result"
+              style="display: none; margin-top: 16px; padding: 16px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 16px; color: var(--text);">
+              <!-- Result injected via JS -->
+            </div>
+          </div>
+
+          <!-- Tier Dictionaries Grid -->
+          <div class="tier-dictionaries-grid">
+            <div class="dict-card tier-a-dict">
+              <div class="dict-header">
+                <span class="dict-title">Tier A: Cyber Security</span>
+                <span class="panel-tier-badge tier-badge-a">Zero Trust / SOC / Firewall</span>
+              </div>
+              <div class="dict-tags">
+                <span class="dict-tag">firewall</span>
+                <span class="dict-tag">NGFW</span>
+                <span class="dict-tag">UTM</span>
+                <span class="dict-tag">SOC</span>
+                <span class="dict-tag">SIEM</span>
+                <span class="dict-tag">EDR / XDR</span>
+                <span class="dict-tag">zero trust</span>
+                <span class="dict-tag">IAM / PAM</span>
+                <span class="dict-tag">DLP</span>
+                <span class="dict-tag">VAPT</span>
+                <span class="dict-tag">CERT-In</span>
+                <span class="dict-tag">encryption</span>
+              </div>
+            </div>
+
+            <div class="dict-card tier-b-dict">
+              <div class="dict-header">
+                <span class="dict-title">Tier B: IT Infrastructure</span>
+                <span class="panel-tier-badge tier-badge-b">Compute / Storage / Network</span>
+              </div>
+              <div class="dict-tags">
+                <span class="dict-tag">rack server</span>
+                <span class="dict-tag">blade server</span>
+                <span class="dict-tag">SAN storage</span>
+                <span class="dict-tag">NAS storage</span>
+                <span class="dict-tag">core switch</span>
+                <span class="dict-tag">managed switch</span>
+                <span class="dict-tag">core router</span>
+                <span class="dict-tag">structured cabling</span>
+                <span class="dict-tag">fiber optic</span>
+                <span class="dict-tag">server rack</span>
+                <span class="dict-tag">KVM switch</span>
+                <span class="dict-tag">wireless AP</span>
+              </div>
+            </div>
+
+            <div class="dict-card tier-c-dict">
+              <div class="dict-header">
+                <span class="dict-title">Tier C: Cloud</span>
+                <span class="panel-tier-badge tier-badge-c">Cloud & Virtualization</span>
+              </div>
+              <div class="dict-tags">
+                <span class="dict-tag">cloud computing</span>
+                <span class="dict-tag">cloud hosting</span>
+                <span class="dict-tag">AWS / Azure / GCP</span>
+                <span class="dict-tag">private cloud</span>
+                <span class="dict-tag">virtual machine</span>
+                <span class="dict-tag">VMware</span>
+                <span class="dict-tag">Nutanix HCI</span>
+                <span class="dict-tag">Kubernetes</span>
+                <span class="dict-tag">Docker</span>
+                <span class="dict-tag">cloud migration</span>
+                <span class="dict-tag">DRaaS</span>
+                <span class="dict-tag">IaaS / PaaS / SaaS</span>
+              </div>
+            </div>
+
+            <div class="dict-card tier-d-dict">
+              <div class="dict-header">
+                <span class="dict-title">Tier D: Non-IT Infrastructure & Services</span>
+                <span class="panel-tier-badge tier-badge-d">Power / Cooling / AMC & FMS</span>
+              </div>
+              <div class="dict-tags">
+                <span class="dict-tag">online UPS</span>
+                <span class="dict-tag">modular UPS</span>
+                <span class="dict-tag">precision air (PAC)</span>
+                <span class="dict-tag">CRAC / CRAH</span>
+                <span class="dict-tag">DG set</span>
+                <span class="dict-tag">FM-200 / Novec</span>
+                <span class="dict-tag">VESDA</span>
+                <span class="dict-tag">raised floor</span>
+                <span class="dict-tag">IBMS / DCIM</span>
+                <span class="dict-tag">CAMC / AMC</span>
+                <span class="dict-tag">FMS</span>
+                <span class="dict-tag">O&M / Managed Services</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 5: DOCUMENTS (EXTRACTED EVIDENCE REPOSITORY)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-documents" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Document Repository & Extraction</h1>
+              <p class="page-subtitle">Official NIT notices, technical specifications, BOQ sheets, and automated data
+                extraction</p>
+            </div>
+          </div>
+
+          <div class="tenders-section" style="height: auto; max-height: none;">
+            <h3 class="analytics-title" style="margin-bottom: 16px;">Official Tender Documents & Extracted Scope</h3>
+            <div class="table-responsive-container">
+              <table class="tenders-table" id="documents-table" style="table-layout: fixed; width: 100%;">
+                <colgroup>
+                  <col style="width: 27%;">
+                  <col style="width: 15%;">
+                  <col style="width: 18%;">
+                  <col style="width: 15%;">
+                  <col style="width: 6%;">
+                  <col style="width: 9%;">
+                  <col style="width: 10%;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Document Name</th>
+                    <th>Tender Reference</th>
+                    <th>Issuing Authority</th>
+                    <th>Document Type</th>
+                    <th>Size</th>
+                    <th>Extraction Status</th>
+                    <th style="text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="documents-tbody">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 6: SETTINGS (SYSTEM CONFIGURATION)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-settings" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Discovery & Extraction Settings</h1>
+              <p class="page-subtitle">System configuration, polling frequencies, threshold rules, and notification
+                preferences</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-panel-primary" style="flex: none; padding: 8px 18px;" onclick="saveSettings()">
+                <span>Save Settings</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="analytics-card">
+              <h3 class="analytics-title">Discovery Schedule & Polling</h3>
+              <div class="setting-field">
+                <label>Rolling Discovery Window</label>
+                <select class="setting-input">
+                  <option selected>Past 24 hours (Recommended)</option>
+                  <option>Past 48 hours</option>
+                  <option>Past 7 days</option>
+                </select>
+                <span class="setting-help">Determines which publication dates qualify for the active feed.</span>
+              </div>
+
+              <div class="setting-field">
+                <label>Portal Scan Interval</label>
+                <select class="setting-input">
+                  <option selected>Every 1 hour (Active)</option>
+                  <option>Every 4 hours</option>
+                  <option>Every 12 hours</option>
+                </select>
+                <span class="setting-help">Automated scraper run frequency across all connected portals.</span>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3 class="analytics-title">Keyword Thresholds & Filters</h3>
+              <div class="setting-field">
+                <label>Minimum Tender Value Filter (INR)</label>
+                <input type="text" class="setting-input" value="₹ 0 (Show all qualifying)" />
+                <span class="setting-help">Tenders below this value will be suppressed from the primary feed.</span>
+              </div>
+
+              <div class="setting-field">
+                <label>Standalone UPS Minimum Capacity</label>
+                <input type="text" class="setting-input" value="10 kVA" />
+                <span class="setting-help">Filters out small single-office UPS noise (1–3 kVA).</span>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3 class="analytics-title">Database & System Health</h3>
+              <div class="setting-field">
+                <label>SQLite Database Journal Mode</label>
+                <div
+                  style="font-size: 13px; font-family: monospace; color: #16a34a; font-weight: 700; margin-top: 4px;">
+                  WAL (Write-Ahead Logging) — Active
+                </div>
+              </div>
+
+              <div class="setting-field">
+                <label>Database File Path</label>
+                <div
+                  style="font-size: 12px; font-family: monospace; color: var(--text-secondary); word-break: break-all; margin-top: 4px;">
+                  c:\Users\Dell\OneDrive\tender\data\nikom_tenders.db
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 7: REPORTS (EXECUTIVE INTELLIGENCE & ANALYTICS)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-reports" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Executive Reports & <span class="discovery-gradient">Intelligence</span></h1>
+              <p class="page-subtitle">Aggregated procurement intelligence, tier distribution audits, and executive briefing dossiers</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-secondary" onclick="exportTendersCSV()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export CSV</span>
+              </button>
+              <button class="btn-primary-run" onclick="generateExecutiveReport()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Generate Intelligence Dossier</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 KPI Metrics -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="12 6 12 12 16 14"></polygon>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive"><span>Live Ingest</span></div>
+              </div>
+              <div class="kpi-number" id="reports-total-analyzed">295</div>
+              <div class="kpi-label">Discovered Tenders Analyzed</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 20 Q 25 14, 50 12 T 100 4" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(244, 63, 94, 0.12); color: #f43f5e;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive"><span>Core DC</span></div>
+              </div>
+              <div class="kpi-number" id="reports-core-dc">232</div>
+              <div class="kpi-label">Qualified Data Centre Scope</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 18 Q 25 22, 50 12 T 100 6" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive"><span>₹ Est. Val</span></div>
+              </div>
+              <div class="kpi-number" style="color: #10b981;">₹ 1,480.20 Cr</div>
+              <div class="kpi-label">Qualified Pipeline Valuation</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 22 Q 25 16, 50 8 T 100 2" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+                <div class="kpi-trend positive"><span>98.4% SLA</span></div>
+              </div>
+              <div class="kpi-number" style="color: #8b5cf6;">98.4%</div>
+              <div class="kpi-label">Automated OCR Extraction Rate</div>
+              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
+                <path d="M0 16 Q 25 18, 50 10 T 100 4" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Reports Breakdown & Feed Quality Grid -->
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 24px;">
+            <!-- Left Card: Category Breakdown -->
+            <div class="analytics-card">
+              <div class="card-header-row">
+                <h3 class="analytics-title">Procurement Category Intent</h3>
+                <span class="card-link" style="color: var(--primary);">Nikom Tiers</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
+                    <span><strong style="color: var(--tier-a);">Tier A</strong> — Cyber Security</span>
+                    <strong id="analytics-tier-a-val">Active Bids</strong>
+                  </div>
+                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 25%; height: 100%; background: var(--tier-a); border-radius: 999px;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
+                    <span><strong style="color: var(--tier-b);">Tier B</strong> — IT Infrastructure</span>
+                    <strong id="analytics-tier-b-val">Active Bids</strong>
+                  </div>
+                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 50%; height: 100%; background: var(--tier-b); border-radius: 999px;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
+                    <span><strong style="color: var(--tier-c);">Tier C</strong> — Cloud</span>
+                    <strong id="analytics-tier-c-val">Active Bids</strong>
+                  </div>
+                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 35%; height: 100%; background: var(--tier-c); border-radius: 999px;"></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
+                    <span><strong style="color: var(--tier-d);">Tier D</strong> — Non-IT Infrastructure & Services</span>
+                    <strong id="analytics-tier-d-val">Active Bids</strong>
+                  </div>
+                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
+                    <div style="width: 40%; height: 100%; background: var(--tier-d); border-radius: 999px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Card: Monitored Portal Intelligence & Quality -->
+            <div class="analytics-card">
+              <div class="card-header-row">
+                <h3 class="analytics-title">Portal Ingestion & SLA Quality</h3>
+                <span class="card-link" style="color: var(--ok);">8 Live Portals</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <div class="portal-health-row">
+                  <div class="portal-health-left">
+                    <span class="portal-health-dot ok"></span>
+                    <span>Government e-Marketplace (GeM)</span>
+                  </div>
+                  <span class="portal-health-badge ok">251 Tenders • 99.4% SLA</span>
+                </div>
+                <div class="portal-health-row">
+                  <div class="portal-health-left">
+                    <span class="portal-health-dot ok"></span>
+                    <span>CPPP Central Active Tenders</span>
+                  </div>
+                  <span class="portal-health-badge ok">25 Tenders • 98.8% SLA</span>
+                </div>
+                <div class="portal-health-row">
+                  <div class="portal-health-left">
+                    <span class="portal-health-dot ok"></span>
+                    <span>CPPP ePublishing Portal</span>
+                  </div>
+                  <span class="portal-health-badge ok">18 Tenders • 97.5% SLA</span>
+                </div>
+                <div class="portal-health-row">
+                  <div class="portal-health-left">
+                    <span class="portal-health-dot ok"></span>
+                    <span>IOCL e-Procurement Portal</span>
+                  </div>
+                  <span class="portal-health-badge ok">1 Tender • 100% SLA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Card: Available Intelligence Reports -->
+          <div class="tenders-section" style="height: auto; max-height: none;">
+            <h3 class="analytics-title" style="margin-bottom: 16px;">Available Executive Intelligence Briefings</h3>
+            <div class="table-responsive-container">
+              <table class="tenders-table" style="table-layout: fixed; width: 100%;">
+                <colgroup>
+                  <col style="width: 35%;">
+                  <col style="width: 15%;">
+                  <col style="width: 18%;">
+                  <col style="width: 14%;">
+                  <col style="width: 18%;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Report Title</th>
+                    <th>Date Generated</th>
+                    <th>Scope & Volume</th>
+                    <th>Format</th>
+                    <th style="text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">Daily Tender Intelligence Executive Briefing</strong>
+                      </div>
+                    </td>
+                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>295 Tenders Discovered</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">PDF Dossier (4.2 MB)</span></td>
+                    <td style="text-align: center;">
+                      <button class="btn-download" onclick="downloadReportBriefing('Daily_Tender_Intelligence')">Download PDF ↗</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">Tier A Cyber Security Opportunity Extract</strong>
+                      </div>
+                    </td>
+                    <td><span class="live-report-date-2" style="color: var(--text-2); font-size: 12px;">Today</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cyber Security Bids</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">Excel / CSV (180 KB)</span></td>
+                    <td style="text-align: center;">
+                      <button class="btn-download" onclick="exportTendersCSV()">Download CSV ↗</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">System-Level Infrastructure & Multi-Tier B Master File</strong>
+                      </div>
+                    </td>
+                    <td><span class="live-report-date-3" style="color: var(--text-2); font-size: 12px;">Recent</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>212 Systems Bids</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset (1.2 MB)</span></td>
+                    <td style="text-align: center;">
+                      <button class="btn-download" onclick="exportTendersCSV()">Download CSV ↗</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 8: WATCHLIST (PRIORITY BIDS & BOOKMARKS)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-watchlist" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Tender <span class="discovery-gradient">Watchlist</span> & Priority Bids</h1>
+              <p class="page-subtitle">High-value opportunities and strategic tenders pinned for qualification and bidding consortiums</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-secondary" onclick="exportTendersCSV()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export Watchlist</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Watchlist Executive KPI Row -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                  <span style="font-size: 16px;">★</span>
+                </div>
+                <div class="kpi-trend positive"><span>Starred</span></div>
+              </div>
+              <div class="kpi-number" id="watchlist-kpi-total">0</div>
+              <div class="kpi-label">Active Priority Opportunities</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="kpi-trend positive"><span>Shortlist</span></div>
+              </div>
+              <div class="kpi-number" id="watchlist-kpi-considered" style="color: #10b981;">0</div>
+              <div class="kpi-label">Formally Considered for Bid</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                </div>
+                <div class="kpi-trend negative"><span>&lt; 72 Hours</span></div>
+              </div>
+              <div class="kpi-number" id="watchlist-kpi-urgent" style="color: #ef4444;">0</div>
+              <div class="kpi-label">Urgent Deadlines Closing Soon</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header-row">
+                <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+                <div class="kpi-trend positive"><span>Valuation</span></div>
+              </div>
+              <div class="kpi-number" id="watchlist-kpi-value" style="color: #3b82f6;">₹ 0 Cr</div>
+              <div class="kpi-label">Watchlist Pipeline Estimated Value</div>
+            </div>
+          </div>
+
+          <div class="tenders-section" style="height: auto; max-height: none;">
+            <div class="table-header-row" style="margin-bottom: 12px;">
+              <h3 class="analytics-title" id="watchlist-table-title">Bookmarked Opportunities (0)</h3>
+              <div class="pill-btn-group">
+                <button class="pill-btn active" id="wl-filter-all" onclick="filterWatchlistView('all')">All Pinned</button>
+                <button class="pill-btn" id="wl-filter-considered" onclick="filterWatchlistView('considered')">Considered Bids</button>
+                <button class="pill-btn" id="wl-filter-urgent" onclick="filterWatchlistView('urgent')">Urgent Closing</button>
+              </div>
+            </div>
+
+            <div class="table-responsive-container">
+              <table class="tenders-table" style="table-layout: fixed; width: 100%;">
+                <colgroup>
+                  <col style="width: 4%;">
+                  <col style="width: 32%;">
+                  <col style="width: 10%;">
+                  <col style="width: 18%;">
+                  <col style="width: 12%;">
+                  <col style="width: 14%;">
+                  <col style="width: 10%;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Tender Title & Scope</th>
+                    <th>Source</th>
+                    <th>Buyer Organisation</th>
+                    <th>Estimated Value</th>
+                    <th>Submission Deadline</th>
+                    <th style="text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="watchlist-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 9: RUNS (COLLECTION RUNS & AUTOMATED DISCOVERY)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-runs" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Automated <span class="discovery-gradient">Collection Runs</span></h1>
+              <p class="page-subtitle">Real-time scraper execution history, portal response latencies, and sync schedules</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-primary-run" onclick="triggerDiscoveryScan()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Trigger Ingestion Scan</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tenders-section" style="height: auto; max-height: none;">
+            <h3 class="analytics-title" style="margin-bottom: 16px;">Recent Scraper Execution Telemetry</h3>
+            <div class="table-responsive-container">
+              <table class="tenders-table" style="table-layout: fixed; width: 100%;">
+                <colgroup>
+                  <col style="width: 18%;">
+                  <col style="width: 20%;">
+                  <col style="width: 20%;">
+                  <col style="width: 14%;">
+                  <col style="width: 14%;">
+                  <col style="width: 14%;">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Run ID</th>
+                    <th>Target Portal</th>
+                    <th>Trigger Timestamp</th>
+                    <th>Duration</th>
+                    <th>Ingested Tenders</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="runs-view-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 11: TEAM (PROCUREMENT & BIDDING TEAM)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-team" style="display: none;">
+          <div class="page-header-row">
+            <div>
+              <h1 class="page-title">Procurement & <span class="discovery-gradient">Bidding Team</span></h1>
+              <p class="page-subtitle">Bid managers, technical evaluators, and notification preferences</p>
+            </div>
+          </div>
+
+          <div class="settings-grid" style="margin-bottom: 24px;">
+            <div class="analytics-card">
+              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px;">U</div>
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">User</h3>
+                  <span style="font-size: 11.5px; color: var(--primary); font-weight: 600;">Lead Bid Manager</span>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+                Responsible for Tier A Cyber Security qualification, client liaisons, and consortium lead management.
+              </div>
+              <div class="table-status-pill extracted"><span class="status-dot"></span>Active Evaluator</div>
+            </div>
+
+            <div class="analytics-card">
+              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #10b981, #059669);">PV</div>
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Priyansh Verma</h3>
+                  <span style="font-size: 11.5px; color: #10b981; font-weight: 600;">Technical Infrastructure Specialist</span>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+                Evaluates online modular UPS, precision air conditioning (PAC), and gas suppression requirements.
+              </div>
+              <div class="table-status-pill extracted"><span class="status-dot"></span>Technical Lead</div>
+            </div>
+
+            <div class="analytics-card">
+              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #8b5cf6, #6d28d9);">MN</div>
+                <div>
+                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Meera Nair</h3>
+                  <span style="font-size: 11.5px; color: #8b5cf6; font-weight: 600;">BOQ & Compliance Lead</span>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+                Manages GeM portal submissions, EMD bank guarantees, and documentation extraction checklists.
+              </div>
+              <div class="table-status-pill extracted"><span class="status-dot"></span>Compliance Reviewer</div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════════
+         RIGHT DETAILS INSPECTOR PANEL (SLIDE-OVER / SPLIT DRAWER)
+         ════════════════════════════════════════════════════════════════════════ -->
+    <aside class="details-panel" id="details-panel">
+
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <div class="panel-title-row">
+          <h2 class="panel-tender-title" id="panel-title">Tender Details</h2>
+          <button class="panel-close-btn" onclick="closeDetailsPanel()">×</button>
+        </div>
+
+        <div class="panel-badges-row">
+          <span class="panel-tier-badge" id="panel-tier-badge">Tier A</span>
+          <span class="panel-source-badge" id="panel-source-badge">GeM</span>
+          <button class="panel-type-badge" id="panel-type-badge">Open Tender</button>
+        </div>
+
+        <!-- Panel Navigation Tabs -->
+        <div class="panel-tabs">
+          <button class="panel-tab active" data-ptab="overview" onclick="switchPanelTab('overview')">Overview</button>
+          <button class="panel-tab" data-ptab="details" onclick="switchPanelTab('details')">Details</button>
+          <button class="panel-tab" data-ptab="documents" onclick="switchPanelTab('documents')">Documents</button>
+          <button class="panel-tab" data-ptab="keywords" onclick="switchPanelTab('keywords')">Keywords</button>
+        </div>
+      </div>
+
+      <!-- Panel Scrollable Body -->
+      <div class="panel-body">
+
+        <!-- Tab 1: Overview Tab -->
+        <div class="tab-content active" id="ptab-overview">
+
+          <!-- Expired / Submission Closed Alert Banner -->
+          <div class="panel-expired-banner" id="panel-expiry-banner" style="display: none;"></div>
+
+          <!-- Tender Pursuit & Management Control Box -->
+          <div class="panel-management-box">
+            <div class="panel-management-header">
+              <div class="panel-management-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Bid Decision & Segregation</span>
+              </div>
+              <button class="panel-star-btn" id="panel-star-toggle-btn" onclick="toggleCurrentTenderWatchlist()" title="Pin to Watchlist">
+                <span class="panel-star-icon" id="panel-star-icon">☆</span>
+                <span id="panel-star-label">Watchlist</span>
+              </button>
+            </div>
+
+            <div class="panel-management-fields">
+              <div class="management-field-group">
+                <label>Pursuit Lifecycle Classification</label>
+                <div class="workflow-select-wrap">
+                  <select id="panel-workflow-status-select" onchange="onPanelWorkflowStatusChange(this.value)">
+                    <option value="new">New Ingestion (Unreviewed)</option>
+                    <option value="under_review">Under Technical Review</option>
+                    <option value="considered">Considered / Shortlist for Bidding</option>
+                    <option value="reviewed">Reviewed / On Hold</option>
+                    <option value="rejected">Disqualified / Rejected</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="management-field-group">
+                <label>Assigned Lead</label>
+                <select id="panel-assigned-to-select" onchange="onPanelAssigneeChange(this.value)">
+                  <option value="">Unassigned</option>
+                  <option value="User">User (Lead Bid Manager)</option>
+                  <option value="Priyansh Verma">Priyansh Verma (Tech Infrastructure)</option>
+                  <option value="Meera Nair">Meera Nair (BOQ & Compliance)</option>
+                </select>
+              </div>
+
+              <div class="management-field-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <label style="margin-bottom: 0;">Internal Strategy Notes</label>
+                  <span class="notes-autosave-status" id="notes-save-indicator">Saved</span>
+                </div>
+                <textarea id="panel-user-notes" rows="3" placeholder="Add qualification notes, OEM partner requirements, pricing strategy..." oninput="onPanelNotesInput()"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">📑</span> Reference No.</div>
+            <div class="detail-value font-mono" id="panel-ref-no">—</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">🏛️</span> Buyer Organisation</div>
+            <div class="detail-value" id="panel-buyer-org">—</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">📍</span> Location</div>
+            <div class="detail-value" id="panel-location">—</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">📅</span> Published Date</div>
+            <div class="detail-value">
+              <span id="panel-pub-date">—</span>
+              <span class="badge-new">New</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">⏳</span> Bid Submission Deadline</div>
+            <div class="detail-value">
+              <span id="panel-deadline">—</span>
+              <span class="badge-days-left" id="panel-days-left">Active</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">💰</span> Estimated Value</div>
+            <div class="detail-value highlight-val" id="panel-value">—</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">📋</span> Tender Type</div>
+            <div class="detail-value" id="panel-tender-type">—</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label"><span class="icon">⚙️</span> Key Systems</div>
+            <div class="systems-tags-container" id="panel-key-systems">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <div class="detail-row scope-box">
+            <div class="detail-label"><span class="icon">📄</span> Brief Scope</div>
+            <div class="scope-text" id="panel-scope">—</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Details Tab -->
+        <div class="tab-content" id="ptab-details">
+          <div class="detail-row">
+            <div class="detail-label">Tender ID</div>
+            <div class="detail-value font-mono" id="panel-det-id">—</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">EMD Amount</div>
+            <div class="detail-value" id="panel-det-emd">—</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Document Fee</div>
+            <div class="detail-value" id="panel-det-fee">—</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Opening Date</div>
+            <div class="detail-value" id="panel-det-opening">—</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Portal Source</div>
+            <div class="detail-value" id="panel-det-portal">—</div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Documents Tab -->
+        <div class="tab-content" id="ptab-documents">
+          <div class="documents-list" id="panel-docs-list">
+            <div class="doc-card">
+              <span class="doc-icon">📥</span>
+              <div class="doc-info">
+                <div class="doc-title" id="panel-doc-name">Official Tender Notice & NIT</div>
+                <div class="doc-sub">Official PDF Document on Portal</div>
+              </div>
+              <a href="#" target="_blank" class="btn-download" id="panel-doc-link">View File</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Keywords & Evidence Tab -->
+        <div class="tab-content" id="ptab-keywords">
+          <div class="evidence-matches-list" id="panel-matches-list">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel Sticky Bottom Action Buttons -->
+      <div class="panel-footer">
+        <button class="btn-panel-primary" onclick="copyRefAndSearchPortal()">
+          <span>Copy Ref & Search Portal</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </button>
+
+        <a href="#" target="_blank" class="btn-panel-secondary" id="panel-portal-url-btn">
+          Direct Portal URL
+        </a>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       MODALS: SOURCE DETAILS & ADD SOURCE
+       ════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Modal: Add Monitored Source -->
+  <div class="modal-backdrop" id="modal-add-source" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🌐</span>
+          <div>
+            <h3 class="modal-title">Register Monitored Portal</h3>
+            <p class="modal-subtitle">Configure an automated tender intake endpoint</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeAddSourceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-source" onsubmit="submitNewSource(event)">
+          <div class="form-group">
+            <label class="form-label" for="input-source-name">Portal / Authority Name *</label>
+            <input type="text" id="input-source-name" class="form-input" placeholder="e.g., NTPC eProcurement Gateway"
+              required />
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="input-source-type">Source Category</label>
+              <select id="input-source-type" class="form-select">
+                <option value="Central Govt e-Procure">Central Government (CPPP/eProc)</option>
+                <option value="National Public Procurement">GeM (Govt e-Marketplace)</option>
+                <option value="State Govt e-Procure">State eProcurement Portal</option>
+                <option value="PSU Dedicated Portal">PSU Critical Infrastructure</option>
+                <option value="Commercial Aggregator">Commercial Tender Aggregator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="input-source-cadence">Sync Cadence</label>
+              <select id="input-source-cadence" class="form-select">
+                <option value="Every 1 hour">Every 1 hour (Fast Rolling)</option>
+                <option value="Every 4 hours" selected>Every 4 hours</option>
+                <option value="Every 12 hours">Every 12 hours</option>
+                <option value="Daily 6 AM">Daily (Morning Run)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-source-url">Portal Base URL *</label>
+            <input type="url" id="input-source-url" class="form-input" placeholder="https://etender.example.gov.in"
+              required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-source-method">Scraper Connector Type</label>
+            <select id="input-source-method" class="form-select">
+              <option value="html_feed">HTML Discovery Feed (Direct RSS/Ticker)</option>
+              <option value="datatables">Drupal / DataTables AJAX Scraper</option>
+              <option value="tapestry">Apache Tapestry Form Session (CPPP ePublish)</option>
+              <option value="rest_api">REST / JSON API Connector</option>
+            </select>
+          </div>
+          <div class="modal-alert-box">
+            <span>ℹ️</span>
+            <div>New sources will be registered in <strong>Adapter Standby</strong> mode until connection diagnostics
+              and CAPTCHA handling parameters are verified.</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-modal-secondary" onclick="closeAddSourceModal()">Cancel</button>
+            <button type="submit" class="btn-modal-primary">Register Source</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Source Details & Status Inspection -->
+  <div class="modal-backdrop" id="modal-source-details" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon" id="src-det-icon">📡</span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 class="modal-title" id="src-det-name">Portal Details</h3>
+              <span class="source-status-badge" id="src-det-badge">Active</span>
+            </div>
+            <p class="modal-subtitle" id="src-det-type">Central Government Portal</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeSourceDetailsModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="source-details-grid">
+          <div class="source-detail-item">
+            <div class="source-detail-label">Portal URL</div>
+            <div class="source-detail-val"><a href="#" target="_blank" id="src-det-url"
+                style="color: #2563eb; text-decoration: none;">Link ↗</a></div>
+          </div>
+          <div class="source-detail-item">
+            <div class="source-detail-label">Sync Cadence</div>
+            <div class="source-detail-val" id="src-det-cadence">Every 1 hour</div>
+          </div>
+          <div class="source-detail-item">
+            <div class="source-detail-label">Scraping Pipeline</div>
+            <div class="source-detail-val" id="src-det-pipeline">Live Python Scraper</div>
+          </div>
+          <div class="source-detail-item">
+            <div class="source-detail-label">Ingested Tenders</div>
+            <div class="source-detail-val" id="src-det-count">0</div>
+          </div>
+        </div>
+
+        <div class="source-status-card" id="src-det-status-box">
+          <div id="src-det-status-msg" style="font-size: 13px; line-height: 1.5;"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-secondary" onclick="closeSourceDetailsModal()">Close</button>
+          <button type="button" class="btn-modal-primary" id="btn-src-det-filter"
+            onclick="applySourceFilterFromModal()">
+            Filter Tenders from this Source
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       FLOATING GLASSMORPHIC BULK ACTIONS TOOLBAR
+       ════════════════════════════════════════════════════════════════════════ -->
+  <div class="floating-bulk-bar" id="floating-bulk-bar" style="display: none;">
+    <div class="bulk-bar-inner">
+      <div class="bulk-info-pill">
+        <span class="bulk-counter" id="bulk-selected-count">0</span>
+        <span class="bulk-text">Tenders Selected</span>
+      </div>
+
+      <div class="bulk-separator"></div>
+
+      <div class="bulk-actions-row">
+        <button class="bulk-btn bulk-btn-consider" onclick="executeBulkAction('bulk_consider')" title="Shortlist selected for active bidding">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Consider / Shortlist</span>
+        </button>
+
+        <button class="bulk-btn bulk-btn-review" onclick="executeBulkAction('bulk_under_review')" title="Move to active technical evaluation">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          <span>Under Review</span>
+        </button>
+
+        <button class="bulk-btn bulk-btn-reviewed" onclick="executeBulkAction('bulk_reviewed')" title="Mark as inspected / on hold">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Mark Reviewed</span>
+        </button>
+
+        <button class="bulk-btn bulk-btn-watchlist" onclick="executeBulkAction('toggle_watchlist')" title="Pin or unpin selected from executive watchlist">
+          <span style="font-size: 14px; line-height: 1;">★</span>
+          <span>Watchlist</span>
+        </button>
+
+        <button class="bulk-btn bulk-btn-reject" onclick="executeBulkAction('bulk_reject')" title="Mark as disqualified / out of scope">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          <span>Reject</span>
+        </button>
+
+        <button class="bulk-btn bulk-btn-export" onclick="exportSelectedTendersCSV()" title="Download CSV dossier of selected tenders">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Export CSV</span>
+        </button>
+      </div>
+
+      <div class="bulk-separator"></div>
+
+      <button class="bulk-btn-close" onclick="clearTenderSelection()" title="Clear selection">
+        ✕ Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="/static/js/app.js?v=20261023_v8_animations_health"></script>
+</body>
+
+</html>

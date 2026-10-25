@@ -1,0 +1,1080 @@
+{
+  "metrics": {
+    "total_tenders_processed": 42,
+    "pipeline_duration_seconds": 113.75,
+    "retrieval_level_breakdown": {
+      "Level_C_Detail": 20,
+      "Level_B_Listing": 15,
+      "NONE": 7
+    },
+    "readiness_breakdown": {
+      "READY": 39,
+      "PARTIALLY_READY": 3
+    },
+    "verdicts": {
+      "GO": 4,
+      "GO (PROVISIONAL)": 0,
+      "CAUTION": 3,
+      "NO-GO": 35
+    },
+    "average_feasibility_score": 51.07,
+    "field_extraction_rates": {
+      "title": {
+        "count": 42,
+        "percentage": 100.0
+      },
+      "submission_deadline": {
+        "count": 39,
+        "percentage": 92.9
+      },
+      "estimated_value": {
+        "count": 17,
+        "percentage": 40.5
+      },
+      "emd_amount": {
+        "count": 14,
+        "percentage": 33.3
+      },
+      "tender_fee": {
+        "count": 11,
+        "percentage": 26.2
+      },
+      "minimum_turnover": {
+        "count": 4,
+        "percentage": 9.5
+      }
+    },
+    "document_stats": {
+      "total_documents_linked": 21,
+      "downloaded_documents": 21,
+      "text_extracted_documents": 1,
+      "download_success_rate_pct": 100.0
+    }
+  },
+  "evaluations": [
+    {
+      "tender_id": "2026_RINL_854802_1",
+      "title": "Comprehensive Technical Management of Water supply activities, Horticulture works, 250 KLD sewage treatment plant, Mineral water plant and Repairs and day to day Maintenance works to Roads, Buildings, Sanitary and Sewage lines in the Township and Min",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 59.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 12,167,458 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_IRELD_854784_1",
+      "title": "Supply of cummins make battery for 750 KVA DG set",
+      "verdict": "CAUTION",
+      "readiness": "PARTIALLY_READY",
+      "composite_score": 61.0,
+      "subscores": {
+        "scope_alignment": 45.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 40.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [
+        "dg set"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Below minimum threshold: Rs. 85,323 < Rs. 5L"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Requires Review: Adjacent technical scope or qualification constraints ()."
+    },
+    {
+      "tender_id": "2026_SJVNL_854794_1",
+      "title": "Restoration of catch pit for existing Hume pipe culvert and check dams at Saledha Khadd across the approach road to Surge Shaft of NJHPS, Distt Shimla HP",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 54.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 75.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Viable contract size: Rs. 1,296,289"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MPPGC_854804_1",
+      "title": "Enquiry for  supply of pipe flange and reducer for replacement of balancing pipe and flange of penstock by pass gate valve pipe line of Unit#3 at 3 x 105 MW THPS-I, MPPGCL, Sirmour, Distt. Rewa (M.P.)",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 51.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_DoHE_854740_1",
+      "title": "Procurement of Optogenetic System",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 54.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 75.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Viable contract size: Rs. 1,718,000"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_BVFCL_854799_1",
+      "title": "Annual rate contract for erection of scaffolding job at various heights and locations for attending emergent/ breakdown mechanical maintenance jobs in AMM-III plant on as and when required basis for a period of one year",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 46.25,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 40.0,
+        "retrieval_completeness": 95.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Below minimum threshold: Rs. 214,760 < Rs. 5L"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_PSB_854791_1",
+      "title": "OPEN TENDER NOTICE FOR PRINTING, PACKAGING AND DISPATCH OF BANKS WALL  TABLE CALENDARS 2027",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 47.0,
+      "subscores": {
+        "scope_alignment": 0.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [
+        "Excluded domain detected: printing"
+      ],
+      "is_excluded_domain": true,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_REIL_854801_1",
+      "title": "Offer for Supply of Various Screw",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 47.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 40.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Below minimum threshold: Rs. 46,910 < Rs. 5L"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_SPMCI_854795_1",
+      "title": "Procurement of Bandsaw Machine",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 43.0,
+      "subscores": {
+        "scope_alignment": 0.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 40.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [
+        "Excluded domain detected: printing"
+      ],
+      "is_excluded_domain": true,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Below minimum threshold: Rs. 215,435 < Rs. 5L"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_DoHE_854679_1",
+      "title": "TENDER FOR PROVIDING MESS SERVICE IN VARIOUS HOSTEL AT IIT BOMBAY",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 59.0,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 60,000,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MES_794892_1",
+      "title": "WINTER PREPARATION AND ALLIED MAINT ACTIVITIES FOR EXTERNAL ELECTRIC SUPPLY IN THE AOR OF GE 874 EWS",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_RBI_295242_1",
+      "title": "Epoxy flooring work at basement of MOB",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_ITBP_930947_1",
+      "title": "SUPPLY OF DRY RATION ITEMS",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MES_794858_1",
+      "title": "PROVN OF OVERHEAD COVER SHED ALONGWITH HARD STANDING AT BANDIPUR UNDER THE AOR OF GE 874 EWS",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MCL_367390_1",
+      "title": "Shifting of Transformer with VCB and LT Distribution Panel and other allied electrical structure at Coal Analysis Laboratory Basundhara Area",
+      "verdict": "CAUTION",
+      "readiness": "PARTIALLY_READY",
+      "composite_score": 56.75,
+      "subscores": {
+        "scope_alignment": 45.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [
+        "transformer"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Requires Review: Adjacent technical scope or qualification constraints (Missing EMD terms; Missing estimated value)."
+    },
+    {
+      "tender_id": "2026_CSIR_295240_1",
+      "title": "Proceq Make Rebound Hammer Repair",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MES_794846_1",
+      "title": "PROVN OF CERTAIN STORAGE ACCN AND SPL REPAIR TO CERTAIN BLDGS AT DAWAR UNDER THE AOR OF GE 874 EWS.",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MES_794862_1",
+      "title": "PROVN OF TOILET BLOCK AT BANDIPORE UNDER THE AOR OF GE 874 EWS",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_PWD_146307_1",
+      "title": "Restoration of Rain damages on Jhanad Balh Khajwhal road Km 0",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_PWD_146305_1",
+      "title": "Restoration of rain damages on Drang Basahi road Km 0",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_PWDJK_328860_1",
+      "title": "Macadamization of road from hanfia college junction to noor bagh chowk (Ueed Cut)",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_PWD_146303_1",
+      "title": "A.R and M.O Rest House at Deothi 12.20 Tehsil Rampur Distt. Shimla H.P.",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_HRY_555596_1",
+      "title": "Laying of interlocking tiles street towards cremation ground in Village Kedarpur, Block Pinjore",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_MCGM_1346193_1",
+      "title": "Improvement of Passage And Drainage Near Walkeshwar Temple Banganga Tank Lane in Beat No. 219 in D Ward",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_RCDF_604458_1",
+      "title": "EMERGENCY PURCHASE DOMC",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 42.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 45.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_INDIVIDUAL SURVIVAL KIT",
+      "title": "INDIVIDUAL SURVIVAL KIT",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Office; Closed Body LCV Truck;",
+      "title": "Goods Transport Service \u2013 Per KM Based Service - Household",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Repair and Overhauling Service",
+      "title": "Repair and Overhauling Service - Diesel Generators- Dg Sets (DFM); Kirloskar; Yes; Buyer Premises",
+      "verdict": "CAUTION",
+      "readiness": "PARTIALLY_READY",
+      "composite_score": 59.75,
+      "subscores": {
+        "scope_alignment": 45.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [
+        "dg set"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Requires Review: Adjacent technical scope or qualification constraints (Missing EMD terms; Missing estimated value)."
+    },
+    {
+      "tender_id": "2026_GEM_STRETCHER AMBULANCE MARK II WA",
+      "title": "STRETCHER AMBULANCE MARK II WAR OFFICE ( N0461-0009141),AIR BORNE STRETCHER (N6530-P060127),STRETCHER FOLDING (N6530-002105),STRETCHER COT COMPLETE WITH CANVAS COVER AND PILLOW (N0461-0000474)",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Multiplexing Software with Ess",
+      "title": "Multiplexing Software with Essential Accessories",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_EXPRESSION OF INTEREST FOR Tec",
+      "title": "EXPRESSION OF INTEREST FOR Technology Partnership for Design, Development cum Manufacturing of 30 mm",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Twill Weave Cotton Fabrics Clo",
+      "title": "Twill Weave Cotton Fabrics Cloth Cotton Drill as per IS 177:1989",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Nickel plated Cobalt Pellets a",
+      "title": "Nickel plated Cobalt Pellets as per attached specifications in Annexure-I and II",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_DESIGN & DEVELOPMENT OF CUSTOM",
+      "title": "DESIGN & DEVELOPMENT OF CUSTOMIZED ENTERPRISES SOFTWARE FOR OF SCANNING AND DIGITISATION OF DOCUMENT",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "2026_GEM_Facility Management Services -",
+      "title": "Facility Management Services - LumpSum Based - Industrial; EXPRESSION OF INTEREST FOR SUPPLY INSTALLATION AND COMMISSIONING OF TEST FACILITY FOR INTEGRATED POWER PACKS RANGING FROM 1200 HP TO 1600 HP; Consumables to be provided by service provider (i..",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 45.75,
+      "subscores": {
+        "scope_alignment": 10.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 60.0,
+        "retrieval_completeness": 65.0
+      },
+      "matched_domains": [],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Estimated value not published in tender notice"
+      ],
+      "missing_fields": [
+        "Missing EMD terms",
+        "Missing estimated value"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "BENCH_NIC_DC_2026",
+      "title": "Comprehensive Design, Supply, Installation, Testing and Commissioning of Tier-III Data Center Infrastructure including High Efficiency Modular Online UPS, In-Row Precision Air Conditioning (PAC), Clean Agent Gas Flooding (Novec 1230), IBMS and 42U Server Racks at NIC New Delhi",
+      "verdict": "GO",
+      "readiness": "READY",
+      "composite_score": 97.5,
+      "subscores": {
+        "scope_alignment": 100.0,
+        "eligibility_feasibility": 90.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 100.0
+      },
+      "matched_domains": [
+        "clean agent",
+        "gas flooding",
+        "vesda",
+        "precision air conditioning",
+        "server rack",
+        "scada",
+        "ibms",
+        "data center"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 148,000,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "High Feasibility: Strong technical scope alignment with Nikom capabilities, viable commercial size, and complete public tender specifications."
+    },
+    {
+      "tender_id": "BENCH_RAILTEL_UPS_2026",
+      "title": "Supply, Installation, Testing & Commissioning of 2x120 kVA Parallel Redundant Online UPS System with 60 Mins VRLA SMF Battery Backup at RailTel Regional Data Centre",
+      "verdict": "GO",
+      "readiness": "READY",
+      "composite_score": 92.75,
+      "subscores": {
+        "scope_alignment": 90.0,
+        "eligibility_feasibility": 90.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 95.0
+      },
+      "matched_domains": [
+        "ups system",
+        "online ups",
+        "transformer"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 9,250,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "High Feasibility: Strong technical scope alignment with Nikom capabilities, viable commercial size, and complete public tender specifications."
+    },
+    {
+      "tender_id": "BENCH_BSNL_PAC_2026",
+      "title": "Comprehensive Annual Maintenance Contract (CAMC) of 8 Nos 20 TR Precision Air Conditioning (PAC) Units and Environment Monitoring System at BSNL IDC Pune",
+      "verdict": "GO",
+      "readiness": "READY",
+      "composite_score": 92.75,
+      "subscores": {
+        "scope_alignment": 90.0,
+        "eligibility_feasibility": 90.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 95.0
+      },
+      "matched_domains": [
+        "precision air conditioning",
+        "water leak detection"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 4,800,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [],
+      "verdict_reason": "High Feasibility: Strong technical scope alignment with Nikom capabilities, viable commercial size, and complete public tender specifications."
+    },
+    {
+      "tender_id": "BENCH_DFCCIL_CCTV_2026",
+      "title": "Supply, Installation and Integration of IP CCTV Surveillance System, Access Control, and Server Storage for DFCCIL Stations",
+      "verdict": "GO",
+      "readiness": "READY",
+      "composite_score": 76.0,
+      "subscores": {
+        "scope_alignment": 60.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 80.0
+      },
+      "matched_domains": [
+        "surveillance system",
+        "cctv"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 21,000,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "High Feasibility: Strong technical scope alignment with Nikom capabilities, viable commercial size, and complete public tender specifications."
+    },
+    {
+      "tender_id": "BENCH_NHAI_ROAD_2026",
+      "title": "Four-laning and construction of highway bypass and rigid pavement bridge on NH-48",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 36.0,
+      "subscores": {
+        "scope_alignment": 0.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 50.0,
+        "retrieval_completeness": 40.0
+      },
+      "matched_domains": [
+        "Excluded domain detected: bridge"
+      ],
+      "is_excluded_domain": true,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Exceeds single work capacity: Rs. 3,200,000,000 > Rs. 30Cr (Requires consortium)"
+      ],
+      "missing_fields": [
+        "Missing submission deadline",
+        "Missing EMD terms",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "BENCH_AIIMS_MED_2026",
+      "title": "Rate contract for supply of pharmaceutical medicines, surgical consumables, and syringes for AIIMS Hospital",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 46.0,
+      "subscores": {
+        "scope_alignment": 0.0,
+        "eligibility_feasibility": 80.0,
+        "commercial_viability": 100.0,
+        "retrieval_completeness": 40.0
+      },
+      "matched_domains": [
+        "Excluded domain detected: pharmaceutical"
+      ],
+      "is_excluded_domain": true,
+      "eligibility_gaps": [],
+      "commercial_notes": [
+        "Optimal project size: Rs. 85,000,000 (within sweet spot Rs. 25L - Rs. 25Cr)"
+      ],
+      "missing_fields": [
+        "Missing submission deadline",
+        "Missing EMD terms",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Out of domain: Work scope does not match Nikom's core data center, power, cooling, or IT capabilities."
+    },
+    {
+      "tender_id": "BENCH_MEGA_DC_2026",
+      "title": "Turnkey Engineering, Procurement and Construction of Hyperscale Green Data Center Campus",
+      "verdict": "NO-GO",
+      "readiness": "READY",
+      "composite_score": 56.0,
+      "subscores": {
+        "scope_alignment": 75.0,
+        "eligibility_feasibility": 40.0,
+        "commercial_viability": 50.0,
+        "retrieval_completeness": 40.0
+      },
+      "matched_domains": [
+        "data center",
+        "smart city"
+      ],
+      "is_excluded_domain": false,
+      "eligibility_gaps": [
+        "Turnover requirement (Rs. 6,000,000,000) exceeds Nikom capacity (Rs. 1,000,000,000)"
+      ],
+      "commercial_notes": [
+        "Exceeds single work capacity: Rs. 4,500,000,000 > Rs. 30Cr (Requires consortium)"
+      ],
+      "missing_fields": [
+        "Missing submission deadline",
+        "Missing EMD terms",
+        "Missing tender specification document or full scope"
+      ],
+      "verdict_reason": "Disqualified: Minimum financial turnover or capacity threshold exceeds Nikom parameters."
+    }
+  ]
+}

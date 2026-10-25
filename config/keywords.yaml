@@ -1,0 +1,587 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Nikom Tender Discovery — Keyword Configuration
+# Structured into 4 primary domains:
+# Tier A: Cyber Security
+# Tier B: IT Infrastructure
+# Tier C: Cloud
+# Tier D: Non-IT Infrastructure & Services
+# ──────────────────────────────────────────────────────────────────────────────
+
+inclusion_rules:
+  tier_a_min_matches: 1
+  tier_b_min_matches: 1
+  tier_c_min_matches: 1
+  tier_d_min_matches: 1
+  tier_c_requires_dc_context: false
+  tier_d_separate_category: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER A — Cyber Security (Critical Threat Protection, Compliance & Monitoring)
+# ─────────────────────────────────────────────────────────────────────────────
+tier_a:
+  label: "Cyber Security"
+  groups:
+    soc_and_siem:
+      - "SOC"
+      - "SIEM"
+      - "security operations centre"
+      - "security operations center"
+      - "SOAR"
+      - "XDR"
+      - "MDR"
+      - "managed detection and response"
+      - "security monitoring"
+      - "incident response"
+
+    firewalls_and_network_security:
+      - "next generation firewall"
+      - "next-generation firewall"
+      - "NGFW"
+      - "firewall"
+      - "firewalls"
+      - "UTM"
+      - "unified threat management"
+      - "WAF"
+      - "web application firewall"
+      - "DDoS protection"
+      - "intrusion prevention system"
+      - "IPS"
+      - "intrusion detection system"
+      - "IDS"
+      - "network security"
+      - "VPN gateway"
+      - "secure web gateway"
+      - "SWG"
+
+    endpoint_and_threat_defense:
+      - "endpoint detection and response"
+      - "EDR"
+      - "endpoint security"
+      - "antivirus"
+      - "anti-virus"
+      - "anti-malware"
+      - "anti-ransomware"
+      - "threat intelligence"
+      - "zero day protection"
+      - "zero-day protection"
+      - "vulnerability management"
+      - "patch management"
+
+    identity_and_access:
+      - "IAM"
+      - "identity and access management"
+      - "PAM"
+      - "privileged access management"
+      - "identity management"
+      - "multi factor authentication"
+      - "multi-factor authentication"
+      - "MFA"
+      - "2FA"
+      - "SSO"
+      - "single sign on"
+      - "zero trust"
+      - "zero trust network access"
+      - "ZTNA"
+
+    data_security_and_compliance:
+      - "DLP"
+      - "data loss prevention"
+      - "data leakage prevention"
+      - "encryption"
+      - "HSM"
+      - "hardware security module"
+      - "vulnerability assessment"
+      - "penetration testing"
+      - "VAPT"
+      - "cyber security audit"
+      - "cybersecurity audit"
+      - "CERT-In"
+      - "CERT-In empanelled"
+      - "ISO 27001"
+      - "information security"
+      - "cyber security"
+      - "cybersecurity"
+      - "cyber-security"
+      - "cyber audit"
+
+  contextual_terms:
+    - term: "SOC"
+      group: "soc_and_siem"
+      require_context:
+        - "security"
+        - "cyber"
+        - "incident"
+        - "threat"
+        - "monitor"
+        - "siem"
+        - "network"
+      reject_context:
+        - "society"
+        - "soccer"
+        - "state of charge"
+
+    - term: "WAF"
+      group: "firewalls_and_network_security"
+      require_context:
+        - "firewall"
+        - "security"
+        - "web"
+        - "application"
+        - "traffic"
+        - "http"
+
+    - term: "UTM"
+      group: "firewalls_and_network_security"
+      require_context:
+        - "firewall"
+        - "threat"
+        - "security"
+        - "appliance"
+        - "gateway"
+
+    - term: "PAM"
+      group: "identity_and_access"
+      require_context:
+        - "privileged"
+        - "access"
+        - "credential"
+        - "security"
+        - "identity"
+
+    - term: "IAM"
+      group: "identity_and_access"
+      require_context:
+        - "identity"
+        - "access"
+        - "management"
+        - "security"
+        - "user"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER B — IT Infrastructure (Compute, Storage, Networking & Cabling)
+# ─────────────────────────────────────────────────────────────────────────────
+tier_b:
+  label: "IT Infrastructure"
+  groups:
+    compute_servers:
+      - "rack server"
+      - "rack servers"
+      - "blade server"
+      - "blade servers"
+      - "tower server"
+      - "server chassis"
+      - "GPU server"
+      - "GPU servers"
+      - "compute nodes"
+      - "high performance computing"
+      - "HPC cluster"
+      - "2U server"
+      - "4U server"
+      - "server hardware"
+
+    enterprise_storage:
+      - "SAN storage"
+      - "NAS storage"
+      - "storage area network"
+      - "network attached storage"
+      - "all-flash storage"
+      - "all flash array"
+      - "hybrid storage"
+      - "unified storage"
+      - "NVMe storage"
+      - "tape library"
+      - "storage array"
+      - "direct attached storage"
+      - "disk storage system"
+
+    networking_and_switching:
+      - "core switch"
+      - "core switches"
+      - "aggregation switch"
+      - "access switch"
+      - "distribution switch"
+      - "leaf switch"
+      - "spine switch"
+      - "network switch"
+      - "network switches"
+      - "managed switch"
+      - "L2 switch"
+      - "L3 switch"
+      - "core router"
+      - "edge router"
+      - "SD-WAN"
+      - "load balancer"
+      - "ADC"
+      - "application delivery controller"
+      - "transceiver module"
+      - "SFP module"
+
+    passive_it_and_cabling:
+      - "structured cabling"
+      - "structured network cabling"
+      - "fiber optic cabling"
+      - "optical fibre cable"
+      - "OFC cable"
+      - "Cat6A"
+      - "Cat6"
+      - "patch panel"
+      - "patch panels"
+      - "fiber patch cord"
+      - "server rack"
+      - "server racks"
+      - "network rack"
+      - "network racks"
+      - "42U rack"
+      - "rack enclosure"
+      - "rack enclosures"
+      - "KVM switch"
+      - "KVM console"
+
+    wireless_and_campus_it:
+      - "wireless access point"
+      - "Wi-Fi access point"
+      - "WLAN controller"
+      - "wireless controller"
+      - "IP PBX"
+      - "VoIP gateway"
+      - "IP phone"
+      - "video conferencing"
+      - "video conferencing system"
+      - "interactive flat panel"
+      - "IT infrastructure"
+      - "ICT infrastructure"
+      - "desktop computers"
+      - "workstations"
+
+  contextual_terms:
+    - term: "switch"
+      group: "networking_and_switching"
+      require_context:
+        - "network"
+        - "ethernet"
+        - "cisco"
+        - "juniper"
+        - "aruba"
+        - "port"
+        - "vlan"
+        - "lan"
+      reject_context:
+        - "light switch"
+        - "isolator switch"
+        - "switchboard"
+
+    - term: "server"
+      group: "compute_servers"
+      require_context:
+        - "rack"
+        - "blade"
+        - "compute"
+        - "memory"
+        - "storage"
+        - "xeon"
+        - "epyc"
+        - "it"
+      reject_context:
+        - "food server"
+        - "catering"
+        - "server staff"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER C — Cloud (Public, Private, Hybrid Cloud & Virtualization)
+# ─────────────────────────────────────────────────────────────────────────────
+tier_c:
+  label: "Cloud"
+  groups:
+    cloud_platforms:
+      - "cloud computing"
+      - "cloud hosting"
+      - "public cloud"
+      - "private cloud"
+      - "hybrid cloud"
+      - "community cloud"
+      - "government cloud"
+      - "GovCloud"
+      - "NIC Cloud"
+      - "MeitY empanelled cloud"
+      - "AWS"
+      - "Amazon Web Services"
+      - "Microsoft Azure"
+      - "Google Cloud Platform"
+      - "GCP"
+      - "Oracle Cloud"
+      - "cloud service provider"
+      - "CSP"
+
+    virtualization_and_hci:
+      - "virtual machine"
+      - "virtual machines"
+      - "virtualization"
+      - "hypervisor"
+      - "VMware"
+      - "vSphere"
+      - "ESXi"
+      - "vCenter"
+      - "Hyper-V"
+      - "KVM hypervisor"
+      - "Nutanix"
+      - "hyperconverged infrastructure"
+      - "hyper-converged infrastructure"
+      - "HCI"
+      - "software defined storage"
+      - "SDS"
+      - "software defined data center"
+      - "SDDC"
+
+    containers_and_cloud_native:
+      - "Kubernetes"
+      - "K8s"
+      - "Docker"
+      - "containerization"
+      - "OpenShift"
+      - "container platform"
+      - "microservices"
+      - "serverless"
+      - "cloud native"
+
+    cloud_services_and_migration:
+      - "IaaS"
+      - "PaaS"
+      - "SaaS"
+      - "cloud migration"
+      - "cloud adoption"
+      - "cloud orchestration"
+      - "DRaaS"
+      - "disaster recovery as a service"
+      - "BaaS"
+      - "backup as a service"
+      - "cloud backup"
+      - "cloud disaster recovery"
+      - "cloud management platform"
+      - "CMP"
+      - "FinOps"
+
+  contextual_terms:
+    - term: "cloud"
+      group: "cloud_platforms"
+      require_context:
+        - "compute"
+        - "server"
+        - "hosting"
+        - "migration"
+        - "infrastructure"
+        - "storage"
+        - "platform"
+        - "service"
+        - "virtual"
+      reject_context:
+        - "cloud burst"
+        - "cloud point"
+        - "weather"
+        - "rain"
+
+    - term: "HCI"
+      group: "virtualization_and_hci"
+      require_context:
+        - "infrastructure"
+        - "hyperconverged"
+        - "server"
+        - "cluster"
+        - "compute"
+        - "storage"
+      reject_context:
+        - "human computer interaction"
+
+    - term: "GCP"
+      group: "cloud_platforms"
+      require_context:
+        - "cloud"
+        - "google"
+        - "platform"
+        - "hosting"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER D — Non-IT Infrastructure & Services (Power, Cooling, Safety, AMC, FMS)
+# ─────────────────────────────────────────────────────────────────────────────
+tier_d:
+  label: "Non-IT Infrastructure & Services"
+  groups:
+    critical_power:
+      - "online UPS"
+      - "modular UPS"
+      - "lithium-ion UPS"
+      - "battery bank"
+      - "SMF battery"
+      - "VRLA battery"
+      - "LT panel"
+      - "HT panel"
+      - "PCC"
+      - "PDB"
+      - "busway"
+      - "bus duct"
+      - "rack PDU"
+      - "RPP"
+      - "ATS"
+      - "STS"
+      - "DG set"
+      - "diesel generator"
+      - "synchronising panel"
+      - "synchronizing panel"
+      - "transformer"
+      - "electrical panel"
+      - "isolation transformer"
+
+    precision_cooling_and_hvac:
+      - "precision air conditioner"
+      - "precision air conditioning"
+      - "PAC"
+      - "CRAC"
+      - "CRAH"
+      - "in-row cooling"
+      - "in row cooling"
+      - "rear-door heat exchanger"
+      - "chiller"
+      - "chilled water"
+      - "liquid cooling"
+      - "direct-to-chip"
+      - "immersion cooling"
+      - "cold-aisle containment"
+      - "cold aisle containment"
+      - "hot-aisle containment"
+      - "hot aisle containment"
+      - "HVAC system"
+      - "comfort AC"
+
+    fire_safety_and_physical_security:
+      - "FM-200"
+      - "FM200"
+      - "Novec 1230"
+      - "FK-5-1-12"
+      - "clean agent"
+      - "gas suppression"
+      - "gas flooding"
+      - "VESDA"
+      - "aspirating smoke detection"
+      - "water leak detection"
+      - "rodent repellent"
+      - "access control"
+      - "access control system"
+      - "biometric"
+      - "biometric system"
+      - "IP CCTV"
+      - "surveillance system"
+      - "mantrap"
+      - "raised floor"
+      - "raised access floor"
+      - "false flooring"
+      - "fire-rated partition"
+      - "fire rated door"
+      - "IBMS"
+      - "BMS"
+      - "DCIM"
+      - "environmental monitoring"
+      - "video wall"
+
+    facility_and_annual_maintenance:
+      - "CAMC"
+      - "AMC"
+      - "annual maintenance contract"
+      - "comprehensive maintenance"
+      - "comprehensive annual maintenance"
+      - "facility management"
+      - "facility management services"
+      - "FMS"
+      - "O&M"
+      - "operation and maintenance"
+      - "operations and maintenance"
+      - "24x7 maintenance"
+      - "24x7 support"
+      - "managed services"
+      - "preventive maintenance"
+      - "breakdown maintenance"
+      - "SLA support"
+      - "helpdesk services"
+      - "technical support services"
+      - "health check"
+      - "energy audit"
+      - "PUE audit"
+      - "site survey"
+
+  contextual_terms:
+    - term: "UPS"
+      group: "critical_power"
+      reject_context:
+        - "UPS courier"
+        - "UPS for traffic"
+        - "traffic signal"
+      min_capacity_kva: 10
+
+    - term: "PAC"
+      group: "precision_cooling_and_hvac"
+      reject_context:
+        - "Provincial Armed Constabulary"
+        - "Public Accounts Committee"
+        - "PAC meeting"
+
+    - term: "CCTV"
+      group: "fire_safety_and_physical_security"
+      require_context:
+        - "surveillance"
+        - "security"
+        - "camera"
+        - "monitoring"
+        - "access"
+
+    - term: "transformer"
+      group: "critical_power"
+      reject_context:
+        - "distribution transformer"
+        - "pole mounted transformer"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NEGATIVE KEYWORDS — Filter or contextually reject noise
+# ─────────────────────────────────────────────────────────────────────────────
+negatives:
+  hard_reject_terms:
+    noise_reject:
+      - "district collector"
+      - "direct current"
+      - "DC motor"
+      - "DC drive"
+      - "Deputy Commissioner"
+      - "UPS courier"
+      - "UPS for traffic signal"
+      - "UPS for traffic signals"
+      - "Provincial Armed Constabulary"
+      - "Public Accounts Committee"
+      - "data entry"
+      - "data collection"
+      - "census data"
+      - "data digitisation"
+      - "data digitization"
+      - "catering staff"
+      - "warehouse rack"
+      - "storage rack"
+      - "pallet rack"
+
+  soft_reject_terms:
+    hardware_only:
+      description: "Generic office supply without IT or infrastructure scope."
+      terms:
+        - "supply of stationery"
+        - "printing and stationery"
+        - "cleaning services"
+        - "housekeeping services"
+      override_if_also_contains:
+        - "server"
+        - "firewall"
+        - "UPS"
+        - "cloud"
+        - "AMC"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFIGURABLE THRESHOLDS
+# ─────────────────────────────────────────────────────────────────────────────
+thresholds:
+  min_value_inr: 0
+  min_ups_kva: 10
+  max_days_to_deadline: 0

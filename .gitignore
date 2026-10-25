@@ -1,0 +1,113 @@
+# ==========================================
+# Nikom Tender Intelligence - .gitignore
+# ==========================================
+
+# --- Python Environment & Bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Testing & Quality ---
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# --- Databases & Scraper Storage (Binary / Ephemeral) ---
+# Ignore binary SQLite databases and temporary storage
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+tender_intelligence.db
+data/*.db
+
+# Ignore downloaded tender documents, raw scraping artifacts, and caches
+data/cache/
+data/raw/
+data/processed/
+data/downloads/
+data/temp/
+
+# Keep data directory structure and seed scripts intact
+!data/
+!data/seed_benchmarks.py
+!data/seed.py
+
+# --- Scratch & Temporary Files ---
+scratch/
+*.log
+logs/
+temp/
+tmp/
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+token.json
+
+# --- IDE & Editor Settings ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
+
+# --- OS-generated Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+[Nn]anorc

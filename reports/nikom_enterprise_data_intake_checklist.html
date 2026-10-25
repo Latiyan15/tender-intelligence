@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nikom Data Intake Questionnaire — Ready for Google Docs</title>
+  <style>
+    :root {
+      --bg-page: #f0f2f5;
+      --doc-bg: #ffffff;
+      --text-main: #202124;
+      --text-muted: #5f6368;
+      --blue-primary: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green-dark: #137333;
+      --green-bg: #e6f4ea;
+      --yellow-dark: #b06000;
+      --yellow-bg: #fef7e0;
+      --red-dark: #c5221f;
+      --red-bg: #fce8e6;
+      --border-color: #dadce0;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Google Sans", Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      font-family: var(--font-family);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 12px;
+    }
+
+    /* Floating Toolbar */
+    .top-toolbar {
+      max-width: 860px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.15);
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+    }
+
+    .toolbar-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--blue-primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #1557b0;
+    }
+
+    .btn-secondary {
+      background-color: #f1f3f4;
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background-color: #e8eaed;
+    }
+
+    /* Google Doc Sheet */
+    .doc-container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--doc-bg);
+      padding: 60px 64px;
+      box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 4px 8px rgba(60,64,67,0.1);
+      border-radius: 4px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a73e8;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #202124;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #3c4043;
+      margin-top: 18px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #3c4043;
+    }
+
+    ul, ol {
+      margin-left: 22px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: #3c4043;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .callout {
+      border-left: 4px solid var(--blue-primary);
+      background-color: var(--blue-light);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #202124;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      color: #202124;
+      font-weight: 600;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 2px solid var(--border-color);
+      border: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      color: #3c4043;
+      vertical-align: middle;
+    }
+
+    .input-box {
+      background: #fdfdfd;
+      border: 1px dashed #b0b5ba;
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: #70757a;
+      font-style: italic;
+      font-size: 12.5px;
+      display: inline-block;
+      min-width: 120px;
+    }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .top-toolbar { display: none; }
+      .doc-container { box-shadow: none; padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Toolbar -->
+  <div class="top-toolbar">
+    <div class="toolbar-title">
+      📄 <span>Nikom Intake Questionnaire • Ready for Google Docs</span>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="btn btn-primary" id="copyBtn" onclick="copyDocumentForGoogleDocs()">📋 Copy for Google Docs</button>
+    </div>
+  </div>
+
+  <div class="doc-container" id="docContent">
+
+    <h1>Enterprise Data Intake Specification & Questionnaire</h1>
+    <div class="subtitle">
+      <strong>Target Enterprise:</strong> Nikom InfraSolutions Pvt. Ltd. &nbsp;|&nbsp; 
+      <strong>Purpose:</strong> Full Corporate Information Required for 100% Accurate Tender Qualification &nbsp;|&nbsp; 
+      <strong>Date:</strong> October 2026
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">📌 Why This Questionnaire Is Required:</div>
+      Indian public procurement portals (CPPP, GeM, Railways, Defense, PSUs) enforce strict mathematical qualification criteria. Missing an eligibility cutoff by ₹1, lacking an OEM authorization letter, or having an expired state electrical license causes <strong>automatic technical disqualification</strong>. To replace estimates with 100% precision, Nikom needs to provide data across the 9 sections below.
+    </div>
+
+    <!-- Section 1 -->
+    <h2>Section 1: Financial Standing & Balance Sheet Metrics (Audited by CA)</h2>
+    <p><em>Government tenders mandate that average annual turnover must be at least 30% to 100% of the estimated contract value, and net worth must be positive.</em></p>
+
+    <h3>1.1 Audited Financials (Last 3 to 5 Financial Years)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Financial Year</th>
+          <th>Annual Turnover / Revenue (INR)</th>
+          <th>Profit After Tax - PAT (INR)</th>
+          <th>Audited Balance Sheet Attached?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>FY 2024–25 (or Prov.)</strong></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] No</td>
+        </tr>
+        <tr>
+          <td><strong>FY 2023–24</strong></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] No</td>
+        </tr>
+        <tr>
+          <td><strong>FY 2022–23</strong></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] No</td>
+        </tr>
+        <tr>
+          <td><strong>FY 2021–22</strong></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td><span class="input-box">₹ [Enter Amount]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] No</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ul>
+      <li><strong>3-Year Average Annual Financial Turnover (AAFT):</strong> <span class="input-box">₹ [Enter Amount in Crores]</span></li>
+      <li><strong>Latest Audited Net Worth:</strong> <span class="input-box">₹ [Enter Amount in Crores]</span></li>
+      <li><strong>Current Ratio / Working Capital:</strong> <span class="input-box">[e.g. 1.5 : 1]</span></li>
+    </ul>
+
+    <h3>1.2 Banking, Credit Lines & Bonding Capacity</h3>
+    <ul>
+      <li><strong>Primary Bank(s):</strong> <span class="input-box">[e.g. HDFC / SBI / ICICI]</span></li>
+      <li><strong>Bank Solvency Certificate Limit:</strong> <span class="input-box">₹ [Max Solvency Amount]</span></li>
+      <li><strong>Fund-Based Limit (Cash Credit / Working Capital):</strong> Sanctioned: <span class="input-box">₹ [Amount]</span> | Utilized: <span class="input-box">₹ [Amount]</span></li>
+      <li><strong>Non-Fund Based Limit (Bank Guarantees - BG / LC):</strong> Sanctioned: <span class="input-box">₹ [Amount]</span> | Available Unencumbered: <span class="input-box">₹ [Amount]</span></li>
+      <li><strong>Maximum EMD Nikom will commit on any single tender:</strong> <span class="input-box">₹ [e.g. ₹50 Lakhs]</span></li>
+    </ul>
+
+    <h3>1.3 MSME / Public Procurement Privileges</h3>
+    <ul>
+      <li><strong>Udyam Registration Number:</strong> <span class="input-box">[Enter Udyam Number]</span></li>
+      <li><strong>Enterprise Classification:</strong> [ &nbsp; ] Micro &nbsp;|&nbsp; [ &nbsp; ] Small &nbsp;|&nbsp; [ &nbsp; ] Medium &nbsp;|&nbsp; [ &nbsp; ] Not Applicable</li>
+      <li><strong>NSIC Registration:</strong> [ &nbsp; ] Yes (Reg No: <span class="input-box">[Enter Number]</span>) &nbsp;|&nbsp; [ &nbsp; ] No</li>
+      <li><em>Note: Micro/Small status grants 100% EMD and Tender Fee exemption under Govt rules!</em></li>
+    </ul>
+
+    <!-- Section 2 -->
+    <h2>Section 2: Past Project Credentials & "Similar Works" Repository</h2>
+    <p><em>Government tenders enforce the Three (40%) / Two (50%) / One (80%) Similar Completed Works rule over the last 7 years.</em></p>
+
+    <h3>2.1 Completed & Ongoing Projects Master List (Last 7 Years)</h3>
+    <p>Please provide an Excel table containing all major projects executed between 2019 and 2026:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Field Required</th>
+          <th>Example / Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Client Name</strong></td>
+          <td>PSU / Central Govt / Bank / Hyperscale (e.g. NIC, BSNL, RailTel, SBI)</td>
+        </tr>
+        <tr>
+          <td><strong>Exact Project Title</strong></td>
+          <td>e.g. "Design, Supply, Installation of Tier-III Data Center at New Delhi"</td>
+        </tr>
+        <tr>
+          <td><strong>PO / Work Order Date & Value</strong></td>
+          <td>Contract Reference, Date of Award, and Executed Value in INR</td>
+        </tr>
+        <tr>
+          <td><strong>Subsystem Cost Breakdown</strong></td>
+          <td>How much was: UPS, Cooling (PAC), Gas Flooding, Panels, Server Racks</td>
+        </tr>
+        <tr>
+          <td><strong>Client Completion Certificate</strong></td>
+          <td>Do you possess a signed satisfactory completion certificate from the client?</td>
+        </tr>
+        <tr>
+          <td><strong>Tier Rating Achieved</strong></td>
+          <td>Tier I / Tier II / Tier III / Tier IV (Uptime or TIA-942)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><strong>Single Largest Contract Completed in Company History:</strong></p>
+    <ul>
+      <li>Client Name: <span class="input-box">[Client]</span></li>
+      <li>Total Value: <span class="input-box">₹ [Value in Crores]</span></li>
+      <li>Scope: <span class="input-box">[Data Center / UPS / Cooling / Electrical]</span></li>
+    </ul>
+
+    <!-- Section 3 -->
+    <h2>Section 3: OEM Alliances, Partnership Tiers & MAF Capability</h2>
+    <p><em>In 95% of tenders, bidders are disqualified without a project-specific Manufacturer Authorization Form (MAF).</em></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th>Target OEMs</th>
+          <th>Nikom's Current Partnership Tier</th>
+          <th>Can Nikom get Exclusive Govt MAF?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Modular / Online UPS</strong></td>
+          <td>Vertiv / Schneider / Eaton / Delta</td>
+          <td><span class="input-box">[e.g. Elite Partner]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>Precision AC (PAC/CRAC)</strong></td>
+          <td>Vertiv / Schneider / Stulz / Daikin</td>
+          <td><span class="input-box">[e.g. Authorized SI]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>Fire Suppression (Novec/Gas)</strong></td>
+          <td>Kidde / Tyco / Siemens / Minimax</td>
+          <td><span class="input-box">[e.g. Channel Partner]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>Early Smoke (VESDA)</strong></td>
+          <td>Xtralis / Honeywell / Securiton</td>
+          <td><span class="input-box">[e.g. Reseller]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>DG Sets (Diesel Generators)</strong></td>
+          <td>Cummins / Kirloskar / Caterpillar</td>
+          <td><span class="input-box">[e.g. Authorized Dealer]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>HT/LT Switchgear & Panels</strong></td>
+          <td>ABB / Schneider / Siemens / L&T</td>
+          <td><span class="input-box">[e.g. Panel Builder Partner]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>Server Racks & Containment</strong></td>
+          <td>Rittal / Netrack / APW President</td>
+          <td><span class="input-box">[e.g. Direct OEM Tier]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+        <tr>
+          <td><strong>DCIM / SCADA / IBMS</strong></td>
+          <td>Schneider EcoStruxure / Honeywell / Siemens</td>
+          <td><span class="input-box">[e.g. Solution Partner]</span></td>
+          <td>[ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] Case-by-case</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Section 4 -->
+    <h2>Section 4: Quality, Safety & Industry Certifications</h2>
+    <ul>
+      <li><strong>ISO 9001:2015 (Quality):</strong> [ &nbsp; ] Valid &nbsp;|&nbsp; Expiry Date: <span class="input-box">[DD/MM/YYYY]</span></li>
+      <li><strong>ISO 27001:2013/2022 (InfoSec):</strong> [ &nbsp; ] Valid &nbsp;|&nbsp; Expiry Date: <span class="input-box">[DD/MM/YYYY]</span></li>
+      <li><strong>ISO 20000-1:2018 (IT Service):</strong> [ &nbsp; ] Valid &nbsp;|&nbsp; Expiry Date: <span class="input-box">[DD/MM/YYYY]</span></li>
+      <li><strong>ISO 14001:2015 (Environment):</strong> [ &nbsp; ] Valid &nbsp;|&nbsp; Expiry Date: <span class="input-box">[DD/MM/YYYY]</span></li>
+      <li><strong>ISO 45001:2018 (Safety):</strong> [ &nbsp; ] Valid &nbsp;|&nbsp; Expiry Date: <span class="input-box">[DD/MM/YYYY]</span></li>
+      <li><strong>ISO 50001 (Energy Management):</strong> [ &nbsp; ] Yes &nbsp;&nbsp; [ &nbsp; ] No</li>
+      <li><strong>CMMI Level:</strong> [ &nbsp; ] Level 3 &nbsp;|&nbsp; [ &nbsp; ] Level 5 &nbsp;|&nbsp; [ &nbsp; ] None</li>
+      <li><strong>Data Center Certifications on Staff:</strong>
+        <br>&bull; Uptime Institute Accredited Tier Designer (ATD): [ &nbsp; ] Yes &nbsp;|&nbsp; [ &nbsp; ] No
+        <br>&bull; CDCP / CDCS / CDCE (EPI Certified): [ &nbsp; ] Yes &nbsp;|&nbsp; [ &nbsp; ] No
+        <br>&bull; BICSI RCDD Certified Designer: [ &nbsp; ] Yes &nbsp;|&nbsp; [ &nbsp; ] No
+      </li>
+    </ul>
+
+    <!-- Section 5 -->
+    <h2>Section 5: Engineering Workforce & Statutory Licenses</h2>
+    <ul>
+      <li><strong>Total Permanent Engineers on Payroll:</strong> <span class="input-box">[Total Headcount]</span></li>
+      <li><strong>Engineers by Discipline:</strong> Electrical: <span class="input-box">[Count]</span> | HVAC: <span class="input-box">[Count]</span> | BMS/Instrumentation: <span class="input-box">[Count]</span> | Civil: <span class="input-box">[Count]</span></li>
+      <li><strong>State "Class-A" Electrical Contractor Licenses:</strong>
+        <br><em>(Required by State PWDs and PSUs to execute electrical substation and panel works)</em>
+        <br>&bull; Delhi NCT: License No: <span class="input-box">[Number]</span>
+        <br>&bull; Maharashtra: License No: <span class="input-box">[Number]</span>
+        <br>&bull; Karnataka: License No: <span class="input-box">[Number]</span>
+        <br>&bull; Telangana / Andhra: License No: <span class="input-box">[Number]</span>
+        <br>&bull; Tamil Nadu: License No: <span class="input-box">[Number]</span>
+        <br>&bull; Uttar Pradesh: License No: <span class="input-box">[Number]</span>
+      </li>
+    </ul>
+
+    <!-- Section 6 -->
+    <h2>Section 6: Geographic Presence & Make in India (MII)</h2>
+    <ul>
+      <li><strong>States with Active GSTIN Registrations:</strong> <span class="input-box">[e.g. Delhi, Maharashtra, Karnataka, Telangana, WB, UP]</span></li>
+      <li><strong>Guaranteed On-Site SLA Response Time:</strong> [ &nbsp; ] 2 Hours &nbsp;|&nbsp; [ &nbsp; ] 4 Hours &nbsp;|&nbsp; [ &nbsp; ] 8 Hours</li>
+      <li><strong>"Make in India" (MII) Local Value Addition Percentage:</strong>
+        <br>[ &nbsp; ] <strong>Class-I Local Supplier</strong> (&ge; 50% domestic content) — <em>Gives statutory 20% purchase preference!</em>
+        <br>[ &nbsp; ] <strong>Class-II Local Supplier</strong> (20% to 49% domestic content)
+        <br>[ &nbsp; ] Non-Local Supplier (&lt; 20%)
+      </li>
+    </ul>
+
+    <!-- Section 7 -->
+    <h2>Section 7: Commercial Strategy, Sweet Spots & Red Lines</h2>
+    <ul>
+      <li><strong>Minimum Project Floor ($V_{floor}$):</strong> <span class="input-box">₹ [e.g. ₹10 Lakhs or ₹25 Lakhs]</span></li>
+      <li><strong>Optimal Sweet Spot ($V_{min}$ to $V_{max}$):</strong> <span class="input-box">₹ [e.g. ₹50 Lakhs to ₹20 Crores]</span></li>
+      <li><strong>Maximum Solo Contract ($V_{single\_max}$):</strong> <span class="input-box">₹ [e.g. ₹30 Crores]</span></li>
+      <li><strong>Consortium / JV Policy:</strong>
+        <br>[ &nbsp; ] Bid only as Sole Prime Contractor
+        <br>[ &nbsp; ] Lead Member in Consortium (with civil/specialist partners)
+        <br>[ &nbsp; ] Sub-contractor / System Integrator to EPC Giants (L&T, Tata Projects)
+      </li>
+      <li><strong>Blacklisted Clients or Territories:</strong>
+        <br>List any departments, PSUs, or states Nikom will NOT bid for: <span class="input-box">[Enter Excluded Clients / States]</span>
+      </li>
+      <li><strong>Unfavorable Terms:</strong> Max acceptable Performance BG: <span class="input-box">[e.g. 5%]</span> | Max acceptable payment delay: <span class="input-box">[e.g. 60 days]</span></li>
+    </ul>
+
+    <!-- Section 8 -->
+    <h2>Section 8: Legal History & Integrity Declarations</h2>
+    <ul>
+      <li><strong>Debarment / Blacklisting History:</strong> Has Nikom ever been debarred or blacklisted by any Govt / PSU entity?
+        <br>[ &nbsp; ] No, completely unblemished record &nbsp;|&nbsp; [ &nbsp; ] Yes (Explain details)
+      </li>
+      <li><strong>Active Litigation:</strong> Any active disputes or arbitration with government clients &gt; ₹50 Lakhs?
+        <br>[ &nbsp; ] None &nbsp;|&nbsp; [ &nbsp; ] Active cases (Provide summary)
+      </li>
+      <li><strong>Corporate Identity:</strong> CIN: <span class="input-box">[CIN]</span> | PAN: <span class="input-box">[PAN]</span> | PF/ESI: <span class="input-box">[Registration Numbers]</span></li>
+    </ul>
+
+    <!-- Section 9 -->
+    <h2>Section 9: Service & Lifecycle Operations (CAMC / FMS)</h2>
+    <ul>
+      <li><strong>Max Concurrent Sites Nikom Can Maintain 24x7:</strong> <span class="input-box">[e.g. 50 sites]</span></li>
+      <li><strong>24x7 In-House NOC / Helpdesk Facility:</strong> [ &nbsp; ] Yes (Location: <span class="input-box">[City]</span>) &nbsp;|&nbsp; [ &nbsp; ] No</li>
+      <li><strong>Warehouse Locations for Emergency Spares:</strong> <span class="input-box">[Cities where boards, compressors, fans are stocked]</span></li>
+    </ul>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted); text-align: center;">
+      Nikom Autonomous Tender Intelligence Engine • Data Intake Specification v2.0
+    </div>
+
+  </div>
+
+  <script>
+    function copyDocumentForGoogleDocs() {
+      const doc = document.getElementById('docContent');
+      const htmlContent = doc.innerHTML;
+      const plainText = doc.innerText;
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        const blobHtml = new Blob([htmlContent], { type: 'text/html' });
+        const blobText = new Blob([plainText], { type: 'text/plain' });
+        const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
+
+        navigator.clipboard.write(data).then(() => {
+          const btn = document.getElementById('copyBtn');
+          const originalText = btn.innerText;
+          btn.innerText = '✅ Copied to Clipboard!';
+          btn.style.backgroundColor = '#137333';
+          setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.backgroundColor = '#1a73e8';
+          }, 2500);
+        }).catch(err => {
+          fallbackCopy();
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function fallbackCopy() {
+      const doc = document.getElementById('docContent');
+      const range = document.createRange();
+      range.selectNode(doc);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      try {
+        document.execCommand('copy');
+        alert('Questionnaire copied! You can now paste (Ctrl+V) into Google Docs at docs.new.');
+      } catch (e) {
+        alert('Please press Ctrl+A, then Ctrl+C to copy this page.');
+      }
+      window.getSelection().removeAllRanges();
+    }
+  </script>
+</body>
+</html>
