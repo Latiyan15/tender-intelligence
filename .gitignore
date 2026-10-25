@@ -67,6 +67,7 @@ data/temp/
 !data/
 !data/seed_benchmarks.py
 !data/seed.py
+!data/seed_tenders.json
 
 # --- Scratch & Temporary Files ---
 scratch/

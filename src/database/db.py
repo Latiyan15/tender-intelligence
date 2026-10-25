@@ -1,7 +1,11 @@
 """
-High-Performance SQLite Native Repository for Nikom Tender Intelligence
-Uses Python's built-in sqlite3 with WAL mode, foreign keys, and indexes.
-Requires zero external dependencies.
+Unified Database Layer (PostgreSQL & SQLite) for Tender Intelligence.
+
+Supports:
+1. Production: Managed PostgreSQL via Render (DATABASE_URL environment variable).
+2. Local Development & Testing: Native SQLite with WAL mode, zero config needed.
+3. Automatic database initialization and schema migration.
+4. Automatic initial data seeding from data/seed_tenders.json when deploying a fresh database.
 """
 
 import os
@@ -13,12 +17,125 @@ from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "nikom_tenders.db")
+# Base project directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DB_PATH = os.path.join(BASE_DIR, "data", "nikom_tenders.db")
+SEED_PATH = os.path.join(BASE_DIR, "data", "seed_tenders.json")
 
 
-def get_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
-    """Create or return a SQLite connection with foreign keys and row factory."""
-    target_path = db_path or DB_PATH
+def get_database_url() -> Optional[str]:
+    """Retrieve and normalize DATABASE_URL (handling Render's postgres:// prefix)."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        return None
+    url = url.strip()
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+    return url
+
+
+class UnifiedCursor:
+    """Cursor wrapper that harmonizes SQLite and psycopg2 differences."""
+
+    def __init__(self, raw_cursor, is_pg: bool = False):
+        self._cur = raw_cursor
+        self.is_pg = is_pg
+        self.lastrowid = getattr(raw_cursor, "lastrowid", None)
+        self.rowcount = getattr(raw_cursor, "rowcount", -1)
+
+    def execute(self, sql: str, params=None):
+        if self.is_pg:
+            # Convert SQLite placeholder ? to PostgreSQL placeholder %s
+            pg_sql = sql.replace("?", "%s")
+            stripped = pg_sql.strip().rstrip(";")
+            is_insert = stripped.upper().startswith("INSERT INTO")
+
+            if is_insert and "RETURNING" not in stripped.upper():
+                pg_sql = stripped + " RETURNING id;"
+                if params is not None:
+                    self._cur.execute(pg_sql, tuple(params))
+                else:
+                    self._cur.execute(pg_sql)
+                try:
+                    row = self._cur.fetchone()
+                    if row:
+                        self.lastrowid = row.get("id") if isinstance(row, dict) else row[0]
+                except Exception:
+                    pass
+                self.rowcount = self._cur.rowcount
+                return self
+
+            if params is not None:
+                self._cur.execute(pg_sql, tuple(params))
+            else:
+                self._cur.execute(pg_sql)
+            self.rowcount = self._cur.rowcount
+            return self
+        else:
+            if params is not None:
+                self._cur.execute(sql, tuple(params))
+            else:
+                self._cur.execute(sql)
+            self.lastrowid = self._cur.lastrowid
+            self.rowcount = self._cur.rowcount
+            return self
+
+    def fetchone(self):
+        row = self._cur.fetchone()
+        if row is None:
+            return None
+        return dict(row)
+
+    def fetchall(self):
+        rows = self._cur.fetchall()
+        return [dict(r) for r in rows]
+
+    def close(self):
+        self._cur.close()
+
+    def __iter__(self):
+        return iter(self.fetchall())
+
+
+class UnifiedConnection:
+    """Connection wrapper providing a uniform interface for SQLite & PostgreSQL."""
+
+    def __init__(self, raw_conn, is_pg: bool = False):
+        self._conn = raw_conn
+        self.is_pg = is_pg
+
+    def cursor(self):
+        return UnifiedCursor(self._conn.cursor(), is_pg=self.is_pg)
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def close(self):
+        self._conn.close()
+
+    def executescript(self, script: str):
+        if self.is_pg:
+            with self._conn.cursor() as cur:
+                cur.execute(script)
+            self._conn.commit()
+        else:
+            self._conn.executescript(script)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.rollback()
+        else:
+            self.commit()
+        self.close()
+
+
+def get_sqlite_connection(target_path: str) -> sqlite3.Connection:
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
     conn = sqlite3.connect(target_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -27,141 +144,363 @@ def get_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     return conn
 
 
+def get_connection(db_path: Optional[str] = None) -> UnifiedConnection:
+    """Create or return a connection (PostgreSQL if DATABASE_URL set and default path, else SQLite)."""
+    pg_url = get_database_url()
+    if pg_url and (db_path is None or db_path == DB_PATH):
+        try:
+            import psycopg2
+            from psycopg2.extras import RealDictCursor
+            conn = psycopg2.connect(pg_url, cursor_factory=RealDictCursor)
+            return UnifiedConnection(conn, is_pg=True)
+        except Exception as e:
+            logger.warning(f"Could not connect to PostgreSQL ({e}), falling back to SQLite")
+
+    target_path = db_path or DB_PATH
+    raw_sqlite = get_sqlite_connection(target_path)
+    return UnifiedConnection(raw_sqlite, is_pg=False)
+
+
+def seed_db_if_empty(conn: UnifiedConnection):
+    """Seed empty database from seed_tenders.json if available."""
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) as cnt FROM tenders")
+        row = cur.fetchone()
+        cnt = row["cnt"] if row else 0
+        if cnt > 0:
+            return
+
+        if not os.path.exists(SEED_PATH):
+            logger.info("No seed file found, skipping auto-seed.")
+            return
+
+        logger.info(f"Empty database detected. Seeding from {SEED_PATH}...")
+        with open(SEED_PATH, "r", encoding="utf-8") as f:
+            seed_data = json.load(f)
+
+        tenders = seed_data.get("tenders", [])
+        matches = seed_data.get("keyword_matches", [])
+
+        tender_cols = [
+            "id", "tender_id", "title", "authority", "reference_no", "tender_type",
+            "estimated_cost_inr", "emd_inr", "doc_fee_inr", "published_date",
+            "submission_deadline", "opening_date", "location", "portal_source",
+            "portal_url", "description", "primary_category", "highest_tier",
+            "is_qualified", "qualification_reason", "uncertain", "raw_metadata",
+            "workflow_status", "is_watchlisted", "user_notes", "assigned_to",
+            "status_updated_at", "created_at", "updated_at"
+        ]
+        placeholders = ", ".join(["?"] * len(tender_cols))
+        tender_insert_sql = f"INSERT INTO tenders ({', '.join(tender_cols)}) VALUES ({placeholders})"
+
+        for t in tenders:
+            params = [
+                t.get("id"),
+                t.get("tender_id"),
+                t.get("title", ""),
+                t.get("authority", "Unknown Authority"),
+                t.get("reference_no", ""),
+                t.get("tender_type", ""),
+                t.get("estimated_cost_inr"),
+                t.get("emd_inr"),
+                t.get("doc_fee_inr"),
+                t.get("published_date"),
+                t.get("submission_deadline"),
+                t.get("opening_date"),
+                t.get("location", ""),
+                t.get("portal_source", "cppp_epublish"),
+                t.get("portal_url", ""),
+                t.get("description", ""),
+                t.get("primary_category", ""),
+                t.get("highest_tier", ""),
+                1 if t.get("is_qualified") else 0,
+                t.get("qualification_reason", ""),
+                1 if t.get("uncertain") else 0,
+                json.dumps(t.get("raw_metadata")) if isinstance(t.get("raw_metadata"), dict) else t.get("raw_metadata"),
+                t.get("workflow_status") or "new",
+                1 if t.get("is_watchlisted") else 0,
+                t.get("user_notes") or "",
+                t.get("assigned_to") or "",
+                t.get("status_updated_at"),
+                t.get("created_at"),
+                t.get("updated_at")
+            ]
+            cur.execute(tender_insert_sql, params)
+
+        km_cols = [
+            "id", "tender_id_ref", "term", "tier", "match_group", "matched_text",
+            "snippet", "position", "source_field", "is_contextual"
+        ]
+        km_placeholders = ", ".join(["?"] * len(km_cols))
+        km_insert_sql = f"INSERT INTO keyword_matches ({', '.join(km_cols)}) VALUES ({km_placeholders})"
+
+        for m in matches:
+            km_params = [
+                m.get("id"),
+                m.get("tender_id_ref"),
+                m.get("term", ""),
+                m.get("tier", ""),
+                m.get("match_group", ""),
+                m.get("matched_text", ""),
+                m.get("snippet", ""),
+                m.get("position", 0),
+                m.get("source_field", ""),
+                1 if m.get("is_contextual") else 0
+            ]
+            cur.execute(km_insert_sql, km_params)
+
+        if conn.is_pg:
+            cur.execute("SELECT setval(\'tenders_id_seq\', (SELECT COALESCE(MAX(id), 1) FROM tenders));")
+            cur.execute("SELECT setval(\'keyword_matches_id_seq\', (SELECT COALESCE(MAX(id), 1) FROM keyword_matches));")
+
+        conn.commit()
+        logger.info(f"Database successfully auto-seeded with {len(tenders)} tenders and {len(matches)} matches.")
+    except Exception as e:
+        logger.error(f"Auto-seed encountered an issue: {e}", exc_info=True)
+
+
 def init_db(db_path: Optional[str] = None):
     """Create database tables and indexes if they do not exist."""
-    target_path = db_path or DB_PATH
-    conn = get_connection(target_path)
+    conn = get_connection(db_path)
     cursor = conn.cursor()
 
-    cursor.executescript("""
-    CREATE TABLE IF NOT EXISTS tenders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tender_id TEXT UNIQUE NOT NULL,
-        title TEXT NOT NULL,
-        authority TEXT DEFAULT 'Unknown Authority',
-        reference_no TEXT,
-        tender_type TEXT,
-        estimated_cost_inr REAL,
-        emd_inr REAL,
-        doc_fee_inr REAL,
-        published_date TEXT,
-        submission_deadline TEXT,
-        opening_date TEXT,
-        location TEXT,
-        portal_source TEXT NOT NULL DEFAULT 'cppp_epublish',
-        portal_url TEXT,
-        description TEXT,
-        primary_category TEXT DEFAULT '',
-        highest_tier TEXT DEFAULT '',
-        is_qualified INTEGER DEFAULT 0,
-        qualification_reason TEXT DEFAULT '',
-        uncertain INTEGER DEFAULT 0,
-        raw_metadata TEXT,
-        workflow_status TEXT DEFAULT 'new',
-        is_watchlisted INTEGER DEFAULT 0,
-        user_notes TEXT DEFAULT '',
-        assigned_to TEXT DEFAULT '',
-        status_updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+    if conn.is_pg:
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tenders (
+            id SERIAL PRIMARY KEY,
+            tender_id TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            authority TEXT DEFAULT 'Unknown Authority',
+            reference_no TEXT,
+            tender_type TEXT,
+            estimated_cost_inr DOUBLE PRECISION,
+            emd_inr DOUBLE PRECISION,
+            doc_fee_inr DOUBLE PRECISION,
+            published_date TEXT,
+            submission_deadline TEXT,
+            opening_date TEXT,
+            location TEXT,
+            portal_source TEXT NOT NULL DEFAULT 'cppp_epublish',
+            portal_url TEXT,
+            description TEXT,
+            primary_category TEXT DEFAULT '',
+            highest_tier TEXT DEFAULT '',
+            is_qualified INTEGER DEFAULT 0,
+            qualification_reason TEXT DEFAULT '',
+            uncertain INTEGER DEFAULT 0,
+            raw_metadata TEXT,
+            workflow_status TEXT DEFAULT 'new',
+            is_watchlisted INTEGER DEFAULT 0,
+            user_notes TEXT DEFAULT '',
+            assigned_to TEXT DEFAULT '',
+            status_updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_tenders_category ON tenders(primary_category);
-    CREATE INDEX IF NOT EXISTS idx_tenders_tier ON tenders(highest_tier);
-    CREATE INDEX IF NOT EXISTS idx_tenders_qualified ON tenders(is_qualified);
-    CREATE INDEX IF NOT EXISTS idx_tenders_source ON tenders(portal_source);
-    CREATE INDEX IF NOT EXISTS idx_tenders_pub_date ON tenders(published_date);
+        CREATE INDEX IF NOT EXISTS idx_tenders_category ON tenders(primary_category);
+        CREATE INDEX IF NOT EXISTS idx_tenders_tier ON tenders(highest_tier);
+        CREATE INDEX IF NOT EXISTS idx_tenders_qualified ON tenders(is_qualified);
+        CREATE INDEX IF NOT EXISTS idx_tenders_source ON tenders(portal_source);
+        CREATE INDEX IF NOT EXISTS idx_tenders_pub_date ON tenders(published_date);
+        CREATE INDEX IF NOT EXISTS idx_tenders_workflow ON tenders(workflow_status);
+        CREATE INDEX IF NOT EXISTS idx_tenders_watchlisted ON tenders(is_watchlisted);
 
-    CREATE TABLE IF NOT EXISTS keyword_matches (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tender_id_ref INTEGER NOT NULL,
-        term TEXT NOT NULL,
-        tier TEXT NOT NULL,
-        match_group TEXT NOT NULL,
-        matched_text TEXT NOT NULL,
-        snippet TEXT,
-        position INTEGER DEFAULT 0,
-        source_field TEXT DEFAULT '',
-        is_contextual INTEGER DEFAULT 0,
-        FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
-    );
+        CREATE TABLE IF NOT EXISTS keyword_matches (
+            id SERIAL PRIMARY KEY,
+            tender_id_ref INTEGER NOT NULL REFERENCES tenders(id) ON DELETE CASCADE,
+            term TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            match_group TEXT NOT NULL,
+            matched_text TEXT NOT NULL,
+            snippet TEXT,
+            position INTEGER DEFAULT 0,
+            source_field TEXT DEFAULT '',
+            is_contextual INTEGER DEFAULT 0
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_km_tender_id ON keyword_matches(tender_id_ref);
-    CREATE INDEX IF NOT EXISTS idx_km_tier ON keyword_matches(tier);
+        CREATE INDEX IF NOT EXISTS idx_km_tender_id ON keyword_matches(tender_id_ref);
+        CREATE INDEX IF NOT EXISTS idx_km_tier ON keyword_matches(tier);
 
-    CREATE TABLE IF NOT EXISTS tender_documents (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tender_id_ref INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        url TEXT NOT NULL,
-        doc_type TEXT DEFAULT 'TenderDocument',
-        local_path TEXT,
-        file_size_bytes INTEGER,
-        page_count INTEGER DEFAULT 0,
-        text_extracted INTEGER DEFAULT 0,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
-    );
+        CREATE TABLE IF NOT EXISTS tender_documents (
+            id SERIAL PRIMARY KEY,
+            tender_id_ref INTEGER NOT NULL REFERENCES tenders(id) ON DELETE CASCADE,
+            title TEXT NOT NULL,
+            url TEXT NOT NULL,
+            doc_type TEXT DEFAULT 'TenderDocument',
+            local_path TEXT,
+            file_size_bytes BIGINT,
+            page_count INTEGER DEFAULT 0,
+            text_extracted INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
 
-    CREATE TABLE IF NOT EXISTS extracted_fields (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tender_id_ref INTEGER NOT NULL,
-        field_name TEXT NOT NULL,
-        raw_text TEXT,
-        normalized_value TEXT,
-        evidence_location TEXT,
-        evidence_snippet TEXT,
-        confidence REAL DEFAULT 0.0,
-        status TEXT DEFAULT 'present_extracted',
-        verified INTEGER DEFAULT 0,
-        FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
-    );
+        CREATE TABLE IF NOT EXISTS extracted_fields (
+            id SERIAL PRIMARY KEY,
+            tender_id_ref INTEGER NOT NULL REFERENCES tenders(id) ON DELETE CASCADE,
+            field_name TEXT NOT NULL,
+            raw_text TEXT,
+            normalized_value TEXT,
+            evidence_location TEXT,
+            evidence_snippet TEXT,
+            confidence REAL DEFAULT 0.0,
+            status TEXT DEFAULT 'present_extracted',
+            verified INTEGER DEFAULT 0
+        );
 
-    CREATE TABLE IF NOT EXISTS source_runs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        source_name TEXT NOT NULL,
-        status TEXT DEFAULT 'running',
-        started_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        finished_at TEXT,
-        items_scanned INTEGER DEFAULT 0,
-        items_discovered INTEGER DEFAULT 0,
-        items_qualified INTEGER DEFAULT 0,
-        error_message TEXT
-    );
+        CREATE TABLE IF NOT EXISTS source_runs (
+            id SERIAL PRIMARY KEY,
+            source_name TEXT NOT NULL,
+            status TEXT DEFAULT 'running',
+            started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            finished_at TEXT,
+            items_scanned INTEGER DEFAULT 0,
+            items_discovered INTEGER DEFAULT 0,
+            items_qualified INTEGER DEFAULT 0,
+            error_message TEXT
+        );
 
-    CREATE INDEX IF NOT EXISTS idx_runs_source ON source_runs(source_name);
-    """)
+        CREATE INDEX IF NOT EXISTS idx_runs_source ON source_runs(source_name);
+        """)
+    else:
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS tenders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tender_id TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            authority TEXT DEFAULT 'Unknown Authority',
+            reference_no TEXT,
+            tender_type TEXT,
+            estimated_cost_inr REAL,
+            emd_inr REAL,
+            doc_fee_inr REAL,
+            published_date TEXT,
+            submission_deadline TEXT,
+            opening_date TEXT,
+            location TEXT,
+            portal_source TEXT NOT NULL DEFAULT 'cppp_epublish',
+            portal_url TEXT,
+            description TEXT,
+            primary_category TEXT DEFAULT '',
+            highest_tier TEXT DEFAULT '',
+            is_qualified INTEGER DEFAULT 0,
+            qualification_reason TEXT DEFAULT '',
+            uncertain INTEGER DEFAULT 0,
+            raw_metadata TEXT,
+            workflow_status TEXT DEFAULT 'new',
+            is_watchlisted INTEGER DEFAULT 0,
+            user_notes TEXT DEFAULT '',
+            assigned_to TEXT DEFAULT '',
+            status_updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
 
-    # Non-destructive migration for workflow management columns on existing databases
-    cursor.execute("PRAGMA table_info(tenders)")
-    existing_cols = {row["name"] for row in cursor.fetchall()}
-    if "workflow_status" not in existing_cols:
-        cursor.execute("ALTER TABLE tenders ADD COLUMN workflow_status TEXT DEFAULT 'new'")
-    if "is_watchlisted" not in existing_cols:
-        cursor.execute("ALTER TABLE tenders ADD COLUMN is_watchlisted INTEGER DEFAULT 0")
-    if "user_notes" not in existing_cols:
-        cursor.execute("ALTER TABLE tenders ADD COLUMN user_notes TEXT DEFAULT ''")
-    if "assigned_to" not in existing_cols:
-        cursor.execute("ALTER TABLE tenders ADD COLUMN assigned_to TEXT DEFAULT ''")
-    if "status_updated_at" not in existing_cols:
-        cursor.execute("ALTER TABLE tenders ADD COLUMN status_updated_at TEXT DEFAULT ''")
+        CREATE INDEX IF NOT EXISTS idx_tenders_category ON tenders(primary_category);
+        CREATE INDEX IF NOT EXISTS idx_tenders_tier ON tenders(highest_tier);
+        CREATE INDEX IF NOT EXISTS idx_tenders_qualified ON tenders(is_qualified);
+        CREATE INDEX IF NOT EXISTS idx_tenders_source ON tenders(portal_source);
+        CREATE INDEX IF NOT EXISTS idx_tenders_pub_date ON tenders(published_date);
 
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_tenders_workflow ON tenders(workflow_status)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_tenders_watchlisted ON tenders(is_watchlisted)")
+        CREATE TABLE IF NOT EXISTS keyword_matches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tender_id_ref INTEGER NOT NULL,
+            term TEXT NOT NULL,
+            tier TEXT NOT NULL,
+            match_group TEXT NOT NULL,
+            matched_text TEXT NOT NULL,
+            snippet TEXT,
+            position INTEGER DEFAULT 0,
+            source_field TEXT DEFAULT '',
+            is_contextual INTEGER DEFAULT 0,
+            FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_km_tender_id ON keyword_matches(tender_id_ref);
+        CREATE INDEX IF NOT EXISTS idx_km_tier ON keyword_matches(tier);
+
+        CREATE TABLE IF NOT EXISTS tender_documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tender_id_ref INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            url TEXT NOT NULL,
+            doc_type TEXT DEFAULT 'TenderDocument',
+            local_path TEXT,
+            file_size_bytes INTEGER,
+            page_count INTEGER DEFAULT 0,
+            text_extracted INTEGER DEFAULT 0,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS extracted_fields (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tender_id_ref INTEGER NOT NULL,
+            field_name TEXT NOT NULL,
+            raw_text TEXT,
+            normalized_value TEXT,
+            evidence_location TEXT,
+            evidence_snippet TEXT,
+            confidence REAL DEFAULT 0.0,
+            status TEXT DEFAULT 'present_extracted',
+            verified INTEGER DEFAULT 0,
+            FOREIGN KEY (tender_id_ref) REFERENCES tenders(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS source_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_name TEXT NOT NULL,
+            status TEXT DEFAULT 'running',
+            started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            finished_at TEXT,
+            items_scanned INTEGER DEFAULT 0,
+            items_discovered INTEGER DEFAULT 0,
+            items_qualified INTEGER DEFAULT 0,
+            error_message TEXT
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_runs_source ON source_runs(source_name);
+        """)
+
+        cursor.execute("PRAGMA table_info(tenders)")
+        existing_cols = {row["name"] for row in cursor.fetchall()}
+        if "workflow_status" not in existing_cols:
+            cursor.execute("ALTER TABLE tenders ADD COLUMN workflow_status TEXT DEFAULT 'new'")
+        if "is_watchlisted" not in existing_cols:
+            cursor.execute("ALTER TABLE tenders ADD COLUMN is_watchlisted INTEGER DEFAULT 0")
+        if "user_notes" not in existing_cols:
+            cursor.execute("ALTER TABLE tenders ADD COLUMN user_notes TEXT DEFAULT ''")
+        if "assigned_to" not in existing_cols:
+            cursor.execute("ALTER TABLE tenders ADD COLUMN assigned_to TEXT DEFAULT ''")
+        if "status_updated_at" not in existing_cols:
+            cursor.execute("ALTER TABLE tenders ADD COLUMN status_updated_at TEXT DEFAULT ''")
+
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_tenders_workflow ON tenders(workflow_status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_tenders_watchlisted ON tenders(is_watchlisted)")
 
     conn.commit()
+
+    # Seed if production database is empty (PostgreSQL or default local database)
+    if conn.is_pg or (db_path is None or db_path == DB_PATH):
+        # Do not auto-seed if custom test db_path is provided (unless explicit AUTO_SEED=true)
+        if db_path and db_path != DB_PATH and not os.environ.get("AUTO_SEED"):
+            pass
+        else:
+            seed_db_if_empty(conn)
+
     conn.close()
-    logger.info(f"Database initialized at {DB_PATH}")
+    logger.info("Database initialized successfully.")
 
 
 class TenderRepository:
-    """Data access layer for tender intelligence."""
+    """Data access layer for tender intelligence (PostgreSQL & SQLite)."""
 
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = db_path or DB_PATH
         init_db(self.db_path)
 
-    def _get_conn(self) -> sqlite3.Connection:
+    def _get_conn(self) -> UnifiedConnection:
         return get_connection(self.db_path)
 
     def upsert_tender(self, data: Dict[str, Any], matches: List[Dict[str, Any]]) -> int:
@@ -235,7 +574,6 @@ class TenderRepository:
                 now_str,
                 tender_db_id
             ))
-            # Delete old matches
             cursor.execute("DELETE FROM keyword_matches WHERE tender_id_ref = ?", (tender_db_id,))
         else:
             cursor.execute("""
@@ -377,11 +715,9 @@ class TenderRepository:
 
         where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
-        # Count total
         cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {where_sql}", params)
         total = cursor.fetchone()["cnt"]
 
-        # Validate sort field and enforce primary sorting by Tier
         tier_order_clause = """
             CASE t.highest_tier
                 WHEN 'A' THEN 1
@@ -449,15 +785,12 @@ class TenderRepository:
         tender["assigned_to"] = tender.get("assigned_to") or ""
         tender["is_expired"] = bool(tender.get("submission_deadline") and tender["submission_deadline"] < now_iso)
 
-        # Fetch matches
         cursor.execute("SELECT * FROM keyword_matches WHERE tender_id_ref = ?", (tender["id"],))
         tender["matches"] = [dict(m) for m in cursor.fetchall()]
 
-        # Fetch documents
         cursor.execute("SELECT * FROM tender_documents WHERE tender_id_ref = ?", (tender["id"],))
         tender["documents"] = [dict(d) for d in cursor.fetchall()]
 
-        # Fetch extracted fields
         cursor.execute("SELECT * FROM extracted_fields WHERE tender_id_ref = ?", (tender["id"],))
         tender["extracted_fields"] = [dict(f) for f in cursor.fetchall()]
 
@@ -623,14 +956,12 @@ class TenderRepository:
         val_row = cursor.fetchone()
         total_pipeline_val = val_row["total_val"] or 0.0
 
-        # Sources breakdown (case-insensitive canonical grouping)
         cursor.execute(f"SELECT LOWER(portal_source) as portal_source, COUNT(*) as cnt FROM tenders {base_where} GROUP BY LOWER(portal_source) ORDER BY cnt DESC", params)
         sources_breakdown = [
             {"name": row["portal_source"], "count": row["cnt"]}
             for row in cursor.fetchall()
         ]
 
-        # Dynamic sectors breakdown from live tender data (Simplified Sectors, Data Centre removed)
         cursor.execute(f"SELECT title, authority FROM tenders {base_where}", params)
         all_tenders_meta = cursor.fetchall()
         sectors_map = {
@@ -655,7 +986,6 @@ class TenderRepository:
 
         sectors_breakdown = [{"name": k, "count": v} for k, v in sectors_map.items() if v > 0]
 
-        # Workflow lifecycle counts
         cursor.execute(f"SELECT workflow_status, COUNT(*) as cnt FROM tenders {base_where} GROUP BY workflow_status", params)
         wf_rows = cursor.fetchall()
         workflow_counts = {"new": 0, "under_review": 0, "considered": 0, "reviewed": 0, "rejected": 0}
@@ -666,7 +996,6 @@ class TenderRepository:
         cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('is_watchlisted = 1')}", params)
         watchlisted_count = cursor.fetchone()["cnt"]
 
-        # Expired and active counts
         cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NOT NULL AND submission_deadline != \'\' AND submission_deadline < ?)')}", params + [now_iso])
         expired_count = cursor.fetchone()["cnt"]
 
