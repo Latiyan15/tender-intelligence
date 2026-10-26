@@ -955,12 +955,11 @@ function setupEventListeners() {
 // MULTI-VIEW NAVIGATION & WORKSPACES
 // ═══════════════════════════════════════════════════════════════════════════
 function navigateTo(nav) {
-  // If moving between dashboard and other views, ensure the tenders table is where it belongs
   if (nav === 'dashboard') {
-    const dashView = document.querySelector('.dashboard-main-col') || document.getElementById('view-dashboard');
+    const dashMount = document.getElementById('dashboard-tenders-mount') || document.getElementById('view-dashboard');
     const section = document.getElementById('dashboard-tenders-section');
-    if (dashView && section && !dashView.contains(section)) {
-      dashView.appendChild(section);
+    if (dashMount && section && !dashMount.contains(section)) {
+      dashMount.appendChild(section);
     }
   }
 
@@ -1022,22 +1021,6 @@ async function initTendersView() {
     await loadTenders();
   }
 
-  const directCnt = allLoadedTenders.filter(t => t.primary_category === 'direct' && t.is_qualified).length;
-  const indirectCnt = allLoadedTenders.filter(t => t.primary_category === 'indirect_review').length;
-  const unmatchedCnt = allLoadedTenders.filter(t => !t.is_qualified).length;
-  const totalVal = allLoadedTenders.filter(t => t.is_qualified).reduce((acc, t) => acc + (t.estimated_cost_inr || 0), 0);
-
-  const elDirect = document.getElementById('tenders-view-direct');
-  if (elDirect) elDirect.textContent = directCnt || 232;
-  const elIndirect = document.getElementById('tenders-view-indirect');
-  if (elIndirect) elIndirect.textContent = indirectCnt || 63;
-  const elUnmatched = document.getElementById('tenders-view-unmatched');
-  if (elUnmatched) elUnmatched.textContent = unmatchedCnt || 0;
-  const elVal = document.getElementById('tenders-view-value');
-  if (elVal) {
-    elVal.textContent = totalVal > 0 ? `₹ ${(totalVal / 10000000).toFixed(2)} Cr` : `₹ 1,480.20 Cr`;
-  }
-
   // Mount table section in full screen workbench container
   const mount = document.getElementById('tenders-view-table-mount');
   const section = document.getElementById('dashboard-tenders-section');
@@ -1049,16 +1032,9 @@ async function initTendersView() {
 }
 
 function initReportsView() {
-  const total = allLoadedTenders.length || 295;
-  const direct = allLoadedTenders.filter(t => t.primary_category === 'direct' && t.is_qualified).length || 232;
-  const elTotal = document.getElementById('reports-total-analyzed');
-  if (elTotal) elTotal.textContent = total;
-  const elDirect = document.getElementById('reports-core-dc');
-  if (elDirect) elDirect.textContent = direct;
-
   const now = new Date();
   const todayStr = `Today, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`;
-  document.querySelectorAll('.live-report-date-1, .live-report-date-2').forEach(el => el.textContent = todayStr);
+  document.querySelectorAll('.live-report-date-1, .live-report-date-2, .live-report-date-3').forEach(el => el.textContent = todayStr);
 }
 
 let currentWatchlistTab = 'all';
@@ -2482,20 +2458,31 @@ function toggleFilterBar() {
 // ═══════════════════════════════════════════════════════════════════════════
 // EXPORT & USER UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
-function exportTendersCSV() {
-  const exportList = (currentTenders && currentTenders.length > 0)
-    ? currentTenders
-    : (allLoadedTenders && allLoadedTenders.length > 0 ? allLoadedTenders : []);
+function exportTendersCSV(filterTier = null) {
+  let exportList = (allLoadedTenders && allLoadedTenders.length > 0)
+    ? allLoadedTenders
+    : (currentTenders && currentTenders.length > 0 ? currentTenders : []);
+
+  if (filterTier) {
+    exportList = exportList.filter(t => (t.highest_tier || '').toUpperCase() === filterTier.toUpperCase());
+  }
 
   if (exportList.length === 0) {
-    showToast('No tenders available to export.');
+    showToast(`No tenders available to export.`);
     return;
   }
 
   const headers = [
     'Tender ID', 'Title', 'Reference No', 'Authority', 'Location',
-    'Tier', 'Category', 'Estimated Cost INR', 'Deadline', 'Source', 'Direct Portal URL'
+    'Area', 'Category', 'Estimated Cost INR', 'Deadline', 'Source', 'Direct Portal URL'
   ];
+
+  const areaNames = {
+    'A': 'Cyber Security',
+    'B': 'IT Infrastructure',
+    'C': 'Cloud',
+    'D': 'Infra & Services'
+  };
 
   const rows = exportList.map(t => [
     `"${(t.tender_id || '').replace(/"/g, '""')}"`,
@@ -2503,7 +2490,7 @@ function exportTendersCSV() {
     `"${(t.reference_no || '').replace(/"/g, '""')}"`,
     `"${(t.authority || '').replace(/"/g, '""')}"`,
     `"${(t.location || '').replace(/"/g, '""')}"`,
-    `"${t.highest_tier || 'Unmatched'}"`,
+    `"${areaNames[(t.highest_tier || '').toUpperCase()] || t.highest_tier || 'Unmatched'}"`,
     `"${t.primary_category || ''}"`,
     t.estimated_cost_inr || 0,
     `"${t.submission_deadline || ''}"`,
@@ -2516,7 +2503,8 @@ function exportTendersCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', `nikom_tenders_export_${new Date().toISOString().slice(0, 10)}.csv`);
+  const fileNameSuffix = filterTier ? `_area_${filterTier.toLowerCase()}` : '';
+  link.setAttribute('download', `nikom_tenders_export${fileNameSuffix}_${new Date().toISOString().slice(0, 10)}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -3092,14 +3080,22 @@ function renderRecentTenders(tenders) {
   const container = document.getElementById('dashboard-recent-tenders');
   if (!container) return;
 
-  const sample = (tenders && tenders.length > 0) ? tenders.slice(0, 5) : (allLoadedTenders || []).slice(0, 5);
+  const sample = (tenders && tenders.length > 0) ? tenders.slice(0, 3) : (allLoadedTenders || []).slice(0, 3);
   if (sample.length === 0) {
     container.innerHTML = '<div style="color: var(--text-3); font-size: 12px; padding: 12px 0;">No recent tenders discovered.</div>';
     return;
   }
 
+  const areaNames = {
+    'A': 'Cyber Security',
+    'B': 'IT Infra',
+    'C': 'Cloud',
+    'D': 'Services'
+  };
+
   container.innerHTML = sample.map((t, idx) => {
     const tier = t.highest_tier || 'B';
+    const areaLabel = areaNames[tier.toUpperCase()] || tier;
     const dateVal = t.published_date || t.created_at;
     const parsedDate = dateVal ? parseUtcDate(dateVal) : null;
     const timeAgo = parsedDate ? formatTimeAgo(parsedDate) : 'Recently discovered';
@@ -3109,14 +3105,14 @@ function renderRecentTenders(tenders) {
       <div class="recent-tender-item" onclick="selectTenderRow('${t.tender_id}', true)" style="animation-delay: ${(idx + 1) * 0.06}s;" title="${escapeHtml(t.title)}">
         <div class="recent-tender-left">
           <div class="recent-tender-logo-wrap">
-            ${getSourceLogoSvg(t.portal_source, 26)}
+            ${getSourceLogoSvg(t.portal_source, 22)}
           </div>
           <div class="recent-tender-meta">
             <div class="recent-tender-title">${escapeHtml(t.title)}</div>
             <div class="recent-tender-sub">${escapeHtml(srcName)} • <span class="live-rel-time" data-timestamp="${escapeHtml(dateVal || '')}">${timeAgo}</span></div>
           </div>
         </div>
-        <span class="table-tier-badge tier-badge-${tier.toLowerCase()}">${tier}</span>
+        <span class="table-tier-badge tier-badge-${tier.toLowerCase()}">${escapeHtml(areaLabel)}</span>
       </div>
     `;
   }).join('');

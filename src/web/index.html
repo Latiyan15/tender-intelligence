@@ -408,14 +408,8 @@
             </div>
           </div>
 
-          <!-- 2-Column Dashboard Grid: Main Analytics+Table on Left, Side Widgets on Right -->
-          <div class="dashboard-grid-layout">
-
-            <!-- Left Main Column -->
-            <div class="dashboard-main-col">
-
-              <!-- Visual Analytics Row (2 Clean Cards: Areas & Sectors) -->
-              <div class="analytics-row">
+          <!-- Visual Analytics Row: 3 Clean Cards (Areas, Sectors, Recent Discoveries) -->
+          <div class="analytics-row">
 
                 <!-- Widget 1: Tenders by Area -->
                 <div class="analytics-card" id="area-bars-card">
@@ -509,10 +503,33 @@
                   </div>
                 </div>
 
+                <!-- Widget 3: Recent Discoveries (Short & Compact Height) -->
+                <div class="analytics-card recent-tenders-card" id="recent-tenders-card">
+                  <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
+                    <div>
+                      <h3 class="analytics-title" style="margin-bottom: 2px;">Recent Discoveries</h3>
+                      <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Latest tenders ingested in real time</p>
+                    </div>
+                    <a href="#tenders" onclick="navigateTo('tenders'); return false;" class="card-link" style="color: var(--primary); font-size: 11.5px; font-weight: 700;">View all &rarr;</a>
+                  </div>
+
+                  <div class="recent-tenders-list" id="dashboard-recent-tenders">
+                    <!-- Populated dynamically via JS -->
+                  </div>
+
+                  <div class="card-footer-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                    <span class="footer-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">Live Ingestion Feed</span>
+                    <a href="#tenders" onclick="navigateTo('tenders'); return false;" class="card-link" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
+                      Explore all &rarr;
+                    </a>
+                  </div>
+                </div>
+
               </div>
 
-              <!-- Tenders Data Table Section -->
-              <section class="tenders-section" id="dashboard-tenders-section">
+              <!-- Full-Width Tenders Section (Widens across entire screen) -->
+              <div id="dashboard-tenders-mount" style="width: 100%;">
+                <section class="tenders-section" id="dashboard-tenders-section" style="width: 100%;">
                 <div class="table-header-row">
                   <div style="display: flex; align-items: center; gap: 10px;">
                     <h2 class="section-title">
@@ -780,26 +797,7 @@
                   </table>
                 </div>
               </section>
-
             </div>
-
-            <!-- Right Side Column (Recent Tenders) -->
-            <div class="dashboard-side-col">
-
-              <!-- Recent Tenders Widget -->
-              <div class="analytics-card side-widget-card">
-                <div class="card-header-row">
-                  <h3 class="analytics-title">Recent Tenders</h3>
-                  <a href="#tenders" class="card-link">View all &rarr;</a>
-                </div>
-                <div class="recent-tenders-list" id="dashboard-recent-tenders">
-                  <!-- Populated via JS -->
-                </div>
-              </div>
-
-            </div>
-
-          </div>
         </div>
 
         <!-- ════════════════════════════════════════════════════════════════════
@@ -823,94 +821,6 @@
             </div>
           </div>
 
-          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                  <span>Core DC</span>
-                </div>
-              </div>
-              <div class="kpi-number" id="tenders-view-direct">232</div>
-              <div class="kpi-label">Direct Matches (Core DC & Multi-Tier B)</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 20 Q 25 18, 50 12 T 100 4" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                  <span>Review</span>
-                </div>
-              </div>
-              <div class="kpi-number" id="tenders-view-indirect">63</div>
-              <div class="kpi-label">Indirect Signals (Review List)</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 18 Q 25 22, 50 14 T 100 6" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive">
-                  <span>Suppressed</span>
-                </div>
-              </div>
-              <div class="kpi-number" id="tenders-view-unmatched">0</div>
-              <div class="kpi-label">General Procurement (Noise Filtered)</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 22 Q 25 16, 50 18 T 100 10" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                  </svg>
-                  <span>Active</span>
-                </div>
-              </div>
-              <div class="kpi-number" style="color: #10b981;" id="tenders-view-value">₹ 1,480.20 Cr</div>
-              <div class="kpi-label">Qualified Pipeline Value (INR)</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 20 Q 25 15, 50 8 T 100 2" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-          </div>
 
           <!-- Tenders Table Placeholder (Mirrors high-density table) -->
           <div id="tenders-view-table-mount"></div>
@@ -1242,165 +1152,6 @@
             </div>
           </div>
 
-          <!-- 4 KPI Metrics -->
-          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polygon points="12 6 12 12 16 14"></polygon>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive"><span>Live Ingest</span></div>
-              </div>
-              <div class="kpi-number" id="reports-total-analyzed">295</div>
-              <div class="kpi-label">Discovered Tenders Analyzed</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 20 Q 25 14, 50 12 T 100 4" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(244, 63, 94, 0.12); color: #f43f5e;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive"><span>Core DC</span></div>
-              </div>
-              <div class="kpi-number" id="reports-core-dc">232</div>
-              <div class="kpi-label">Qualified Data Centre Scope</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 18 Q 25 22, 50 12 T 100 6" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive"><span>₹ Est. Val</span></div>
-              </div>
-              <div class="kpi-number" style="color: #10b981;">₹ 1,480.20 Cr</div>
-              <div class="kpi-label">Qualified Pipeline Valuation</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 22 Q 25 16, 50 8 T 100 2" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-header-row">
-                <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                  </svg>
-                </div>
-                <div class="kpi-trend positive"><span>98.4% SLA</span></div>
-              </div>
-              <div class="kpi-number" style="color: #8b5cf6;">98.4%</div>
-              <div class="kpi-label">Automated OCR Extraction Rate</div>
-              <svg class="kpi-sparkline" viewBox="0 0 100 24" fill="none" preserveAspectRatio="none">
-                <path d="M0 16 Q 25 18, 50 10 T 100 4" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Reports Breakdown & Feed Quality Grid -->
-          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 24px;">
-            <!-- Left Card: Category Breakdown -->
-            <div class="analytics-card">
-              <div class="card-header-row">
-                <h3 class="analytics-title">Procurement Category Intent</h3>
-                <span class="card-link" style="color: var(--primary);">Nikom Tiers</span>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
-                    <span><strong style="color: var(--tier-a);">Tier A</strong> — Cyber Security</span>
-                    <strong id="analytics-tier-a-val">Active Bids</strong>
-                  </div>
-                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
-                    <div style="width: 25%; height: 100%; background: var(--tier-a); border-radius: 999px;"></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
-                    <span><strong style="color: var(--tier-b);">Tier B</strong> — IT Infrastructure</span>
-                    <strong id="analytics-tier-b-val">Active Bids</strong>
-                  </div>
-                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
-                    <div style="width: 50%; height: 100%; background: var(--tier-b); border-radius: 999px;"></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
-                    <span><strong style="color: var(--tier-c);">Tier C</strong> — Cloud</span>
-                    <strong id="analytics-tier-c-val">Active Bids</strong>
-                  </div>
-                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
-                    <div style="width: 35%; height: 100%; background: var(--tier-c); border-radius: 999px;"></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
-                    <span><strong style="color: var(--tier-d);">Tier D</strong> — Non-IT Infrastructure & Services</span>
-                    <strong id="analytics-tier-d-val">Active Bids</strong>
-                  </div>
-                  <div style="height: 7px; background: var(--surface-raised); border-radius: 999px; overflow: hidden;">
-                    <div style="width: 40%; height: 100%; background: var(--tier-d); border-radius: 999px;"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Card: Monitored Portal Intelligence & Quality -->
-            <div class="analytics-card">
-              <div class="card-header-row">
-                <h3 class="analytics-title">Portal Ingestion & SLA Quality</h3>
-                <span class="card-link" style="color: var(--ok);">8 Live Portals</span>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-                <div class="portal-health-row">
-                  <div class="portal-health-left">
-                    <span class="portal-health-dot ok"></span>
-                    <span>Government e-Marketplace (GeM)</span>
-                  </div>
-                  <span class="portal-health-badge ok">251 Tenders • 99.4% SLA</span>
-                </div>
-                <div class="portal-health-row">
-                  <div class="portal-health-left">
-                    <span class="portal-health-dot ok"></span>
-                    <span>CPPP Central Active Tenders</span>
-                  </div>
-                  <span class="portal-health-badge ok">25 Tenders • 98.8% SLA</span>
-                </div>
-                <div class="portal-health-row">
-                  <div class="portal-health-left">
-                    <span class="portal-health-dot ok"></span>
-                    <span>CPPP ePublishing Portal</span>
-                  </div>
-                  <span class="portal-health-badge ok">18 Tenders • 97.5% SLA</span>
-                </div>
-                <div class="portal-health-row">
-                  <div class="portal-health-left">
-                    <span class="portal-health-dot ok"></span>
-                    <span>IOCL e-Procurement Portal</span>
-                  </div>
-                  <span class="portal-health-badge ok">1 Tender • 100% SLA</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Bottom Card: Available Intelligence Reports -->
           <div class="tenders-section" style="height: auto; max-height: none;">
@@ -1432,8 +1183,8 @@
                       </div>
                     </td>
                     <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>295 Tenders Discovered</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">PDF Dossier (4.2 MB)</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>All Discovered Portals</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">PDF Dossier</span></td>
                     <td style="text-align: center;">
                       <button class="btn-download" onclick="downloadReportBriefing('Daily_Tender_Intelligence')">Download PDF ↗</button>
                     </td>
@@ -1441,29 +1192,43 @@
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <strong style="color: var(--text);">Tier A Cyber Security Opportunity Extract</strong>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">Cyber Security Opportunity Extract</strong>
                       </div>
                     </td>
                     <td><span class="live-report-date-2" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cyber Security Bids</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">Excel / CSV (180 KB)</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cyber Security Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
                     <td style="text-align: center;">
-                      <button class="btn-download" onclick="exportTendersCSV()">Download CSV ↗</button>
+                      <button class="btn-download" onclick="exportTendersCSV('A')">Download CSV ↗</button>
                     </td>
                   </tr>
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                        <strong style="color: var(--text);">System-Level Infrastructure & Multi-Tier B Master File</strong>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">IT Infrastructure Master File</strong>
                       </div>
                     </td>
-                    <td><span class="live-report-date-3" style="color: var(--text-2); font-size: 12px;">Recent</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>212 Systems Bids</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset (1.2 MB)</span></td>
+                    <td><span class="live-report-date-3" style="color: var(--text-2); font-size: 12px;">Today</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>IT Infrastructure Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
                     <td style="text-align: center;">
-                      <button class="btn-download" onclick="exportTendersCSV()">Download CSV ↗</button>
+                      <button class="btn-download" onclick="exportTendersCSV('B')">Download CSV ↗</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <strong style="color: var(--text);">Cloud Computing Opportunity Extract</strong>
+                      </div>
+                    </td>
+                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span></td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cloud & DC Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
+                    <td style="text-align: center;">
+                      <button class="btn-download" onclick="exportTendersCSV('C')">Download CSV ↗</button>
                     </td>
                   </tr>
                 </tbody>

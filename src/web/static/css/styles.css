@@ -1033,7 +1033,7 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 .analytics-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1.15fr;
   gap: 16px;
   align-items: stretch;
 }
@@ -1467,7 +1467,8 @@ body {
 .recent-tenders-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 @keyframes itemSlideIn {
@@ -1486,8 +1487,8 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px;
-  border-radius: 16px;
+  padding: 6px 10px;
+  border-radius: 12px;
   background: rgba(20, 34, 59, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
@@ -1536,17 +1537,17 @@ body {
 }
 
 .recent-tender-title {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  max-width: 210px;
 }
 
 .recent-tender-sub {
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-3);
   margin-top: 1px;
 }
@@ -4273,7 +4274,7 @@ body {
     gap: 18px;
   }
   .analytics-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 16px;
   }
 }
@@ -4306,7 +4307,7 @@ body {
     gap: 16px;
   }
   .analytics-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 14px;
   }
 }
@@ -4333,7 +4334,7 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-  .analytics-hero-card {
+  .recent-tenders-card {
     grid-column: span 2;
   }
   .header-search-box {
