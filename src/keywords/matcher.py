@@ -107,7 +107,7 @@ class KeywordMatcher:
         self.config_path = config_path
         self.config: Dict[str, Any] = {}
         self._compiled_patterns: Dict[str, List[Tuple[re.Pattern, str, str]]] = {}
-        self._negative_patterns: List[Tuple[re.Pattern, str]] = []
+        self._negative_patterns: List[Tuple[re.Pattern, str, str]] = []
         self._soft_negative_patterns: List[Dict[str, Any]] = []
         self._contextual_rules: Dict[str, List[Dict[str, Any]]] = {}
         self._inclusion_rules: Dict[str, Any] = {}
@@ -171,7 +171,7 @@ class KeywordMatcher:
             if isinstance(terms, list):
                 for term in terms:
                     pat = self._build_word_boundary_pattern(term)
-                    self._negative_patterns.append((pat, term))
+                    self._negative_patterns.append((pat, term, category))
 
         # Compile soft negatives
         soft_rejects = negatives.get("soft_reject_terms", {})
@@ -341,11 +341,12 @@ class KeywordMatcher:
         negative_hits = []
 
         # Hard negatives
-        for neg_pat, neg_term in self._negative_patterns:
+        for neg_pat, neg_term, neg_cat in self._negative_patterns:
             if neg_pat.search(text):
                 negative_hits.append({
                     "term": neg_term,
                     "type": "hard_reject",
+                    "category": neg_cat,
                 })
 
         # Soft negatives
@@ -399,15 +400,37 @@ class KeywordMatcher:
 
         # ── Step 5: Check if hard-negatives disqualify ─────────────────
         hard_negatives = [n for n in negative_hits if n["type"] == "hard_reject"]
-        has_positive_matches = (result.tier_a_count > 0 or result.tier_b_count > 0
-                                or result.tier_c_count > 0 or result.tier_d_count > 0)
+        if hard_negatives:
+            # Check absolute non-overridable categories
+            absolute_reject_categories = {
+                "medical_and_hospital",
+                "machinery_and_vehicles",
+                "manpower_and_low_end_services",
+                "sanitary_water_sewage",
+                "office_supplies_and_commodities",
+                "comfort_cooling_appliances",
+            }
+            has_absolute_reject = any(n.get("category") in absolute_reject_categories for n in hard_negatives)
 
-        if hard_negatives and not has_positive_matches:
-            result.disqualified_by_negative = True
-            return result
+            # Core turnkey DC override check for civil/general noise
+            core_override_terms = [
+                "data center", "datacenter", "data centre", "server room",
+                "disaster recovery center", "disaster recovery site", "dr site",
+                "precision air conditioning", "precision air conditioner",
+                "modular ups", "online ups"
+            ]
+            has_core_override = any(self._build_word_boundary_pattern(t).search(text) for t in core_override_terms)
+
+            if has_absolute_reject or not has_core_override:
+                result.disqualified_by_negative = True
+                result.qualified = False
+                result.inclusion_rule_applied = f"Disqualified by negative term: {hard_negatives[0]['term']}"
+                return result
 
         # Soft negatives: flag as uncertain if no strong positive match
         soft_negatives = [n for n in negative_hits if n["type"] == "soft_reject"]
+        has_positive_matches = (result.tier_a_count > 0 or result.tier_b_count > 0
+                                or result.tier_c_count > 0 or result.tier_d_count > 0)
         if soft_negatives and not has_positive_matches:
             result.uncertain = True
 

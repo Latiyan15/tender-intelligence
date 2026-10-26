@@ -258,6 +258,10 @@ class DiscoveryService:
                 if not match_result.matches:
                     continue
 
+                # Drop tenders disqualified by negative filters
+                if match_result.disqualified_by_negative:
+                    continue
+
                 tier_val = match_result.highest_tier
                 if not tier_val and match_result.matches:
                     matched_tiers = [m.tier for m in match_result.matches if m.tier]
@@ -267,7 +271,7 @@ class DiscoveryService:
                             break
 
                 cat_val = match_result.primary_category or ("direct" if tier_val in ["A", "B"] else "indirect_review")
-                qual_val = match_result.qualified or bool(tier_val)
+                qual_val = bool(match_result.qualified and not match_result.disqualified_by_negative)
                 qual_reason = match_result.inclusion_rule_applied or f"Keyword Match: Tier {tier_val}"
 
                 tender_data = {

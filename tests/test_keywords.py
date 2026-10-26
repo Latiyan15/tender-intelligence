@@ -271,3 +271,105 @@ class TestMatchResult:
         assert "qualified" in d
         assert "matches" in d
         assert isinstance(d["matches"], list)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# NIKOM HISTORICAL TENDERS & REAL-WORLD NOISE FILTERING
+# ──────────────────────────────────────────────────────────────────────────
+
+class TestNikomHistoricalTenders:
+    """Validates real-world historical tenders executed by Nikom InfraSolutions Pvt. Ltd."""
+
+    def test_turnkey_datacenter_cdac(self, matcher):
+        text = "Setting UP of Data Centre on Turnkey basis at CDAC Pune"
+        res = matcher.match_text(text, tender_id="NIKOM_01")
+        assert res.qualified is True
+        assert res.disqualified_by_negative is False
+
+    def test_modular_ups_and_camc_iocl(self, matcher):
+        text = (
+            "Supply, Installation, Testing & Commissioning of 125 KVA on line double conversion "
+            "modular UPS system, expandable up to 200 KVA including 02 year warranty along with "
+            "03 year Post Warranty Comprehensive Annual Maintenance Contract (PWCAMC) at IOCL"
+        )
+        res = matcher.match_text(text, tender_id="NIKOM_02")
+        assert res.qualified is True
+        assert res.disqualified_by_negative is False
+
+    def test_precision_air_conditioners_ntpc(self, matcher):
+        text = "Procurement of 03 Precision Air Conditioners (PACs) for ERP Data Center at NTPC"
+        res = matcher.match_text(text, tender_id="NIKOM_03")
+        assert res.qualified is True
+        assert res.disqualified_by_negative is False
+
+    def test_dr_site_non_it_infra_aai(self, matcher):
+        text = "Establishment of Non-IT Infrastructure for Disaster Recovery (DR) Site at Hyderabad AAI"
+        res = matcher.match_text(text, tender_id="NIKOM_04")
+        assert res.qualified is True
+        assert res.disqualified_by_negative is False
+
+    def test_natgrid_firewall(self, matcher):
+        text = "NATGRID firewall 2 nos with next generation security"
+        res = matcher.match_text(text, tender_id="NIKOM_05")
+        assert res.qualified is True
+        assert res.highest_tier == "A"
+
+    def test_novec_gas_refilling_grse(self, matcher):
+        text = "REFILING OF DATA CENTRE NOVEC GAS AT GRSE, CDO"
+        res = matcher.match_text(text, tender_id="NIKOM_06")
+        assert res.qualified is True
+
+    def test_dcim_and_power_monitoring_iocl(self, matcher):
+        text = "Centralized Power Monitoring System and DCIM software at IOCL complex"
+        res = matcher.match_text(text, tender_id="NIKOM_07")
+        assert res.qualified is True
+
+    def test_rack_containment_nhpc(self, matcher):
+        text = "Supply and Installation of integrated racks infrastructure in Server room with cold aisle containment"
+        res = matcher.match_text(text, tender_id="NIKOM_08")
+        assert res.qualified is True
+
+    # Negative / Noise Rejection Tests
+
+    def test_reject_medical_gas_hospital(self, matcher):
+        text = "CAMC of Medical gas pipe line system along with allied accessories installed at Mata Gujri Hospital"
+        res = matcher.match_text(text, tender_id="NOISE_01")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_passenger_lifts(self, matcher):
+        text = "Comprehensive Maintenance Contract of 02 nos. Kone make passenger lifts"
+        res = matcher.match_text(text, tender_id="NOISE_02")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_joinery_carpentry(self, matcher):
+        text = "COMPREHENSIVE MAINTENANCE OF JOINERY WORK AND OTHER CONNECTED B R WORK AT INS RAJALI"
+        res = matcher.match_text(text, tender_id="NOISE_03")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_lorry_weighbridge(self, matcher):
+        text = "SITC of new 60 MT capacity fully electronic Lorry Weighbridge with cabin incl. 3 years CAMC"
+        res = matcher.match_text(text, tender_id="NOISE_04")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_data_entry_operator(self, matcher):
+        text = "Facility Management Services - LumpSum Based - Commercial; DATA ENTRY OPERATOR"
+        res = matcher.match_text(text, tender_id="NOISE_05")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_water_cooler_split_ac(self, matcher):
+        text = "Operation and Maintenance of Split Air Conditioners, Water Coolers and Reverse Osmosis (RO)"
+        res = matcher.match_text(text, tender_id="NOISE_06")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
+    def test_reject_river_pumpset_transformer(self, matcher):
+        text = "Upgradation of 100 KVA to 250 KVA transformer for supplying electricity to motor pump sets installed at Shiwane river"
+        res = matcher.match_text(text, tender_id="NOISE_07")
+        assert res.qualified is False
+        assert res.disqualified_by_negative is True
+
