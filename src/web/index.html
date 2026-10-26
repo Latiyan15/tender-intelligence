@@ -273,7 +273,7 @@
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Tender <span class="discovery-gradient">Discovery</span></h1>
-              <p class="page-subtitle" id="discovery-feed-subtitle">All relevant tenders published in the last 24 hours across monitored portals</p>
+              <p class="page-subtitle" id="discovery-feed-subtitle">All relevant tenders discovered across monitored portals</p>
             </div>
 
             <div class="page-controls">
@@ -286,11 +286,11 @@
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <select id="time-window-select" onchange="handleTimeWindowChange(this.value)">
-                  <option value="24h" selected>Last 24 hours</option>
+                  <option value="all" selected>All Time</option>
+                  <option value="24h">Last 24 hours</option>
                   <option value="48h">Last 48 hours</option>
                   <option value="7d">Last 7 days</option>
                   <option value="30d">Last 30 days</option>
-                  <option value="all">All Discovered</option>
                 </select>
               </div>
 
@@ -613,8 +613,8 @@
                 <!-- Workflow Lifecycle & Segregation Bar -->
                 <div class="workflow-segregation-bar" id="workflow-segregation-bar">
                   <button class="wf-tab active" data-status="all" onclick="setWorkflowFilter('all')">
-                    <span>All Discovered</span>
-                    <span class="wf-count" id="wf-count-all">334</span>
+                    <span>All Tenders</span>
+                    <span class="wf-count" id="wf-count-all">0</span>
                   </button>
                   <button class="wf-tab wf-tab-watchlist" data-status="watchlist" onclick="setWorkflowFilter('watchlist')">
                     <span class="wf-tab-star">★</span>
@@ -753,6 +753,16 @@
                         <option value="all">Bids: All Statuses</option>
                         <option value="active">Bids: Open / Active Only</option>
                         <option value="expired">Bids: Closed / Expired Only</option>
+                      </select>
+                    </div>
+
+                    <div class="dropdown-wrapper">
+                      <select id="filter-window" onchange="handleTimeWindowChange(this.value)">
+                        <option value="all" selected>Window: All Time</option>
+                        <option value="24h">Window: Last 24 Hours</option>
+                        <option value="48h">Window: Last 48 Hours</option>
+                        <option value="7d">Window: Last 7 Days</option>
+                        <option value="30d">Window: Last 30 Days</option>
                       </select>
                     </div>
 

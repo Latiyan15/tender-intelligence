@@ -34,6 +34,71 @@ def get_database_url() -> Optional[str]:
     return url
 
 
+def normalize_date_to_iso(date_str: Optional[str]) -> Optional[str]:
+    """Parse and convert various Indian portal and ISO date strings into standard ISO 8601 UTC string (YYYY-MM-DDTHH:MM:SSZ)."""
+    if not date_str:
+        return None
+    date_str = str(date_str).strip()
+    if not date_str:
+        return None
+
+    # Common ISO formats
+    for iso_fmt in (
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d",
+    ):
+        try:
+            dt = datetime.strptime(date_str, iso_fmt)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            pass
+
+    # Indian portal date string formats (e.g. 03-Nov-2026 04:00 PM, 09-November-2026, 29/10/2026, etc.)
+    for fmt in (
+        "%d-%b-%Y %I:%M:%S %p",
+        "%d-%b-%Y %I:%M %p",
+        "%d-%b-%Y %H:%M",
+        "%d-%B-%Y %I:%M:%S %p",
+        "%d-%B-%Y %I:%M %p",
+        "%d-%B-%Y %H:%M",
+        "%d-%b-%Y",
+        "%d-%B-%Y",
+        "%d/%m/%Y %I:%M:%S %p",
+        "%d/%m/%Y %I:%M %p",
+        "%d/%m/%Y %H:%M",
+        "%d/%m/%Y",
+        "%d-%m-%Y %H:%M",
+        "%d-%m-%Y",
+    ):
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            dt = dt.replace(tzinfo=timezone.utc)
+            return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            pass
+
+    return date_str
+
+
+def is_deadline_expired(submission_deadline: Optional[str], now_iso: str) -> bool:
+    """Return True if submission deadline is genuinely in the past compared to now_iso."""
+    if not submission_deadline:
+        return False
+    iso_dl = normalize_date_to_iso(submission_deadline)
+    if iso_dl:
+        clean_dl = iso_dl.rstrip("Z")
+        clean_now = str(now_iso).strip().rstrip("Z")
+        return clean_dl < clean_now
+    return False
+
+
+
 class UnifiedCursor:
     """Cursor wrapper that harmonizes SQLite and psycopg2 differences."""
 
@@ -205,9 +270,9 @@ def seed_db_if_empty(conn: UnifiedConnection):
                 t.get("estimated_cost_inr"),
                 t.get("emd_inr"),
                 t.get("doc_fee_inr"),
-                t.get("published_date"),
-                t.get("submission_deadline"),
-                t.get("opening_date"),
+                normalize_date_to_iso(t.get("published_date")),
+                normalize_date_to_iso(t.get("submission_deadline")),
+                normalize_date_to_iso(t.get("opening_date")),
                 t.get("location", ""),
                 t.get("portal_source", "cppp_epublish"),
                 t.get("portal_url", ""),
@@ -489,6 +554,30 @@ def init_db(db_path: Optional[str] = None):
         else:
             seed_db_if_empty(conn)
 
+    # Auto-normalize legacy date strings to ISO 8601 UTC (YYYY-MM-DDTHH:MM:SSZ)
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT id, published_date, submission_deadline, opening_date FROM tenders WHERE published_date IS NOT NULL OR submission_deadline IS NOT NULL OR opening_date IS NOT NULL")
+        rows = cur.fetchall()
+        for r in rows:
+            row_id = r["id"]
+            orig_pub = r["published_date"]
+            orig_dl = r["submission_deadline"]
+            orig_op = r["opening_date"] if "opening_date" in r else None
+
+            norm_pub = normalize_date_to_iso(orig_pub)
+            norm_dl = normalize_date_to_iso(orig_dl)
+            norm_op = normalize_date_to_iso(orig_op)
+
+            if norm_pub != orig_pub or norm_dl != orig_dl or norm_op != orig_op:
+                cur.execute(
+                    "UPDATE tenders SET published_date = ?, submission_deadline = ?, opening_date = ? WHERE id = ?",
+                    (norm_pub, norm_dl, norm_op, row_id)
+                )
+        conn.commit()
+    except Exception as e:
+        logger.warning(f"Date normalization auto-migration notice: {e}")
+
     conn.close()
     logger.info("Database initialized successfully.")
 
@@ -509,6 +598,9 @@ class TenderRepository:
         cursor = conn.cursor()
 
         now_str = datetime.utcnow().isoformat()
+        norm_pub = normalize_date_to_iso(data.get("published_date"))
+        norm_dl = normalize_date_to_iso(data.get("submission_deadline"))
+        norm_op = normalize_date_to_iso(data.get("opening_date"))
 
         # 1. Primary deduplication lookup by unique tender_id
         cursor.execute("SELECT id FROM tenders WHERE tender_id = ?", (data["tender_id"],))
@@ -558,9 +650,9 @@ class TenderRepository:
                 data.get("estimated_cost_inr"),
                 data.get("emd_inr"),
                 data.get("doc_fee_inr"),
-                data.get("published_date"),
-                data.get("submission_deadline"),
-                data.get("opening_date"),
+                norm_pub,
+                norm_dl,
+                norm_op,
                 data.get("location", ""),
                 data.get("portal_source", "cppp_epublish"),
                 data.get("portal_url", ""),
@@ -594,9 +686,9 @@ class TenderRepository:
                 data.get("estimated_cost_inr"),
                 data.get("emd_inr"),
                 data.get("doc_fee_inr"),
-                data.get("published_date"),
-                data.get("submission_deadline"),
-                data.get("opening_date"),
+                norm_pub,
+                norm_dl,
+                norm_op,
                 data.get("location", ""),
                 data.get("portal_source", "cppp_epublish"),
                 data.get("portal_url", ""),
@@ -753,7 +845,7 @@ class TenderRepository:
             d["workflow_status"] = d.get("workflow_status") or "new"
             d["user_notes"] = d.get("user_notes") or ""
             d["assigned_to"] = d.get("assigned_to") or ""
-            d["is_expired"] = bool(d.get("submission_deadline") and d["submission_deadline"] < now_iso)
+            d["is_expired"] = is_deadline_expired(d.get("submission_deadline"), now_iso)
             items.append(d)
 
         conn.close()
@@ -783,7 +875,7 @@ class TenderRepository:
         tender["workflow_status"] = tender.get("workflow_status") or "new"
         tender["user_notes"] = tender.get("user_notes") or ""
         tender["assigned_to"] = tender.get("assigned_to") or ""
-        tender["is_expired"] = bool(tender.get("submission_deadline") and tender["submission_deadline"] < now_iso)
+        tender["is_expired"] = is_deadline_expired(tender.get("submission_deadline"), now_iso)
 
         cursor.execute("SELECT * FROM keyword_matches WHERE tender_id_ref = ?", (tender["id"],))
         tender["matches"] = [dict(m) for m in cursor.fetchall()]

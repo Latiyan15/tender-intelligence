@@ -9,10 +9,24 @@ let currentTenders = [];
 let allLoadedTenders = [];
 let activeTierFilter = 'all';
 let activeWorkflowFilter = 'all';
-let currentTimeWindow = '24h';
+let currentTimeWindow = 'all';
 let selectedTenderIds = new Set();
 let currentSelectedTenderId = null;
 let sortDirection = 'desc';
+
+function parseDateRobust(dateStr) {
+  if (!dateStr) return null;
+  const s = String(dateStr).trim();
+  if (!s) return null;
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+  try {
+    const parts = s.split(' ')[0];
+    const d2 = new Date(parts);
+    if (!isNaN(d2.getTime())) return d2;
+  } catch (e) {}
+  return null;
+}
 
 function isWithinTimeWindow(t, windowStr) {
   if (!windowStr || windowStr === 'all') return true;
@@ -26,30 +40,32 @@ function isWithinTimeWindow(t, windowStr) {
 
   const cutoff = new Date(now.getTime() - hours * 60 * 60 * 1000);
 
-  let createdDt = t.created_at ? new Date(t.created_at) : null;
-  let pubDt = t.published_date ? new Date(t.published_date) : null;
+  let createdDt = parseDateRobust(t.created_at);
+  let pubDt = parseDateRobust(t.published_date);
 
-  const isCreatedRecent = createdDt && !isNaN(createdDt.getTime()) && createdDt >= cutoff;
-  const isPubRecent = pubDt && !isNaN(pubDt.getTime()) && pubDt >= cutoff;
+  const isCreatedRecent = createdDt && createdDt >= cutoff;
+  const isPubRecent = pubDt && pubDt >= cutoff;
 
   return Boolean(isCreatedRecent || isPubRecent);
 }
 
 function isTenderExpired(t) {
-  if (t.is_expired !== undefined) return Boolean(t.is_expired);
   if (!t.submission_deadline) return false;
-  try {
-    const parts = t.submission_deadline.split(' ')[0];
-    const d = new Date(parts);
-    if (!isNaN(d.getTime())) {
-      return d.getTime() < Date.now();
-    }
-  } catch (e) {}
+  const d = parseDateRobust(t.submission_deadline);
+  if (d) {
+    return d.getTime() < Date.now();
+  }
+  if (t.is_expired !== undefined) return Boolean(t.is_expired);
   return false;
 }
 
 function handleTimeWindowChange(windowVal) {
   currentTimeWindow = windowVal;
+
+  const sel1 = document.getElementById('time-window-select');
+  if (sel1 && sel1.value !== windowVal) sel1.value = windowVal;
+  const sel2 = document.getElementById('filter-window');
+  if (sel2 && sel2.value !== windowVal) sel2.value = windowVal;
 
   const sub = document.getElementById('discovery-feed-subtitle');
   if (sub) {
@@ -62,7 +78,7 @@ function handleTimeWindowChange(windowVal) {
     } else if (windowVal === '30d') {
       sub.textContent = 'All relevant tenders discovered in the last 30 days across monitored portals';
     } else {
-      sub.textContent = 'All discovered tenders across monitored portals';
+      sub.textContent = 'All relevant tenders discovered across monitored portals';
     }
   }
 
@@ -1194,6 +1210,33 @@ function updateSegregationCounts() {
 
   const elExp = document.getElementById('wf-count-expired');
   if (elExp) elExp.textContent = countExpired;
+
+  // Dynamically update Tier Pills to match the active window & segregation context
+  let baseForTiers = inWindowTenders;
+  if (activeWorkflowFilter === 'expired') {
+    baseForTiers = baseForTiers.filter(t => isTenderExpired(t));
+  } else if (activeWorkflowFilter === 'watchlist') {
+    baseForTiers = baseForTiers.filter(t => t.is_watchlisted);
+  } else if (activeWorkflowFilter !== 'all') {
+    baseForTiers = baseForTiers.filter(t => (t.workflow_status || 'new') === activeWorkflowFilter);
+  }
+
+  const tierAllCount = baseForTiers.length;
+  const tierACount = baseForTiers.filter(t => t.highest_tier === 'A').length;
+  const tierBCount = baseForTiers.filter(t => t.highest_tier === 'B').length;
+  const tierCCount = baseForTiers.filter(t => t.highest_tier === 'C').length;
+  const tierDCount = baseForTiers.filter(t => t.highest_tier === 'D').length;
+
+  const pillAll = document.getElementById('pill-all-count');
+  if (pillAll) pillAll.textContent = tierAllCount;
+  const pillA = document.getElementById('pill-a-count');
+  if (pillA) pillA.textContent = tierACount;
+  const pillB = document.getElementById('pill-b-count');
+  if (pillB) pillB.textContent = tierBCount;
+  const pillC = document.getElementById('pill-c-count');
+  if (pillC) pillC.textContent = tierCCount;
+  const pillD = document.getElementById('pill-d-count');
+  if (pillD) pillD.textContent = tierDCount;
 }
 
 function toggleTenderSelection(tenderId, isChecked) {
@@ -2296,6 +2339,11 @@ function resetFilters() {
   document.getElementById('filter-value').value = '';
   const expEl = document.getElementById('filter-expiry');
   if (expEl) expEl.value = 'all';
+  const winEl = document.getElementById('filter-window');
+  if (winEl) winEl.value = 'all';
+  const timeSelect = document.getElementById('time-window-select');
+  if (timeSelect) timeSelect.value = 'all';
+  currentTimeWindow = 'all';
 
   document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.pill-btn[data-tier="all"]').classList.add('active');
@@ -2307,7 +2355,7 @@ function resetFilters() {
   clearSourceFilter();
   clearTenderSelection();
   applyFilters();
-  showToast('Filters reset to default');
+  showToast('Filters reset to default (All Tenders)');
 }
 
 function toggleSortDirection() {
@@ -2631,26 +2679,31 @@ function formatDeadline(deadlineStr) {
 
   let daysLeft = 14;
   let isExpired = false;
-  try {
-    const parts = deadlineStr.split(' ')[0];
-    const d = new Date(parts);
-    if (!isNaN(d.getTime())) {
-      const now = new Date();
-      const diffTime = d.getTime() - now.getTime();
-      daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffTime < 0) {
-        isExpired = true;
-      }
+  const dateObj = parseDateRobust(deadlineStr);
+
+  if (dateObj) {
+    const now = new Date();
+    const diffTime = dateObj.getTime() - now.getTime();
+    daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffTime < 0) {
+      isExpired = true;
     }
-  } catch (e) {
-    daysLeft = 14;
+  }
+
+  let displayDate = deadlineStr.split('T')[0].split(' ')[0];
+  if (dateObj) {
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const month = months[dateObj.getMonth()];
+    const year = dateObj.getFullYear();
+    displayDate = `${day}-${month}-${year}`;
   }
 
   if (isExpired || daysLeft < 0) {
     const absDays = Math.abs(daysLeft);
     const tag = absDays === 0 ? 'Closed Today' : (absDays === 1 ? 'Closed Yesterday' : (absDays > 60 ? 'Closed' : `Closed (${absDays}d ago)`));
     return {
-      dateStr: deadlineStr.split(' ')[0],
+      dateStr: displayDate,
       tagStr: tag,
       urgencyClass: 'deadline-expired',
       isExpired: true
@@ -2674,7 +2727,7 @@ function formatDeadline(deadlineStr) {
   }
 
   return {
-    dateStr: deadlineStr.split(' ')[0],
+    dateStr: displayDate,
     tagStr: tagStr,
     urgencyClass: urgencyClass,
     isExpired: false
