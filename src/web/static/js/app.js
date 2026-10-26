@@ -454,9 +454,16 @@ function renderTable(tenders) {
     // Deadline & Countdown
     const deadlineInfo = formatDeadline(t.submission_deadline);
 
-    // Tier badge (Tinted square box matching Image 1)
+    // Area badge (Subject name instead of Tier letter)
+    const areaNames = {
+      'A': 'Cyber Security',
+      'B': 'IT Infra',
+      'C': 'Cloud',
+      'D': 'Services'
+    };
+    const areaLabel = areaNames[tier.toUpperCase()] || tier;
     const tierBadge = hasTier
-      ? `<span class="table-tier-badge tier-badge-${tier.toLowerCase()}">${tier}</span>`
+      ? `<span class="table-tier-badge tier-badge-${tier.toLowerCase()}">${escapeHtml(areaLabel)}</span>`
       : `<span class="table-tier-badge tier-badge-unmatched">—</span>`;
 
     // Workflow Lifecycle Status Pill
@@ -593,11 +600,17 @@ async function selectTenderRow(tenderId, openPanel = true) {
 function populateDetailsPanel(t) {
   document.getElementById('panel-title').textContent = t.title;
 
-  // Tier Badge
+  // Area Badge (Subject name)
   const tierBadgeEl = document.getElementById('panel-tier-badge');
   const hasTier = t.highest_tier && t.highest_tier.trim() !== '';
   if (hasTier) {
-    tierBadgeEl.textContent = `Tier ${t.highest_tier}`;
+    const areaNamesFull = {
+      'A': 'Cyber Security',
+      'B': 'IT Infrastructure',
+      'C': 'Cloud',
+      'D': 'Infra & Services'
+    };
+    tierBadgeEl.textContent = areaNamesFull[t.highest_tier.toUpperCase()] || t.highest_tier;
     tierBadgeEl.className = `panel-tier-badge tier-badge-${t.highest_tier.toLowerCase()}`;
     tierBadgeEl.style.display = 'inline-block';
   } else {
@@ -2210,6 +2223,85 @@ async function submitNewSource(e) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE TO PORTAL & REGIONAL ALIAS MAPPINGS FOR INTELLIGENT SEARCH
+// ═══════════════════════════════════════════════════════════════════════════
+const STATE_PORTAL_MAP = {
+  'Maharashtra': ['mahatenders'],
+  'Uttar Pradesh': ['up_tenders'],
+  'Delhi': ['delhi_tenders'],
+  'Karnataka': ['karnataka_eproc'],
+  'Tamil Nadu': ['tn_tenders'],
+  'Gujarat': ['gujarat_nprocure'],
+  'Rajasthan': ['rajasthan_eproc'],
+  'West Bengal': ['wb_tenders'],
+  'Madhya Pradesh': ['mp_tenders'],
+  'Kerala': ['kerala_tenders'],
+  'Andhra Pradesh': ['ap_eprocurement'],
+  'Telangana': ['telangana_eproc'],
+  'Bihar': ['bihar_eprocurement'],
+  'Odisha': ['odisha_tenders'],
+  'Punjab': ['punjab_eproc'],
+  'Haryana': ['haryana_tenders'],
+  'Assam': ['assam_tenders'],
+  'Arunachal Pradesh': ['arunachal_tenders'],
+  'Uttarakhand': ['uk_tenders'],
+  'Himachal Pradesh': ['hp_tenders'],
+  'Jammu & Kashmir': ['jk_tenders'],
+  'Chhattisgarh': ['chhattisgarh_eproc'],
+  'Jharkhand': ['jharkhand_tenders']
+};
+
+const STATE_ALIASES = {
+  'Maharashtra': ['maharashtra', 'mumbai', 'pune', 'nagpur', 'thane', 'nashik', 'aurangabad', 'iit bombay', 'iiser pune', 'mahavitaran', 'bmc', 'cidco', 'midc'],
+  'Uttar Pradesh': ['uttar pradesh', 'lucknow', 'noida', 'greater noida', 'kanpur', 'varanasi', 'agra', 'prayagraj', 'allahabad', 'ghaziabad', 'meerut', 'gorakhpur'],
+  'Delhi': ['delhi', 'new delhi', 'nct of delhi', 'delhi jal board', 'ndmc', 'dtc', 'dsiidc'],
+  'Karnataka': ['karnataka', 'bengaluru', 'bangalore', 'mysore', 'hubli', 'mangalore', 'bial', 'kptcl', 'bescom'],
+  'Tamil Nadu': ['tamil nadu', 'chennai', 'coimbatore', 'madurai', 'trichy', 'tangedco', 'elcot', 'tantransco'],
+  'Gujarat': ['gujarat', 'ahmedabad', 'gandhinagar', 'surat', 'vadodara', 'rajkot', 'gift city', 'gacl'],
+  'Rajasthan': ['rajasthan', 'jaipur', 'jodhpur', 'udaipur', 'kota', 'reil jaipur', 'rvunl', 'rsmm'],
+  'West Bengal': ['west bengal', 'bengal', 'kolkata', 'calcutta', 'howrah', 'durgapur', 'siliguri', 'wbpdcl', 'wbsedcl'],
+  'Madhya Pradesh': ['madhya pradesh', 'bhopal', 'indore', 'jabalpur', 'gwalior', 'narmadapuram', 'mppkvvcl'],
+  'Kerala': ['kerala', 'thiruvananthapuram', 'trivandrum', 'kochi', 'cochin', 'kozhikode', 'calicut', 'kseb', 'keltron'],
+  'Andhra Pradesh': ['andhra pradesh', 'visakhapatnam', 'vizag', 'vijayawada', 'tirupati', 'guntur', 'amaravati', 'apcpdcl'],
+  'Telangana': ['telangana', 'hyderabad', 'secunderabad', 'warangal', 'tssouthernpower'],
+  'Bihar': ['bihar', 'patna', 'gaya', 'bhagalpur', 'muzaffarpur', 'bsphcl'],
+  'Odisha': ['odisha', 'orissa', 'bhubaneswar', 'cuttack', 'rourkela', 'sambalpur', 'gridco', 'optcl'],
+  'Punjab': ['punjab', 'chandigarh', 'ludhiana', 'amritsar', 'jalandhar', 'patiala', 'pspcl'],
+  'Haryana': ['haryana', 'gurugram', 'gurgaon', 'faridabad', 'panipat', 'ambala', 'panchkula', 'hsvp'],
+  'Assam': ['assam', 'guwahati', 'silchar', 'dibrugarh', 'jorhat', 'dispur', 'apdcl'],
+  'Arunachal Pradesh': ['arunachal pradesh', 'arunachal', 'itanagar', 'nari', 'pasighat', 'naharlagun'],
+  'Uttarakhand': ['uttarakhand', 'dehradun', 'haridwar', 'roorkee', 'rishikesh', 'nainital', 'uprnn', 'upcl'],
+  'Himachal Pradesh': ['himachal pradesh', 'shimla', 'dharamshala', 'mandi', 'solan', 'kullu', 'hpseb'],
+  'Jammu & Kashmir': ['jammu & kashmir', 'jammu and kashmir', 'jammu', 'srinagar', 'baramulla', 'anantnag', 'jkpdcl'],
+  'Chhattisgarh': ['chhattisgarh', 'raipur', 'bilaspur', 'bhilai', 'durg', 'cseb'],
+  'Jharkhand': ['jharkhand', 'ranchi', 'jamshedpur', 'dhanbad', 'bokaro', 'jbvnl']
+};
+
+function isTenderInState(t, targetState) {
+  if (!targetState) return true;
+  
+  if (targetState === 'Pan India / Central') {
+    const p = (t.portal_source || '').toLowerCase();
+    const loc = (t.location || '').toLowerCase();
+    const isCentral = p.includes('gem') || p.includes('eprocure') || p.includes('cppp') || p.includes('iocl');
+    return isCentral || loc.includes('india') || loc.includes('central') || loc.includes('pan india');
+  }
+
+  const portals = STATE_PORTAL_MAP[targetState] || [];
+  const aliases = STATE_ALIASES[targetState] || [targetState.toLowerCase()];
+  const portalSrc = (t.portal_source || '').toLowerCase();
+
+  // 1. Direct portal source match (e.g. mahatenders -> Maharashtra)
+  if (portals.some(p => portalSrc === p.toLowerCase() || portalSrc.includes(p.toLowerCase()))) {
+    return true;
+  }
+
+  // 2. Location, authority, or title contains city or state alias
+  const text = `${t.location || ''} ${t.authority || ''} ${t.title || ''} ${portalSrc}`.toLowerCase();
+  return aliases.some(alias => text.includes(alias));
+}
+
 function applyFilters() {
   const searchTerm = (document.getElementById('table-search').value || '').toLowerCase().trim();
   const sourceFilter = document.getElementById('filter-source').value;
@@ -2271,10 +2363,9 @@ function applyFilters() {
       return false;
     }
 
-    // State / Location filter
+    // State / Location filter with intelligent portal & city mapping
     if (stateFilter) {
-      const loc = (t.location || '').toLowerCase();
-      if (!loc.includes(stateFilter.toLowerCase())) return false;
+      if (!isTenderInState(t, stateFilter)) return false;
     }
 
     // Sector filter (Simplified Sectors: Government, Defence, Enterprise / Commercial, Energy & Utilities, Transport)
@@ -2308,17 +2399,32 @@ function applyFilters() {
       if (valueFilter === '50cr' && cost < 500000000) return false;
     }
 
-    // Search query
+    // Search query with full portal, authority, and state recognition
     if (searchTerm) {
       const haystack = [
         t.title,
         t.reference_no,
         t.authority,
         t.location,
-        t.tender_id
+        t.portal_source,
+        formatSourceName(t.portal_source),
+        t.tender_id,
+        t.description
       ].join(' ').toLowerCase();
 
-      if (!haystack.includes(searchTerm)) return false;
+      let matched = haystack.includes(searchTerm);
+      if (!matched) {
+        // Also check if search term corresponds to a state or its cities that match this tender
+        for (const [state, aliases] of Object.entries(STATE_ALIASES)) {
+          if (state.toLowerCase().includes(searchTerm) || aliases.some(a => a.includes(searchTerm))) {
+            if (isTenderInState(t, state)) {
+              matched = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!matched) return false;
     }
 
     return true;

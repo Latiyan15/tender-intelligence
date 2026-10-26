@@ -1033,7 +1033,7 @@ body {
    ═══════════════════════════════════════════════════════════════════════════ */
 .analytics-row {
   display: grid;
-  grid-template-columns: 1.15fr 1.25fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: stretch;
 }
@@ -2088,16 +2088,16 @@ body {
 .deadline-medium { color: var(--warn); }
 .deadline-normal { color: var(--text-3); }
 
-/* 9. TABLE: Circular Letter Tier Badges with Tinted Fill */
+/* 9. TABLE: Area Badges with Tinted Fill */
 .table-tier-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%; /* Circular */
-  font-size: 12px;
-  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .tier-badge-a { background: rgba(244, 63, 94, 0.15); color: var(--tier-a); border: 1px solid rgba(244, 63, 94, 0.30); }
@@ -4273,7 +4273,7 @@ body {
     gap: 18px;
   }
   .analytics-row {
-    grid-template-columns: 1fr 1.3fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
 }
@@ -4306,7 +4306,7 @@ body {
     gap: 16px;
   }
   .analytics-row {
-    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
 }
