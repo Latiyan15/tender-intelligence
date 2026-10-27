@@ -51,7 +51,7 @@ class GemAdapter(BaseAdapter):
                 'User-Agent': self.headers['User-Agent'],
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             })
-            self.opener.open(req, timeout=12)
+            self.opener.open(req, timeout=5)
             cookies = {c.name: c.value for c in self.cj}
             return cookies.get('csrf_gem_cookie', '')
         except Exception as e:
@@ -112,7 +112,7 @@ class GemAdapter(BaseAdapter):
                     }).encode('utf-8')
 
                     req = urllib.request.Request(self.DATA_ENDPOINT, data=payload, headers=self.headers)
-                    res = self.opener.open(req, timeout=12)
+                    res = self.opener.open(req, timeout=5)
                     raw_json = res.read().decode('utf-8')
                     data = json.loads(raw_json)
 

@@ -40,7 +40,7 @@ class IoclAdapter(BaseAdapter):
         tenders = []
         try:
             req = urllib.request.Request(self.BASE_URL, headers=self.headers)
-            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=12).read().decode('utf-8')
+            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=4).read().decode('utf-8')
             soup = BeautifulSoup(html, 'html.parser')
 
             tbl = soup.find('table', {'id': 'activeTenders'})

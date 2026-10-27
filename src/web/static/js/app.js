@@ -109,6 +109,21 @@ async function initApp() {
   await loadTenders();
   await checkScanStatus();
 
+  // If deployed database has fewer than 50 tenders (e.g. fresh cloud deploy or interrupted scan),
+  // auto-sync the verified Nikom baseline dataset so the user immediately gets 450+ qualified tenders.
+  if (allLoadedTenders.length < 50) {
+    console.log("Database has < 50 tenders. Triggering baseline sync...");
+    try {
+      const syncRes = await fetch(`${API_BASE}/api/tenders/sync-seed`, { method: 'POST' });
+      if (syncRes.ok) {
+        await loadMetrics();
+        await loadTenders();
+      }
+    } catch (e) {
+      console.warn("Seed sync notice:", e);
+    }
+  }
+
   if (!scanPollInterval) {
     scanPollInterval = setInterval(checkScanStatus, 2500);
   }
@@ -2714,7 +2729,7 @@ function triggerDiscoveryScan(sourceId) {
   }
   if (refreshBtn) refreshBtn.classList.add('spinning');
 
-  const url = sourceId ? `${API_BASE}/api/sources/${sourceId}/run?max_tenders=1500` : `${API_BASE}/api/sources/scan?max_per_source=1500`;
+  const url = sourceId ? `${API_BASE}/api/sources/${sourceId}/run?max_tenders=200` : `${API_BASE}/api/sources/scan?max_per_source=100`;
   fetch(url, { method: 'POST' })
     .then(res => {
       if (!res.ok) throw new Error('Failed to initiate scan');

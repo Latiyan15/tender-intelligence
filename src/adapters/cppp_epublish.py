@@ -80,7 +80,7 @@ class CpppEpublishAdapter(BaseAdapter):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             })
             try:
-                resp = urllib.request.urlopen(req, context=ctx, timeout=12)
+                resp = urllib.request.urlopen(req, context=ctx, timeout=5)
                 soup = BeautifulSoup(resp.read().decode('utf-8', errors='ignore'), 'html.parser')
                 table = soup.find('table')
                 if not table:

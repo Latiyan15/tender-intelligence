@@ -49,7 +49,7 @@ class PsuStatePortalAdapter(BaseAdapter):
         tenders = []
         try:
             req = urllib.request.Request(self.base_url, headers=self.headers)
-            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=8).read().decode('utf-8', errors='ignore')
+            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=4).read().decode('utf-8', errors='ignore')
             soup = BeautifulSoup(html, 'html.parser')
 
             tables = soup.find_all('table')

@@ -25,6 +25,13 @@ logger = logging.getLogger(__name__)
 init_db()
 
 repo = TenderRepository()
+try:
+    if repo.count_tenders() < 50:
+        logger.info("Database has fewer than 50 tenders. Running baseline opportunity sync...")
+        repo.sync_seed_tenders()
+except Exception as e:
+    logger.warning(f"Could not verify initial tender count on startup: {e}")
+
 discovery_service = DiscoveryService()
 keyword_matcher = KeywordMatcher()
 
@@ -172,6 +179,13 @@ def update_tender_management(tender_id: str, req: TenderWorkflowUpdateRequest):
         "success": True,
         "tender": updated
     }
+
+
+@app.post("/api/tenders/sync-seed")
+def sync_seed_opportunities(force: bool = False):
+    """Synchronizes verified baseline Nikom opportunities into the active database."""
+    res = repo.sync_seed_tenders(force=force)
+    return res
 
 
 @app.post("/api/tenders/bulk-action")

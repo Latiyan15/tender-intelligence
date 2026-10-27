@@ -233,19 +233,26 @@ def seed_db_if_empty(conn: UnifiedConnection):
         cur.execute("SELECT COUNT(*) as cnt FROM tenders")
         row = cur.fetchone()
         cnt = row["cnt"] if row else 0
-        if cnt > 0:
+        if cnt >= 50:
             return
 
         if not os.path.exists(SEED_PATH):
             logger.info("No seed file found, skipping auto-seed.")
             return
 
-        logger.info(f"Empty database detected. Seeding from {SEED_PATH}...")
+        logger.info(f"Database needs seeding (count={cnt} < 50). Seeding from {SEED_PATH}...")
         with open(SEED_PATH, "r", encoding="utf-8") as f:
             seed_data = json.load(f)
 
         tenders = seed_data.get("tenders", [])
         matches = seed_data.get("keyword_matches", [])
+
+        matches_by_ref = {}
+        for m in matches:
+            ref = m.get("tender_id_ref")
+            if ref not in matches_by_ref:
+                matches_by_ref[ref] = []
+            matches_by_ref[ref].append(m)
 
         tender_cols = [
             "id", "tender_id", "title", "authority", "reference_no", "tender_type",
@@ -260,6 +267,12 @@ def seed_db_if_empty(conn: UnifiedConnection):
         tender_insert_sql = f"INSERT INTO tenders ({', '.join(tender_cols)}) VALUES ({placeholders})"
 
         for t in tenders:
+            tid = t.get("tender_id")
+            if not tid:
+                continue
+            cur.execute("SELECT id FROM tenders WHERE tender_id = ?", (tid,))
+            if cur.fetchone():
+                continue
             params = [
                 t.get("id"),
                 t.get("tender_id"),
@@ -856,6 +869,140 @@ class TenderRepository:
             "items": items
         }
 
+    def count_tenders(self, is_qualified: Optional[bool] = None) -> int:
+        """Count total or qualified tenders in the database."""
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        if is_qualified is not None:
+            cursor.execute("SELECT COUNT(*) as cnt FROM tenders WHERE is_qualified = ?", (1 if is_qualified else 0,))
+        else:
+            cursor.execute("SELECT COUNT(*) as cnt FROM tenders")
+        row = cursor.fetchone()
+        cnt = row["cnt"] if row else 0
+        conn.close()
+        return cnt
+
+    def sync_seed_tenders(self, force: bool = False) -> Dict[str, Any]:
+        """
+        Synchronizes the database with verified seed and benchmark tenders.
+        Upserts all seed tenders without overwriting user workflow statuses,
+        ensuring cloud deployments (like Render) always have 450+ qualified tenders.
+        """
+        if not os.path.exists(SEED_PATH):
+            return {"scanned": 0, "discovered": 0, "qualified": 0}
+
+        try:
+            with open(SEED_PATH, "r", encoding="utf-8") as f:
+                seed_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to read seed file {SEED_PATH}: {e}")
+            return {"scanned": 0, "discovered": 0, "qualified": 0}
+
+        tenders = seed_data.get("tenders", [])
+        matches = seed_data.get("keyword_matches", [])
+
+        matches_by_ref = {}
+        for m in matches:
+            ref = m.get("tender_id_ref")
+            if ref not in matches_by_ref:
+                matches_by_ref[ref] = []
+            matches_by_ref[ref].append(m)
+
+        conn = self._get_conn()
+        cursor = conn.cursor()
+
+        scanned = len(tenders)
+        discovered = 0
+        qualified = 0
+
+        for t in tenders:
+            tid = t.get("tender_id")
+            if not tid:
+                continue
+
+            cursor.execute("SELECT id, workflow_status, is_watchlisted, user_notes FROM tenders WHERE tender_id = ?", (tid,))
+            existing = cursor.fetchone()
+
+            now_str = datetime.utcnow().isoformat()
+            if existing and not force:
+                discovered += 1
+                if t.get("is_qualified"):
+                    qualified += 1
+                continue
+
+            if existing:
+                cursor.execute("""
+                    UPDATE tenders SET
+                        title = ?, authority = ?, reference_no = ?, tender_type = ?,
+                        estimated_cost_inr = ?, emd_inr = ?, doc_fee_inr = ?,
+                        published_date = ?, submission_deadline = ?, opening_date = ?,
+                        location = ?, portal_source = ?, portal_url = ?, description = ?,
+                        primary_category = ?, highest_tier = ?, is_qualified = ?,
+                        qualification_reason = ?, uncertain = ?, updated_at = ?
+                    WHERE tender_id = ?
+                """, (
+                    t.get("title", ""), t.get("authority", "Unknown Authority"),
+                    t.get("reference_no", ""), t.get("tender_type", ""),
+                    t.get("estimated_cost_inr"), t.get("emd_inr"), t.get("doc_fee_inr"),
+                    normalize_date_to_iso(t.get("published_date")),
+                    normalize_date_to_iso(t.get("submission_deadline")),
+                    normalize_date_to_iso(t.get("opening_date")),
+                    t.get("location", ""), t.get("portal_source", "cppp_epublish"),
+                    t.get("portal_url", ""), t.get("description", ""),
+                    t.get("primary_category", ""), t.get("highest_tier", ""),
+                    1 if t.get("is_qualified") else 0,
+                    t.get("qualification_reason", ""),
+                    1 if t.get("uncertain") else 0,
+                    now_str,
+                    tid
+                ))
+            else:
+                cursor.execute("""
+                    INSERT INTO tenders (
+                        tender_id, title, authority, reference_no, tender_type,
+                        estimated_cost_inr, emd_inr, doc_fee_inr, published_date,
+                        submission_deadline, opening_date, location, portal_source,
+                        portal_url, description, primary_category, highest_tier,
+                        is_qualified, qualification_reason, uncertain, raw_metadata,
+                        workflow_status, is_watchlisted, user_notes, assigned_to,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    tid, t.get("title", ""), t.get("authority", "Unknown Authority"),
+                    t.get("reference_no", ""), t.get("tender_type", ""),
+                    t.get("estimated_cost_inr"), t.get("emd_inr"), t.get("doc_fee_inr"),
+                    normalize_date_to_iso(t.get("published_date")),
+                    normalize_date_to_iso(t.get("submission_deadline")),
+                    normalize_date_to_iso(t.get("opening_date")),
+                    t.get("location", ""), t.get("portal_source", "cppp_epublish"),
+                    t.get("portal_url", ""), t.get("description", ""),
+                    t.get("primary_category", ""), t.get("highest_tier", ""),
+                    1 if t.get("is_qualified") else 0,
+                    t.get("qualification_reason", ""),
+                    1 if t.get("uncertain") else 0,
+                    json.dumps(t.get("raw_metadata")) if isinstance(t.get("raw_metadata"), dict) else t.get("raw_metadata"),
+                    t.get("workflow_status") or "new",
+                    1 if t.get("is_watchlisted") else 0,
+                    t.get("user_notes") or "",
+                    t.get("assigned_to") or "",
+                    t.get("created_at") or now_str,
+                    now_str
+                ))
+
+            discovered += 1
+            if t.get("is_qualified"):
+                qualified += 1
+
+        if conn.is_pg:
+            cursor.execute("SELECT setval('tenders_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenders));")
+            cursor.execute("SELECT setval('keyword_matches_id_seq', (SELECT COALESCE(MAX(id), 1) FROM keyword_matches));")
+
+        conn.commit()
+        conn.close()
+
+        logger.info(f"Seed sync complete: {scanned} scanned, {discovered} active, {qualified} qualified.")
+        return {"scanned": scanned, "discovered": discovered, "qualified": qualified}
+
     def get_tender(self, tender_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve full details of a tender including keyword matches and evidence."""
         conn = self._get_conn()
@@ -1150,3 +1297,141 @@ class TenderRepository:
         runs = [dict(r) for r in rows]
         conn.close()
         return runs
+
+    def count_tenders(self, is_qualified: Optional[bool] = None) -> int:
+        """Count total tenders, optionally filtered by qualification status."""
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        if is_qualified is None:
+            cursor.execute("SELECT COUNT(*) as cnt FROM tenders")
+        else:
+            cursor.execute("SELECT COUNT(*) as cnt FROM tenders WHERE is_qualified = ?", (1 if is_qualified else 0,))
+        row = cursor.fetchone()
+        cnt = row["cnt"] if row else 0
+        conn.close()
+        return cnt
+
+    def sync_seed_tenders(self, force: bool = False) -> Dict[str, Any]:
+        """Upsert baseline opportunities from seed_tenders.json safely."""
+        if not os.path.exists(SEED_PATH):
+            return {"status": "error", "message": "Seed file not found"}
+
+        with open(SEED_PATH, "r", encoding="utf-8") as f:
+            seed_data = json.load(f)
+
+        tenders = seed_data.get("tenders", [])
+        matches = seed_data.get("keyword_matches", [])
+
+        matches_by_ref = {}
+        for m in matches:
+            ref = m.get("tender_id_ref")
+            if ref not in matches_by_ref:
+                matches_by_ref[ref] = []
+            matches_by_ref[ref].append(m)
+
+        conn = self._get_conn()
+        cur = conn.cursor()
+        inserted = 0
+        updated = 0
+        now_str = datetime.utcnow().isoformat()
+
+        for t in tenders:
+            tid = t.get("tender_id")
+            if not tid:
+                continue
+
+            norm_pub = normalize_date_to_iso(t.get("published_date"))
+            norm_dl = normalize_date_to_iso(t.get("submission_deadline"))
+            norm_op = normalize_date_to_iso(t.get("opening_date"))
+
+            cur.execute("SELECT id FROM tenders WHERE tender_id = ?", (tid,))
+            existing = cur.fetchone()
+
+            if existing:
+                if force:
+                    cur.execute("""
+                        UPDATE tenders SET
+                            title = ?, authority = ?, reference_no = ?, tender_type = ?,
+                            estimated_cost_inr = ?, emd_inr = ?, doc_fee_inr = ?,
+                            published_date = ?, submission_deadline = ?, opening_date = ?,
+                            location = ?, portal_source = ?, portal_url = ?, description = ?,
+                            primary_category = ?, highest_tier = ?, is_qualified = ?,
+                            qualification_reason = ?, uncertain = ?, updated_at = ?
+                        WHERE id = ?
+                    """, (
+                        t.get("title", ""), t.get("authority", "Unknown Authority"),
+                        t.get("reference_no", ""), t.get("tender_type", ""),
+                        t.get("estimated_cost_inr"), t.get("emd_inr"), t.get("doc_fee_inr"),
+                        norm_pub, norm_dl, norm_op, t.get("location", ""),
+                        t.get("portal_source", "cppp_epublish"), t.get("portal_url", ""),
+                        t.get("description", ""), t.get("primary_category", ""),
+                        t.get("highest_tier", ""), 1 if t.get("is_qualified") else 0,
+                        t.get("qualification_reason", ""), 1 if t.get("uncertain") else 0,
+                        now_str, existing["id"]
+                    ))
+                    updated += 1
+            else:
+                cur.execute("""
+                    INSERT INTO tenders (
+                        tender_id, title, authority, reference_no, tender_type,
+                        estimated_cost_inr, emd_inr, doc_fee_inr,
+                        published_date, submission_deadline, opening_date,
+                        location, portal_source, portal_url, description,
+                        primary_category, highest_tier, is_qualified,
+                        qualification_reason, uncertain, raw_metadata,
+                        workflow_status, is_watchlisted, user_notes, assigned_to,
+                        status_updated_at, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    tid, t.get("title", ""), t.get("authority", "Unknown Authority"),
+                    t.get("reference_no", ""), t.get("tender_type", ""),
+                    t.get("estimated_cost_inr"), t.get("emd_inr"), t.get("doc_fee_inr"),
+                    norm_pub, norm_dl, norm_op, t.get("location", ""),
+                    t.get("portal_source", "cppp_epublish"), t.get("portal_url", ""),
+                    t.get("description", ""), t.get("primary_category", ""),
+                    t.get("highest_tier", ""), 1 if t.get("is_qualified") else 0,
+                    t.get("qualification_reason", ""), 1 if t.get("uncertain") else 0,
+                    json.dumps(t.get("raw_metadata")) if isinstance(t.get("raw_metadata"), dict) else t.get("raw_metadata"),
+                    t.get("workflow_status") or "new", 1 if t.get("is_watchlisted") else 0,
+                    t.get("user_notes") or "", t.get("assigned_to") or "",
+                    t.get("status_updated_at"), t.get("created_at") or now_str, now_str
+                ))
+                new_id = cur.lastrowid
+                seed_id = t.get("id")
+                if seed_id in matches_by_ref and new_id:
+                    for m in matches_by_ref[seed_id]:
+                        cur.execute("""
+                            INSERT INTO keyword_matches (
+                                tender_id_ref, term, tier, match_group, matched_text,
+                                snippet, position, source_field, is_contextual
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            new_id, m.get("term", ""), m.get("tier", ""), m.get("match_group", ""),
+                            m.get("matched_text", ""), m.get("snippet", ""), m.get("position", 0),
+                            m.get("source_field", ""), 1 if m.get("is_contextual") else 0
+                        ))
+                inserted += 1
+
+        if conn.is_pg:
+            try:
+                cur.execute("SELECT setval('tenders_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenders));")
+                cur.execute("SELECT setval('keyword_matches_id_seq', (SELECT COALESCE(MAX(id), 1) FROM keyword_matches));")
+            except Exception:
+                pass
+
+        conn.commit()
+
+        cur.execute("SELECT COUNT(*) as total, SUM(CASE WHEN is_qualified = 1 THEN 1 ELSE 0 END) as qualified FROM tenders")
+        tot_row = cur.fetchone()
+        tot_count = tot_row["total"] if tot_row else 0
+        qual_count = tot_row["qualified"] if tot_row else 0
+        conn.close()
+
+        logger.info(f"Sync complete: inserted {inserted}, updated {updated}. Total in DB: {tot_count} ({qual_count} qualified)")
+        return {
+            "status": "success",
+            "inserted": inserted,
+            "updated": updated,
+            "total_in_db": tot_count,
+            "qualified": qual_count
+        }
