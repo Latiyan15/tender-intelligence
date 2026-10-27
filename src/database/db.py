@@ -255,7 +255,7 @@ def seed_db_if_empty(conn: UnifiedConnection):
             matches_by_ref[ref].append(m)
 
         tender_cols = [
-            "id", "tender_id", "title", "authority", "reference_no", "tender_type",
+            "tender_id", "title", "authority", "reference_no", "tender_type",
             "estimated_cost_inr", "emd_inr", "doc_fee_inr", "published_date",
             "submission_deadline", "opening_date", "location", "portal_source",
             "portal_url", "description", "primary_category", "highest_tier",
@@ -266,15 +266,18 @@ def seed_db_if_empty(conn: UnifiedConnection):
         placeholders = ", ".join(["?"] * len(tender_cols))
         tender_insert_sql = f"INSERT INTO tenders ({', '.join(tender_cols)}) VALUES ({placeholders})"
 
+        seed_id_to_db_id = {}
         for t in tenders:
             tid = t.get("tender_id")
             if not tid:
                 continue
             cur.execute("SELECT id FROM tenders WHERE tender_id = ?", (tid,))
-            if cur.fetchone():
+            existing = cur.fetchone()
+            if existing:
+                seed_id_to_db_id[t.get("id")] = existing["id"]
                 continue
+
             params = [
-                t.get("id"),
                 t.get("tender_id"),
                 t.get("title", ""),
                 t.get("authority", "Unknown Authority"),
@@ -305,18 +308,25 @@ def seed_db_if_empty(conn: UnifiedConnection):
                 t.get("updated_at")
             ]
             cur.execute(tender_insert_sql, params)
+            new_id = cur.lastrowid
+            if new_id:
+                seed_id_to_db_id[t.get("id")] = new_id
 
         km_cols = [
-            "id", "tender_id_ref", "term", "tier", "match_group", "matched_text",
+            "tender_id_ref", "term", "tier", "match_group", "matched_text",
             "snippet", "position", "source_field", "is_contextual"
         ]
         km_placeholders = ", ".join(["?"] * len(km_cols))
         km_insert_sql = f"INSERT INTO keyword_matches ({', '.join(km_cols)}) VALUES ({km_placeholders})"
 
+        inserted_matches = 0
         for m in matches:
+            old_ref = m.get("tender_id_ref")
+            actual_db_id = seed_id_to_db_id.get(old_ref)
+            if not actual_db_id:
+                continue
             km_params = [
-                m.get("id"),
-                m.get("tender_id_ref"),
+                actual_db_id,
                 m.get("term", ""),
                 m.get("tier", ""),
                 m.get("match_group", ""),
@@ -326,16 +336,27 @@ def seed_db_if_empty(conn: UnifiedConnection):
                 m.get("source_field", ""),
                 1 if m.get("is_contextual") else 0
             ]
-            cur.execute(km_insert_sql, km_params)
+            try:
+                cur.execute(km_insert_sql, km_params)
+                inserted_matches += 1
+            except Exception as e:
+                logger.debug(f"Skipping match insert issue: {e}")
 
         if conn.is_pg:
-            cur.execute("SELECT setval(\'tenders_id_seq\', (SELECT COALESCE(MAX(id), 1) FROM tenders));")
-            cur.execute("SELECT setval(\'keyword_matches_id_seq\', (SELECT COALESCE(MAX(id), 1) FROM keyword_matches));")
+            try:
+                cur.execute("SELECT setval('tenders_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenders));")
+                cur.execute("SELECT setval('keyword_matches_id_seq', (SELECT COALESCE(MAX(id), 1) FROM keyword_matches));")
+            except Exception:
+                pass
 
         conn.commit()
-        logger.info(f"Database successfully auto-seeded with {len(tenders)} tenders and {len(matches)} matches.")
+        logger.info(f"Database successfully auto-seeded with {len(seed_id_to_db_id)} tenders and {inserted_matches} matches.")
     except Exception as e:
         logger.error(f"Auto-seed encountered an issue: {e}", exc_info=True)
+        try:
+            conn.rollback()
+        except Exception:
+            pass
 
 
 def init_db(db_path: Optional[str] = None):
@@ -1400,16 +1421,19 @@ class TenderRepository:
                 seed_id = t.get("id")
                 if seed_id in matches_by_ref and new_id:
                     for m in matches_by_ref[seed_id]:
-                        cur.execute("""
-                            INSERT INTO keyword_matches (
-                                tender_id_ref, term, tier, match_group, matched_text,
-                                snippet, position, source_field, is_contextual
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            new_id, m.get("term", ""), m.get("tier", ""), m.get("match_group", ""),
-                            m.get("matched_text", ""), m.get("snippet", ""), m.get("position", 0),
-                            m.get("source_field", ""), 1 if m.get("is_contextual") else 0
-                        ))
+                        try:
+                            cur.execute("""
+                                INSERT INTO keyword_matches (
+                                    tender_id_ref, term, tier, match_group, matched_text,
+                                    snippet, position, source_field, is_contextual
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (
+                                new_id, m.get("term", ""), m.get("tier", ""), m.get("match_group", ""),
+                                m.get("matched_text", ""), m.get("snippet", ""), m.get("position", 0),
+                                m.get("source_field", ""), 1 if m.get("is_contextual") else 0
+                            ))
+                        except Exception:
+                            pass
                 inserted += 1
 
         if conn.is_pg:
