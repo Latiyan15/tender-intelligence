@@ -970,12 +970,8 @@ function setupEventListeners() {
 // MULTI-VIEW NAVIGATION & WORKSPACES
 // ═══════════════════════════════════════════════════════════════════════════
 function navigateTo(nav) {
-  if (nav === 'dashboard') {
-    const dashMount = document.getElementById('dashboard-tenders-mount') || document.getElementById('view-dashboard');
-    const section = document.getElementById('dashboard-tenders-section');
-    if (dashMount && section && !dashMount.contains(section)) {
-      dashMount.appendChild(section);
-    }
+  if (nav === 'tenders') {
+    nav = 'dashboard';
   }
 
   // Update sidebar active item
@@ -1012,8 +1008,6 @@ function navigateTo(nav) {
     loadDocumentsView();
   } else if (nav === 'keywords') {
     initKeywordsView();
-  } else if (nav === 'tenders') {
-    initTendersView();
   } else if (nav === 'reports') {
     initReportsView();
   } else if (nav === 'watchlist') {
@@ -1029,21 +1023,6 @@ function navigateTo(nav) {
     loadMetrics();
     renderTable(currentTenders.length > 0 ? currentTenders : allLoadedTenders);
   }
-}
-
-async function initTendersView() {
-  if (!allLoadedTenders || allLoadedTenders.length === 0) {
-    await loadTenders();
-  }
-
-  // Mount table section in full screen workbench container
-  const mount = document.getElementById('tenders-view-table-mount');
-  const section = document.getElementById('dashboard-tenders-section');
-  if (mount && section && !mount.contains(section)) {
-    mount.appendChild(section);
-  }
-
-  renderTable(currentTenders.length > 0 ? currentTenders : allLoadedTenders);
 }
 
 function initReportsView() {
