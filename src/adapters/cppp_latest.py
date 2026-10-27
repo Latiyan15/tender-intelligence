@@ -24,13 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 class CpppLatestTendersAdapter(BaseAdapter):
-    """Adapter for the CPPP Latest Active Tenders (Drupal portal)."""
+    """Adapter for the CPPP Latest Active Tenders (Central and State active feeds)."""
 
-    BASE_URL = "https://eprocure.gov.in/cppp"
-    CENTRAL_TENDERS_URL = "https://eprocure.gov.in/cppp/latestactivetendersnew/cpppdata"
-    STATE_TENDERS_URL = "https://eprocure.gov.in/cppp/latestactivetendersnew/mmpdata"
-    GEM_TENDERS_URL = "https://eprocure.gov.in/cppp/latestactivetendersnew/gemdata"
-    SEARCH_URL = "https://eprocure.gov.in/cppp/tendersearch"
+    BASE_URL = "https://gem.gov.in"
+    CENTRAL_TENDERS_URL = "https://gem.gov.in/cppp"
+    STATE_TENDERS_URL = "https://gem.gov.in/cppp_state"
+    SEARCH_URL = "https://gem.gov.in/cppp"
 
     # Organization dropdown values relevant to Nikom's business
     RELEVANT_ORGS = [
@@ -47,38 +46,34 @@ class CpppLatestTendersAdapter(BaseAdapter):
     ]
 
     def __init__(self, http_client: HttpClient):
-        super().__init__("CPPP_Latest", "https://eprocure.gov.in/cppp", http_client)
+        super().__init__("CPPP_Latest", "https://gem.gov.in/cppp", http_client)
         self.http_client = http_client
 
     def _get_page_url(self, base_url: str, page: int) -> str:
-        """Construct CPPP Drupal base64-encoded pagination URL."""
+        """Construct CPPP pagination URL."""
+        if "gem.gov.in" in base_url:
+            return f"{base_url.rstrip('/')}/{page}"
         if page <= 1:
             return base_url
         target = f"{base_url}?page={page}"
         b64 = base64.b64encode(target.encode('utf-8')).decode('utf-8')
         return f"{base_url}?url={quote(b64)}"
 
-    def discover_tenders(self, max_tenders: int = 1500, pages: int = 5, **kwargs) -> List[TenderRecord]:
-        """Discover tenders from CPPP across extensive multi-page depth (Central, State, and GeM listings)."""
+    def discover_tenders(self, max_tenders: int = 1500, pages: int = 20, **kwargs) -> List[TenderRecord]:
+        """Discover tenders from CPPP across extensive multi-page depth (Central and State active feeds)."""
         all_tenders = []
 
-        # 1. Fetch Central Active Tenders across up to 50 pages (covering past 24-48 hours)
+        # 1. Fetch Central Active Tenders across pages
         logger.info(f"Fetching CPPP Central Active Tenders across {pages} pages...")
         central_tenders = self._scrape_latest_tenders(self.CENTRAL_TENDERS_URL, "central", max_pages=pages)
         all_tenders.extend(central_tenders)
         logger.info(f"Discovered {len(central_tenders)} central tenders across {pages} pages")
 
-        # 2. Fetch State Active Tenders across up to 50 pages
+        # 2. Fetch State Active Tenders across pages
         logger.info(f"Fetching CPPP State Active Tenders across {pages} pages...")
         state_tenders = self._scrape_latest_tenders(self.STATE_TENDERS_URL, "state", max_pages=pages)
         all_tenders.extend(state_tenders)
         logger.info(f"Discovered {len(state_tenders)} state tenders across {pages} pages")
-
-        # 3. Fetch GeM Active Tenders on CPPP across 15 pages
-        logger.info("Fetching CPPP GeM Active Tenders across 15 pages...")
-        gem_tenders = self._scrape_latest_tenders(self.GEM_TENDERS_URL, "gem_cppp", max_pages=15)
-        all_tenders.extend(gem_tenders)
-        logger.info(f"Discovered {len(gem_tenders)} GeM tenders on CPPP across 15 pages")
 
         # Deduplicate
         seen_ids = set()
@@ -90,7 +85,7 @@ class CpppLatestTendersAdapter(BaseAdapter):
                 unique_tenders.append(t)
 
         self.stats['tenders_discovered'] = len(unique_tenders)
-        logger.info(f"Total unique tenders from CPPP across {pages*2 + 15} pages: {len(unique_tenders)}")
+        logger.info(f"Total unique tenders from CPPP across {pages*2} pages: {len(unique_tenders)}")
         return unique_tenders[:max_tenders]
 
     def _scrape_page(self, base_url: str, source_type: str, page: int) -> List[TenderRecord]:
@@ -184,27 +179,42 @@ class CpppLatestTendersAdapter(BaseAdapter):
         if len(texts) < 5 or any('no records' in t.lower() for t in texts):
             return None
 
-        # Link to detail page
-        link_elem = cells[4].find('a', href=True) if len(cells) > 4 else None
+        # Check if cell 0 is a date (GeM CPPP mirror format) or S.No (Drupal format)
+        is_gem_cppp_format = bool(re.search(r'\d{1,2}-[A-Za-z]+-\d{4}', texts[0]))
+        if is_gem_cppp_format:
+            # GeM CPPP table format:
+            # cells[0]: Bid Submission Closing Date (e.g. 07-December-2026 03:00:00 PM)
+            # cells[1]: Tender Opening Date (e.g. 30-November-2026 09:00:00 AM)
+            # cells[2]: e-Published Date (e.g. 24-October-2026 09:00:00 AM)
+            # cells[3]: Title / Reference No / Tender ID
+            # cells[4]: Organisation Name
+            closing_date_text = texts[0]
+            opening_date_text = texts[1] if len(texts) > 1 else None
+            published_date_text = texts[2] if len(texts) > 2 else None
+            combined_col = texts[3] if len(texts) > 3 else ""
+            org = texts[4] if len(texts) > 4 else None
+            link_elem = cells[3].find('a', href=True) if len(cells) > 3 else None
+        else:
+            # Standard CPPP Drupal row format:
+            # cells[0]: S.No (e.g. 1.)
+            # cells[1]: Published Date (e.g. 21-Oct-2026 05:55 PM)
+            # cells[2]: Bid Submission Closing Date (e.g. 29-Oct-2026 11:00 AM)
+            # cells[3]: Tender Opening Date (e.g. 30-Oct-2026 12:00 PM)
+            # cells[4]: Title / Reference No / Tender ID
+            # cells[5]: Organisation
+            published_date_text = texts[1] if len(texts) > 1 else None
+            closing_date_text = texts[2] if len(texts) > 2 else None
+            opening_date_text = texts[3] if len(texts) > 3 else None
+            combined_col = texts[4] if len(texts) > 4 else ""
+            org = texts[5] if len(texts) > 5 else None
+            link_elem = cells[4].find('a', href=True) if len(cells) > 4 else None
+
         if not link_elem:
             for cell in cells:
                 link = cell.find('a', href=True)
                 if link:
                     link_elem = link
                     break
-
-        # Standard CPPP Drupal row format:
-        # cells[0]: S.No (e.g. 1.)
-        # cells[1]: Published Date (e.g. 21-Oct-2026 05:55 PM)
-        # cells[2]: Bid Submission Closing Date (e.g. 29-Oct-2026 11:00 AM)
-        # cells[3]: Tender Opening Date (e.g. 30-Oct-2026 12:00 PM)
-        # cells[4]: Title / Reference No / Tender ID
-        # cells[5]: Organisation
-        published_date_text = texts[1] if len(texts) > 1 else None
-        closing_date_text = texts[2] if len(texts) > 2 else None
-        opening_date_text = texts[3] if len(texts) > 3 else None
-        combined_col = texts[4] if len(texts) > 4 else ""
-        org = texts[5] if len(texts) > 5 else None
 
         # Extract official government Tender ID using regex (e.g. 2026_BSF_931106_1)
         tid_match = re.search(r'(\d{4}_[A-Za-z0-9]+_\d+_\d+)', combined_col)
@@ -288,6 +298,8 @@ class CpppLatestTendersAdapter(BaseAdapter):
             collection_timestamp=datetime.now().isoformat(),
         )
 
+        if published_date_text:
+            tender.publication_date = self._parse_date_field(published_date_text, "publication_date")
         if closing_date_text:
             tender.submission_deadline = self._parse_date_field(closing_date_text, "submission_deadline")
         if opening_date_text:
@@ -532,7 +544,12 @@ class CpppLatestTendersAdapter(BaseAdapter):
             return None
 
         for fmt in [
+            "%d-%B-%Y %I:%M:%S %p",
+            "%d-%b-%Y %I:%M:%S %p",
+            "%d-%B-%Y %I:%M %p",
             "%d-%b-%Y %I:%M %p",
+            "%d-%B-%Y %H:%M:%S",
+            "%d-%b-%Y %H:%M:%S",
             "%d-%b-%Y %H:%M",
             "%d/%m/%Y %I:%M %p",
             "%d/%m/%Y",

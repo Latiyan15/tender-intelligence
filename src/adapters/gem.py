@@ -45,41 +45,52 @@ class GemAdapter(BaseAdapter):
         }
 
     def _init_session(self) -> str:
-        """Fetch the landing page to populate session cookies and retrieve the CSRF token."""
-        try:
-            req = urllib.request.Request(self.LISTING_URL, headers={
-                'User-Agent': self.headers['User-Agent'],
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-            })
-            self.opener.open(req, timeout=5)
-            cookies = {c.name: c.value for c in self.cj}
-            return cookies.get('csrf_gem_cookie', '')
-        except Exception as e:
-            logger.error(f"Failed to initialize GeM session: {e}")
-            self.stats['errors'] += 1
-            return ''
+        """Fetch the landing page to populate session cookies and retrieve the CSRF token with retry."""
+        import time
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(self.LISTING_URL, headers={
+                    'User-Agent': self.headers['User-Agent'],
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                })
+                self.opener.open(req, timeout=10)
+                cookies = {c.name: c.value for c in self.cj}
+                token = cookies.get('csrf_gem_cookie', '')
+                if token:
+                    return token
+            except Exception as e:
+                logger.warning(f"GeM session init attempt {attempt + 1} failed: {e}")
+                if attempt == 0:
+                    time.sleep(1)
+        self.stats['errors'] += 1
+        return ''
 
     TARGET_KEYWORDS = [
-        # Tier A — Core DC
+        # Tier A — Cyber Security & Core DC
+        "firewall",
+        "cyber security",
         "data centre",
         "data center",
         "server room",
-        "modular data centre",
-        # Tier B — Core Power & Cooling
+        # Tier B — Compute & Networking
+        "server",
+        "switch",
+        "network",
+        "cctv",
+        "structured cabling",
+        # Tier C — Power, Cooling & Infrastructure
         "online UPS",
         "modular UPS",
+        "ups",
         "precision air conditioning",
-        "substation",
+        "cooling",
         "transformer",
         "diesel generator",
-        # Tier C — Fitout & Security
+        # Tier D — Ancillary & Maintenance
         "fire suppression",
-        "structured cabling",
         "access control",
-        "cyber security",
-        # Tier D — Ancillary
         "IT infrastructure",
-        "SCADA",
+        "amc",
         "BMS"
     ]
 
@@ -112,7 +123,7 @@ class GemAdapter(BaseAdapter):
                     }).encode('utf-8')
 
                     req = urllib.request.Request(self.DATA_ENDPOINT, data=payload, headers=self.headers)
-                    res = self.opener.open(req, timeout=5)
+                    res = self.opener.open(req, timeout=10)
                     raw_json = res.read().decode('utf-8')
                     data = json.loads(raw_json)
 
