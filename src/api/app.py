@@ -154,33 +154,6 @@ def get_watchlist(limit: int = Query(200, ge=1, le=500)):
     }
 
 
-@app.get("/api/tenders/{tender_id:path}")
-def get_tender_detail(tender_id: str):
-    tender = repo.get_tender(tender_id)
-    if not tender:
-        raise HTTPException(status_code=404, detail="Tender not found")
-    return tender
-
-
-@app.patch("/api/tenders/{tender_id:path}/manage")
-@app.patch("/api/tenders/{tender_id:path}/workflow")
-def update_tender_management(tender_id: str, req: TenderWorkflowUpdateRequest):
-    """Updates user workflow classification (considered, under_review, reviewed, rejected), watchlist star, notes, or assignee."""
-    updated = repo.update_tender_workflow(
-        tender_id=tender_id,
-        workflow_status=req.workflow_status,
-        is_watchlisted=req.is_watchlisted,
-        user_notes=req.user_notes,
-        assigned_to=req.assigned_to
-    )
-    if not updated:
-        raise HTTPException(status_code=404, detail=f"Tender '{tender_id}' not found")
-    return {
-        "success": True,
-        "tender": updated
-    }
-
-
 @app.post("/api/tenders/sync-seed")
 def sync_seed_opportunities(force: bool = False):
     """Synchronizes verified baseline Nikom opportunities into the active database."""
@@ -227,6 +200,33 @@ def execute_bulk_action(req: BulkActionRequest):
         "action": req.action,
         "updated_count": updated_count,
         "tender_ids": req.tender_ids
+    }
+
+
+@app.get("/api/tenders/{tender_id:path}")
+def get_tender_detail(tender_id: str):
+    tender = repo.get_tender(tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail="Tender not found")
+    return tender
+
+
+@app.patch("/api/tenders/{tender_id:path}/manage")
+@app.patch("/api/tenders/{tender_id:path}/workflow")
+def update_tender_management(tender_id: str, req: TenderWorkflowUpdateRequest):
+    """Updates user workflow classification (considered, under_review, reviewed, rejected), watchlist star, notes, or assignee."""
+    updated = repo.update_tender_workflow(
+        tender_id=tender_id,
+        workflow_status=req.workflow_status,
+        is_watchlisted=req.is_watchlisted,
+        user_notes=req.user_notes,
+        assigned_to=req.assigned_to
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail=f"Tender '{tender_id}' not found")
+    return {
+        "success": True,
+        "tender": updated
     }
 
 
