@@ -31,6 +31,34 @@ class CpppLatestTendersAdapter(BaseAdapter):
     STATE_TENDERS_URL = "https://gem.gov.in/cppp_state"
     SEARCH_URL = "https://gem.gov.in/cppp"
 
+    # Targeted keywords guaranteeing high-yield IT, Cyber Security & Data Center coverage
+    TARGET_KEYWORDS = [
+        # Tier A — Cyber Security & Turnkey Data Centers
+        "firewall",
+        "cyber security",
+        "data center",
+        "data centre",
+        "server room",
+        # Tier B — Servers, Storage & Networking
+        "server",
+        "switch",
+        "network",
+        "cctv",
+        "structured cabling",
+        # Tier C & D — Power, Cooling & Facilities
+        "ups",
+        "online UPS",
+        "precision air conditioning",
+        "cooling",
+        "transformer",
+        "diesel generator",
+        "fire suppression",
+        "access control",
+        "IT infrastructure",
+        "amc",
+        "BMS"
+    ]
+
     # Organization dropdown values relevant to Nikom's business
     RELEVANT_ORGS = [
         "Bharat Sanchar Nigam Limited",
@@ -49,8 +77,13 @@ class CpppLatestTendersAdapter(BaseAdapter):
         super().__init__("CPPP_Latest", "https://gem.gov.in/cppp", http_client)
         self.http_client = http_client
 
-    def _get_page_url(self, base_url: str, page: int) -> str:
-        """Construct CPPP pagination URL."""
+    def _get_page_url(self, base_url: str, page: int, search_term: Optional[str] = None) -> str:
+        """Construct CPPP pagination URL with optional keyword search query."""
+        if search_term:
+            clean_term = quote(search_term.strip())
+            if page <= 1:
+                return f"{base_url.rstrip('/')}?title={clean_term}&search=Search"
+            return f"{base_url.rstrip('/')}/{page}?title={clean_term}&search=Search"
         if "gem.gov.in" in base_url:
             return f"{base_url.rstrip('/')}/{page}"
         if page <= 1:
@@ -59,50 +92,58 @@ class CpppLatestTendersAdapter(BaseAdapter):
         b64 = base64.b64encode(target.encode('utf-8')).decode('utf-8')
         return f"{base_url}?url={quote(b64)}"
 
-    def discover_tenders(self, max_tenders: int = 1500, pages: int = 20, **kwargs) -> List[TenderRecord]:
-        """Discover tenders from CPPP across extensive multi-page depth (Central and State active feeds)."""
+    def discover_tenders(self, max_tenders: int = 1500, pages: int = 5, **kwargs) -> List[TenderRecord]:
+        """Discover tenders from CPPP using concurrent targeted keyword queries across Central & State feeds."""
         all_tenders = []
+        from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        # Concurrently fetch Central and State feeds for 2x speedup
-        from concurrent.futures import ThreadPoolExecutor
-        effective_pages = min(pages, 10)
-        logger.info(f"Fetching CPPP Central and State Active Tenders across {effective_pages} pages concurrently...")
+        logger.info(f"Initiating high-yield targeted CPPP search across {len(self.TARGET_KEYWORDS)} keywords on Central & State feeds...")
 
-        with ThreadPoolExecutor(max_workers=2) as feed_executor:
-            fut_central = feed_executor.submit(self._scrape_latest_tenders, self.CENTRAL_TENDERS_URL, "central", effective_pages)
-            fut_state = feed_executor.submit(self._scrape_latest_tenders, self.STATE_TENDERS_URL, "state", effective_pages)
+        def _fetch_kw(kw: str, base_url: str, stype: str) -> List[TenderRecord]:
+            kw_tenders = []
+            for p in range(1, 3):  # Check top 2 pages per keyword
+                items = self._scrape_page(base_url, stype, p, search_term=kw)
+                if not items:
+                    break
+                kw_tenders.extend(items)
+            return kw_tenders
 
-            try:
-                central_tenders = fut_central.result()
-                all_tenders.extend(central_tenders)
-                logger.info(f"Discovered {len(central_tenders)} central tenders")
-            except Exception as e:
-                logger.debug(f"CPPP central feed error: {e}")
+        tasks = []
+        with ThreadPoolExecutor(max_workers=6) as executor:
+            for kw in self.TARGET_KEYWORDS:
+                tasks.append(executor.submit(_fetch_kw, kw, self.CENTRAL_TENDERS_URL, "central"))
+                tasks.append(executor.submit(_fetch_kw, kw, self.STATE_TENDERS_URL, "state"))
+            # Also scrape page 1 of generic feeds to catch newly published general listings
+            tasks.append(executor.submit(self._scrape_page, self.CENTRAL_TENDERS_URL, "central", 1, None))
+            tasks.append(executor.submit(self._scrape_page, self.STATE_TENDERS_URL, "state", 1, None))
 
-            try:
-                state_tenders = fut_state.result()
-                all_tenders.extend(state_tenders)
-                logger.info(f"Discovered {len(state_tenders)} state tenders")
-            except Exception as e:
-                logger.debug(f"CPPP state feed error: {e}")
+            for fut in as_completed(tasks):
+                try:
+                    res = fut.result()
+                    if res:
+                        all_tenders.extend(res)
+                        self.stats['listings_retrieved'] += len(res)
+                except Exception as e:
+                    logger.debug(f"CPPP keyword task error: {e}")
+                    self.stats['errors'] += 1
 
         # Deduplicate
         seen_ids = set()
         unique_tenders = []
         for t in all_tenders:
-            key = (t.tender_id, t.reference_number or t.title)
+            key = t.tender_id or t.reference_number or t.title
             if key not in seen_ids:
                 seen_ids.add(key)
                 unique_tenders.append(t)
 
         self.stats['tenders_discovered'] = len(unique_tenders)
-        logger.info(f"Total unique tenders from CPPP across {pages*2} pages: {len(unique_tenders)}")
+        logger.info(f"Total unique tenders discovered from targeted CPPP search: {len(unique_tenders)}")
         return unique_tenders[:max_tenders]
 
-    def _scrape_page(self, base_url: str, source_type: str, page: int) -> List[TenderRecord]:
-        """Scrape a single page of CPPP listings."""
-        url = self._get_page_url(base_url, page)
-        response = self.http_client.get(url)
+    def _scrape_page(self, base_url: str, source_type: str, page: int, search_term: Optional[str] = None) -> List[TenderRecord]:
+        """Scrape a single page of CPPP listings with optional search query."""
+        url = self._get_page_url(base_url, page, search_term)
+        response = self.http_client.get(url, use_cache=False)
         if not response['success']:
             logger.debug(f"Failed to fetch {source_type} tenders page {page}: {response.get('error')}")
             return []
