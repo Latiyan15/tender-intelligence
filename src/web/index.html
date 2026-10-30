@@ -212,12 +212,21 @@
             </svg>
           </button>
 
-          <button class="btn-icon notification-bell" title="Notifications">
+          <!-- 24h Bidding Alert Button -->
+          <button class="btn-icon" id="btn-email-alert" onclick="openEmailAlertModal()" title="Email 24h Tender Digest to Bidding Team" style="position: relative; color: #38bdf8;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </button>
+
+          <!-- Notifications Bell -->
+          <button class="btn-icon notification-bell" id="btn-notification-bell" onclick="openEmailAlertModal()" title="Bidding Team Alerts">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            <span class="bell-badge">12</span>
+            <span class="bell-badge" id="bell-unread-count">24h</span>
           </button>
 
           <div class="user-profile-widget">
@@ -522,10 +531,11 @@
               <div id="dashboard-tenders-mount" style="width: 100%;">
                 <section class="tenders-section" id="dashboard-tenders-section" style="width: 100%;">
                 <div class="table-header-row">
-                  <div style="display: flex; align-items: center; gap: 10px;">
-                    <h2 class="section-title">
-                      Tenders (<span id="table-total-count">0</span>)
+                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <h2 class="section-title" style="margin: 0;">
+                      Tenders (<span id="table-total-count">0</span><span id="table-total-context" style="font-size: 13px; font-weight: 500; color: var(--text-3); margin-left: 2px;"></span>)
                     </h2>
+                    <div id="active-filters-chips" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"></div>
                     <span id="table-scan-indicator" class="table-scan-indicator" style="display: none;">
                       <span class="mini-spin-dot"></span>
                       <span id="table-scan-indicator-text">Scanning portals...</span>
@@ -764,6 +774,7 @@
                   </div>
                 </div>
 
+                <div id="active-filters-banner" style="display: none; margin: 10px 0 14px 0; padding: 10px 16px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; font-size: 12.5px; color: var(--text); align-items: center; justify-content: space-between; gap: 12px;"></div>
                 <div class="table-responsive-container">
                   <table class="tenders-table" id="tenders-table">
                     <thead>
@@ -973,33 +984,126 @@
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Document Repository & Extraction</h1>
-              <p class="page-subtitle">Official NIT notices, technical specifications, BOQ sheets, and automated data
-                extraction</p>
+              <p class="page-subtitle">Official NIT notices, technical specifications, and automated data extraction synced to active tenders</p>
+            </div>
+            <div class="page-controls">
+              <button class="btn-subtle-pill" onclick="loadDocumentsView(true)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                <span>Sync Documents</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Document KPI Counters -->
+          <div class="kpi-grid" style="margin-bottom: 20px;">
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-blue">📄</span>
+                  <div>
+                    <div class="kpi-number" id="doc-kpi-total">0</div>
+                    <div class="kpi-label">Total Documents Synced</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-red">🛡️</span>
+                  <div>
+                    <div class="kpi-number" id="doc-kpi-cyber">0</div>
+                    <div class="kpi-label">Cyber Security NITs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-blue">⚙️</span>
+                  <div>
+                    <div class="kpi-number" id="doc-kpi-infra">0</div>
+                    <div class="kpi-label">IT Infrastructure Docs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top-row">
+                <div class="kpi-icon-wrap">
+                  <span class="kpi-icon kpi-green">☁️</span>
+                  <div>
+                    <div class="kpi-number" id="doc-kpi-cloud">0</div>
+                    <div class="kpi-label">Cloud & Services Docs</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="tenders-section" style="height: auto; max-height: none;">
-            <h3 class="analytics-title" style="margin-bottom: 16px;">Official Tender Documents & Extracted Scope</h3>
+            <div class="table-header-row" style="margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 class="analytics-title" style="margin: 0;">Official Tender Documents (<span id="documents-count">0</span>)</h3>
+              </div>
+              <div class="table-search-tools">
+                <div class="search-mini" style="width: 250px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="doc-table-search" placeholder="Search by title, ref, or buyer..." oninput="filterDocumentsTable()">
+                </div>
+                <div class="dropdown-wrapper">
+                  <select id="doc-filter-tier" onchange="filterDocumentsTable()">
+                    <option value="">Area: All Focus Areas</option>
+                    <option value="A">Cyber Security</option>
+                    <option value="B">IT Infrastructure</option>
+                    <option value="C">Cloud</option>
+                    <option value="D">Infra & Services</option>
+                  </select>
+                </div>
+                <div class="dropdown-wrapper">
+                  <select id="doc-filter-portal" onchange="filterDocumentsTable()">
+                    <option value="">Portal: All Portals</option>
+                    <option value="gem">GeM Portal</option>
+                    <option value="cppp">CPPP Portal</option>
+                    <option value="state">State eProcurement</option>
+                  </select>
+                </div>
+                <div class="dropdown-wrapper">
+                  <select id="doc-filter-window" onchange="filterDocumentsTable()">
+                    <option value="all" selected>Window: All Time</option>
+                    <option value="24h">Window: Last 24 Hours</option>
+                    <option value="48h">Window: Last 48 Hours</option>
+                    <option value="7d">Window: Last 7 Days</option>
+                    <option value="30d">Window: Last 30 Days</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div class="table-responsive-container">
               <table class="tenders-table" id="documents-table" style="table-layout: fixed; width: 100%;">
                 <colgroup>
-                  <col style="width: 27%;">
+                  <col style="width: 28%;">
+                  <col style="width: 14%;">
                   <col style="width: 15%;">
-                  <col style="width: 18%;">
-                  <col style="width: 15%;">
-                  <col style="width: 6%;">
-                  <col style="width: 9%;">
-                  <col style="width: 10%;">
+                  <col style="width: 13%;">
+                  <col style="width: 8%;">
+                  <col style="width: 22%;">
                 </colgroup>
                 <thead>
                   <tr>
                     <th>Document Name</th>
                     <th>Tender Reference</th>
                     <th>Issuing Authority</th>
-                    <th>Document Type</th>
-                    <th>Size</th>
-                    <th>Extraction Status</th>
-                    <th style="text-align: center;">Action</th>
+                    <th>Technology Focus</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="documents-tbody">
@@ -1429,22 +1533,60 @@
       <!-- Panel Header -->
       <div class="panel-header">
         <div class="panel-title-row">
-          <h2 class="panel-tender-title" id="panel-title">Tender Details</h2>
-          <button class="panel-close-btn" onclick="closeDetailsPanel()">×</button>
+          <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+            <span class="panel-ref-badge" id="panel-header-ref" onclick="copyCurrentRef()" title="Click to copy reference number">REF</span>
+            <h2 class="panel-tender-title" id="panel-title">Tender Details</h2>
+          </div>
+          <button class="panel-close-btn" onclick="closeDetailsPanel()" title="Close details panel (Esc)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <div class="panel-badges-row">
           <span class="panel-tier-badge" id="panel-tier-badge">Cyber Security</span>
           <span class="panel-source-badge" id="panel-source-badge">GeM</span>
-          <button class="panel-type-badge" id="panel-type-badge">Open Tender</button>
+          <span class="panel-type-badge" id="panel-type-badge">Open Tender</span>
+        </div>
+
+        <!-- Human Verification & Approval Bar -->
+        <div class="panel-verification-card" id="panel-verification-card">
+          <div class="verification-status-wrap">
+            <span class="verification-dot" id="panel-verif-dot"></span>
+            <div>
+              <div class="verification-label" id="panel-verif-label">Pending Verification</div>
+              <div class="verification-sub" id="panel-verif-sub">Bidding engineer must verify feasibility</div>
+            </div>
+          </div>
+          <div class="verification-actions">
+            <button type="button" class="btn-verif-approve" id="btn-verif-approve" onclick="verifyCurrentTender()" title="Approve tender for bidding and official NIT upload">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Verify & Approve</span>
+            </button>
+            <button type="button" class="btn-verif-reject" id="btn-verif-reject" onclick="rejectCurrentTender()" title="Flag tender as out-of-scope or disqualified">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
         </div>
 
         <!-- Panel Navigation Tabs -->
         <div class="panel-tabs">
-          <button class="panel-tab active" data-ptab="overview" onclick="switchPanelTab('overview')">Overview</button>
-          <button class="panel-tab" data-ptab="details" onclick="switchPanelTab('details')">Details</button>
-          <button class="panel-tab" data-ptab="documents" onclick="switchPanelTab('documents')">Documents</button>
-          <button class="panel-tab" data-ptab="keywords" onclick="switchPanelTab('keywords')">Keywords</button>
+          <button class="panel-tab active" data-ptab="overview" onclick="switchPanelTab('overview')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Overview</span>
+          </button>
+          <button class="panel-tab" data-ptab="documents" onclick="switchPanelTab('documents')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <span>Documents & Pack</span>
+            <span class="tab-badge" id="tab-badge-docs-count">0</span>
+          </button>
+          <button class="panel-tab" data-ptab="eligibility" onclick="switchPanelTab('eligibility')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span>Qualify & Eligibility</span>
+          </button>
+          <button class="panel-tab" data-ptab="keywords" onclick="switchPanelTab('keywords')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Keywords</span>
+          </button>
         </div>
       </div>
 
@@ -1457,27 +1599,47 @@
           <!-- Expired / Submission Closed Alert Banner -->
           <div class="panel-expired-banner" id="panel-expiry-banner" style="display: none;"></div>
 
+          <!-- Quick Metrics Ribbon -->
+          <div class="panel-kpi-ribbon">
+            <div class="panel-kpi-item">
+              <span class="panel-kpi-label">Estimated Value</span>
+              <span class="panel-kpi-val highlight" id="panel-value">Refer BOQ</span>
+            </div>
+            <div class="panel-kpi-divider"></div>
+            <div class="panel-kpi-item">
+              <span class="panel-kpi-label">EMD Security</span>
+              <span class="panel-kpi-val" id="panel-det-emd">Exempted</span>
+            </div>
+            <div class="panel-kpi-divider"></div>
+            <div class="panel-kpi-item">
+              <span class="panel-kpi-label">Days to Due</span>
+              <span class="panel-kpi-val" id="panel-days-left">Active</span>
+            </div>
+          </div>
+
           <!-- Tender Pursuit & Management Control Box -->
           <div class="panel-management-box">
             <div class="panel-management-header">
               <div class="panel-management-title">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span>Bid Decision & Segregation</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <span>Pipeline Stage & Strategy</span>
               </div>
               <button class="panel-star-btn" id="panel-star-toggle-btn" onclick="toggleCurrentTenderWatchlist()" title="Pin to Watchlist">
-                <span class="panel-star-icon" id="panel-star-icon">☆</span>
+                <svg class="panel-star-svg" id="panel-star-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                 <span id="panel-star-label">Watchlist</span>
               </button>
             </div>
 
             <div class="panel-management-fields">
               <div class="management-field-group">
-                <label>Pursuit Lifecycle Classification</label>
+                <label>Pursuit Lifecycle Stage</label>
                 <div class="workflow-select-wrap">
                   <select id="panel-workflow-status-select" onchange="onPanelWorkflowStatusChange(this.value)">
-                    <option value="new">New Ingestion (Unreviewed)</option>
-                    <option value="under_review">Under Technical Review</option>
+                    <option value="new">New Ingest (Pending Verification)</option>
+                    <option value="verified">Verified (Ready for NIT Submission)</option>
+                    <option value="doc_attached">Official NIT Attached (In Qualification)</option>
                     <option value="considered">Considered / Shortlist for Bidding</option>
+                    <option value="under_review">Under Technical Review</option>
                     <option value="reviewed">Reviewed / On Hold</option>
                     <option value="rejected">Disqualified / Rejected</option>
                   </select>
@@ -1485,12 +1647,13 @@
               </div>
 
               <div class="management-field-group">
-                <label>Assigned Lead</label>
+                <label>Assigned Lead Engineer</label>
                 <select id="panel-assigned-to-select" onchange="onPanelAssigneeChange(this.value)">
                   <option value="">Unassigned</option>
                   <option value="User">User (Lead Bid Manager)</option>
                   <option value="Priyansh Verma">Priyansh Verma (Tech Infrastructure)</option>
                   <option value="Meera Nair">Meera Nair (BOQ & Compliance)</option>
+                  <option value="Bidding Team">Nikom Bidding Team</option>
                 </select>
               </div>
 
@@ -1499,28 +1662,41 @@
                   <label style="margin-bottom: 0;">Internal Strategy Notes</label>
                   <span class="notes-autosave-status" id="notes-save-indicator">Saved</span>
                 </div>
-                <textarea id="panel-user-notes" rows="3" placeholder="Add qualification notes, OEM partner requirements, pricing strategy..." oninput="onPanelNotesInput()"></textarea>
+                <textarea id="panel-user-notes" rows="2" placeholder="Add qualification notes, OEM partner requirements, pricing strategy..." oninput="onPanelNotesInput()"></textarea>
               </div>
             </div>
           </div>
 
+          <!-- Structured Metadata Rows with Custom SVG Icons (No Emojis) -->
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">📑</span> Reference No.</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span>Reference No.</span>
+            </div>
             <div class="detail-value font-mono" id="panel-ref-no">—</div>
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">🏛️</span> Buyer Organisation</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="22.01"></line><line x1="15" y1="22" x2="15" y2="22.01"></line><line x1="9" y1="6" x2="9" y2="6.01"></line><line x1="15" y1="6" x2="15" y2="6.01"></line><line x1="9" y1="10" x2="9" y2="10.01"></line><line x1="15" y1="10" x2="15" y2="10.01"></line><line x1="9" y1="14" x2="9" y2="14.01"></line><line x1="15" y1="14" x2="15" y2="14.01"></line></svg>
+              <span>Buyer Organisation</span>
+            </div>
             <div class="detail-value" id="panel-buyer-org">—</div>
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">📍</span> Location</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span>Location / State</span>
+            </div>
             <div class="detail-value" id="panel-location">—</div>
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">📅</span> Published Date</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Published Date</span>
+            </div>
             <div class="detail-value">
               <span id="panel-pub-date">—</span>
               <span class="badge-new">New</span>
@@ -1528,71 +1704,108 @@
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">⏳</span> Bid Submission Deadline</div>
-            <div class="detail-value">
-              <span id="panel-deadline">—</span>
-              <span class="badge-days-left" id="panel-days-left">Active</span>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>Submission Due</span>
             </div>
+            <div class="detail-value font-mono" id="panel-deadline">—</div>
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">💰</span> Estimated Value</div>
-            <div class="detail-value highlight-val" id="panel-value">—</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+              <span>Tender Type</span>
+            </div>
+            <div class="detail-value" id="panel-tender-type">Open Tender</div>
           </div>
 
           <div class="detail-row">
-            <div class="detail-label"><span class="icon">📋</span> Tender Type</div>
-            <div class="detail-value" id="panel-tender-type">—</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label"><span class="icon">⚙️</span> Key Systems</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              <span>Key Systems</span>
+            </div>
             <div class="systems-tags-container" id="panel-key-systems">
               <!-- Injected via JS -->
             </div>
           </div>
 
           <div class="detail-row scope-box">
-            <div class="detail-label"><span class="icon">📄</span> Brief Scope</div>
+            <div class="detail-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span>Brief Scope of Work</span>
+            </div>
             <div class="scope-text" id="panel-scope">—</div>
           </div>
         </div>
 
-        <!-- Tab 2: Details Tab -->
-        <div class="tab-content" id="ptab-details">
-          <div class="detail-row">
-            <div class="detail-label">Tender ID</div>
-            <div class="detail-value font-mono" id="panel-det-id">—</div>
+        <!-- Tab 2: Documents & Pack Tab -->
+        <div class="tab-content" id="ptab-documents">
+
+          <!-- Auto-Fetch GeM Banner (Dynamic) -->
+          <div class="panel-autofetch-box" id="panel-autofetch-box" style="display: none;">
+            <div class="autofetch-header">
+              <div class="autofetch-icon-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              </div>
+              <div class="autofetch-text">
+                <div class="autofetch-title">Direct Government PDF Available</div>
+                <div class="autofetch-sub">Official signed GeM tender notice can be retrieved automatically.</div>
+              </div>
+            </div>
+            <button type="button" class="btn-autofetch-trigger" id="btn-autofetch-trigger" onclick="autoFetchCurrentTenderDoc()">
+              <span>⚡ Fetch & Attach Official GeM PDF</span>
+            </button>
           </div>
-          <div class="detail-row">
-            <div class="detail-label">EMD Amount</div>
-            <div class="detail-value" id="panel-det-emd">—</div>
+
+          <!-- Official Document Drag-and-Drop Uploader -->
+          <div class="panel-upload-zone" id="panel-upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)">
+            <input type="file" id="panel-file-input" style="display: none;" onchange="handleFileSelect(event)" accept=".pdf,.zip,.rar,.xlsx,.xls,.docx" />
+            <div class="upload-zone-content" onclick="document.getElementById('panel-file-input').click()">
+              <div class="upload-icon-circle">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </div>
+              <div class="upload-main-text">
+                <strong>Click to Upload Official NIT / Tender Pack</strong> or drag and drop
+              </div>
+              <div class="upload-hint-text">
+                Accepts authentic government PDF, BOQ Spreadsheet (.xlsx), or ZIP packages
+              </div>
+            </div>
+            <div id="upload-progress-wrap" style="display: none; margin-top: 10px; width: 100%;">
+              <div style="font-size: 11.5px; color: var(--primary); font-weight: 600; margin-bottom: 4px;" id="upload-progress-label">Uploading document...</div>
+              <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div id="upload-progress-bar" style="width: 45%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
+              </div>
+            </div>
           </div>
-          <div class="detail-row">
-            <div class="detail-label">Document Fee</div>
-            <div class="detail-value" id="panel-det-fee">—</div>
+
+          <!-- Documents List Section -->
+          <div class="panel-docs-header-row">
+            <span class="panel-docs-section-title">Official Procurement Documents</span>
+            <span class="panel-docs-count-pill" id="panel-docs-attached-count">0 Attached</span>
           </div>
-          <div class="detail-row">
-            <div class="detail-label">Opening Date</div>
-            <div class="detail-value" id="panel-det-opening">—</div>
+
+          <div class="documents-list-table" id="panel-docs-list-container">
+            <!-- Dynamic document rows injected via JS -->
           </div>
-          <div class="detail-row">
-            <div class="detail-label">Portal Source</div>
-            <div class="detail-value" id="panel-det-portal">—</div>
+
+          <!-- Official Portal Bridge Action Card -->
+          <div class="portal-bridge-card">
+            <div class="portal-bridge-left">
+              <div class="portal-bridge-title">Need additional documents from the official portal?</div>
+              <div class="portal-bridge-desc">Open the government portal directly via our authenticated bridge to retrieve BOQ, technical drawings, and corrigenda.</div>
+            </div>
+            <a href="#" target="_blank" rel="noopener" class="btn-bridge-open" id="panel-doc-portal-bridge-btn">
+              <span>Open Portal Bridge ↗</span>
+            </a>
           </div>
+
         </div>
 
-        <!-- Tab 3: Documents Tab -->
-        <div class="tab-content" id="ptab-documents">
-          <div class="documents-list" id="panel-docs-list">
-            <div class="doc-card">
-              <span class="doc-icon">📥</span>
-              <div class="doc-info">
-                <div class="doc-title" id="panel-doc-name">Official Tender Notice & NIT</div>
-                <div class="doc-sub">Official PDF Document on Portal</div>
-              </div>
-              <a href="#" target="_blank" class="btn-download" id="panel-doc-link">View File</a>
-            </div>
+        <!-- Tab 3: Qualify & Eligibility Tab (Phase 1 AI Engine) -->
+        <div class="tab-content" id="ptab-eligibility">
+          <div class="eligibility-container" id="panel-eligibility-container">
+            <!-- Injected via JS -->
           </div>
         </div>
 
@@ -1608,16 +1821,20 @@
       <!-- Panel Sticky Bottom Action Buttons -->
       <div class="panel-footer">
         <button class="btn-panel-primary" onclick="copyRefAndSearchPortal()">
-          <span>Copy Ref & Search Portal</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy Ref & Search</span>
+        </button>
+
+        <a href="#" target="_blank" rel="noopener" class="btn-panel-secondary" id="panel-portal-url-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
             <polyline points="15 3 21 3 21 9"></polyline>
             <line x1="10" y1="14" x2="21" y2="3"></line>
           </svg>
-        </button>
-
-        <a href="#" target="_blank" class="btn-panel-secondary" id="panel-portal-url-btn">
-          Direct Portal URL
+          <span>Official Portal</span>
         </a>
       </div>
 
@@ -1628,6 +1845,114 @@
   <!-- ════════════════════════════════════════════════════════════════════════
        MODALS: SOURCE DETAILS & ADD SOURCE
        ════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Modal: 24h Bidding Team Email Digest & Alert Dispatcher -->
+  <div class="modal-backdrop" id="modal-email-alert" style="display: none; z-index: 9999;">
+    <div class="modal-dialog" style="max-width: 580px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 20px;">📧</span>
+          <div>
+            <h3 class="modal-title">Bidding Team Email Digest</h3>
+            <p class="modal-subtitle">Dispatch verified new tender alerts from the past 24 hours</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeEmailAlertModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px 24px;">
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.5; color: var(--text-2);">
+          <strong style="color: #38bdf8; display: block; margin-bottom: 4px;">Human Verification Pipeline Initializer</strong>
+          Dispatches an executive intelligence email containing all opportunities qualified in the rolling 24-hour window. The bidding engineer uses this digest to begin human verification and retrieve the official tender pack.
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="input-alert-email" style="display: flex; justify-content: space-between;">
+            <span>Target Recipient Email *</span>
+            <span style="color: #10b981; font-weight: 600; font-size: 11px;">Active Test Mode</span>
+          </label>
+          <input type="email" id="input-alert-email" class="form-input" value="nikominfrasolutionsss@gmail.com" required style="font-family: monospace; font-size: 13.5px;" />
+        </div>
+
+        <div class="form-row-2" style="margin-bottom: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="select-alert-window">Scanning Window</label>
+            <select id="select-alert-window" class="form-select">
+              <option value="24h" selected>Past 24 Hours (Daily Digest)</option>
+              <option value="48h">Past 48 Hours</option>
+              <option value="7d">Past 7 Days</option>
+              <option value="all">All-Time Qualified Opportunities</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qualified Tenders Ready</label>
+            <div id="alert-summary-count" style="padding: 9px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-weight: 700; color: #38bdf8; font-size: 13.5px;">
+              Loading count...
+            </div>
+          </div>
+        </div>
+
+        <div id="email-dispatch-status" style="display: none; padding: 12px; border-radius: 6px; font-size: 12.5px; margin-top: 10px;"></div>
+      </div>
+      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn-modal-secondary" onclick="previewEmailDigestInBrowser()" style="font-size: 12px;">Preview in Browser ↗</button>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-modal-secondary" onclick="closeEmailAlertModal()">Close</button>
+          <button type="button" class="btn-modal-primary" id="btn-send-email-digest" onclick="sendBiddingEmailAlert()" style="background: #2563eb; font-weight: 600;">Send Digest Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Disqualification Warning & Override Confirmation -->
+  <div class="modal-backdrop" id="modal-disqualification-warning" style="display: none; z-index: 9999;">
+    <div class="modal-dialog" style="max-width: 540px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+        <div class="modal-title-wrap">
+          <span class="modal-icon" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-size: 22px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">⚠️</span>
+          <div>
+            <h3 class="modal-title" style="color: #ef4444; font-size: 16px; margin: 0;">Warning: Disqualified Tender Override</h3>
+            <p class="modal-subtitle" style="margin-top: 2px;">Confirming movement of an out-of-scope / disqualified tender</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeDisqualificationWarningModal(false)">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px 24px;">
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+          <div style="font-weight: 600; color: #ef4444; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 13.5px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            Automated Disqualification Safeguard Triggered
+          </div>
+          <div style="font-size: 13px; color: var(--text-2); line-height: 1.5;">
+            This tender was analyzed and flagged as <strong>Disqualified / Out-of-Scope</strong> by the intelligence matching engine. Moving it will override the automated rejection and re-introduce it into your active pipeline.
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 13px;">
+          <div style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Tender Details</div>
+          <div id="warn-modal-tender-title" style="font-weight: 600; color: var(--text-1); margin: 6px 0 8px 0; line-height: 1.4;">—</div>
+          <div style="display: flex; gap: 16px; margin-bottom: 10px; font-size: 12px; color: var(--text-2);">
+            <div>Reference: <span id="warn-modal-tender-ref" style="font-family: monospace; color: var(--text-1); font-weight: 600;">—</span></div>
+            <div>Portal: <span id="warn-modal-tender-portal" style="color: var(--text-1);">—</span></div>
+          </div>
+          <div style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 10px;">Identified Disqualification Reason</div>
+          <div id="warn-modal-tender-reason" style="font-size: 12px; font-family: monospace; color: #f87171; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; margin-top: 4px; word-break: break-word; border: 1px solid rgba(239, 68, 68, 0.2);">—</div>
+        </div>
+
+        <div style="margin-top: 16px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(56, 189, 248, 0.08); border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
+          <span>Target Field / Status:</span>
+          <strong id="warn-modal-target-status" style="color: #38bdf8; font-size: 14px;">—</strong>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-modal-secondary" onclick="closeDisqualificationWarningModal(false)">Cancel (Keep Disqualified)</button>
+        <button type="button" class="btn-modal-primary" id="btn-confirm-disqual-override" style="background: #dc2626; border-color: #ef4444; color: #ffffff; font-weight: 600;" onclick="executeDisqualificationOverride()">Confirm & Move</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal: Add Monitored Source -->
   <div class="modal-backdrop" id="modal-add-source" style="display: none;">

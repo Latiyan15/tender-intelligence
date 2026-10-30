@@ -58,7 +58,7 @@ class DiscoveryService:
             # 18 High-Priority State & UT Procurement Portals
             "up_tenders": GepnicPortalAdapter("up_tenders", "Uttar Pradesh eProcurement", "https://etender.up.nic.in/nicgep/app", "Government of Uttar Pradesh", self.http_client),
             "mahatenders": GepnicPortalAdapter("mahatenders", "Maharashtra eProcurement (MahaTenders)", "https://mahatenders.gov.in/nicgep/app", "Government of Maharashtra", self.http_client),
-            "karnataka_eproc": PsuStatePortalAdapter("karnataka_eproc", "Karnataka eProcurement (KPPP)", "https://eproc.karnataka.gov.in", "Government of Karnataka", "Government", self.http_client),
+            "karnataka_eproc": PsuStatePortalAdapter("karnataka_eproc", "Karnataka eProcurement (KPPP)", "https://kppp.karnataka.gov.in", "Government of Karnataka", "Government", self.http_client),
             "tn_tenders": GepnicPortalAdapter("tn_tenders", "Tamil Nadu eProcurement (TNTenders)", "https://tntenders.gov.in/nicgep/app", "Government of Tamil Nadu", self.http_client),
             "gujarat_nprocure": PsuStatePortalAdapter("gujarat_nprocure", "Gujarat nProcure", "https://www.nprocure.com", "Gujarat Informatics Limited (GIL)", "Government", self.http_client),
             "rajasthan_eproc": GepnicPortalAdapter("rajasthan_eproc", "Rajasthan eProcurement", "https://eproc.rajasthan.gov.in/nicgep/app", "Government of Rajasthan", self.http_client),
@@ -157,8 +157,12 @@ class DiscoveryService:
         try:
             from concurrent.futures import ThreadPoolExecutor, as_completed
 
-            # Run sources concurrently across worker threads so unresponsive/geo-blocked portals do not stall the scan
-            with ThreadPoolExecutor(max_workers=8) as executor:
+            # Production High-Throughput Concurrent Execution (16 workers)
+            # Parallelizes scraping across all portals with strict fail-fast timeout guards
+            total_sources_count = len(self.sources)
+            completed_sources_count = 0
+
+            with ThreadPoolExecutor(max_workers=16) as executor:
                 future_to_src = {
                     executor.submit(self.run_discovery_for_source, src_name, max_per_source, True): src_name
                     for src_name in self.sources
@@ -169,10 +173,13 @@ class DiscoveryService:
                         break
                     src_name = future_to_src[future]
                     desc = source_descriptions.get(src_name, src_name)
+                    completed_sources_count += 1
+                    pct = int((completed_sources_count / total_sources_count) * 100)
                     self.scan_state["active_source"] = src_name
-                    self.scan_state["message"] = f"Processed {desc}..."
+                    self.scan_state["progress_pct"] = pct
+                    self.scan_state["message"] = f"Scanned {completed_sources_count}/{total_sources_count} portals ({pct}%) — {desc}..."
                     try:
-                        res = future.result()
+                        res = future.result(timeout=10.0)
                         results[src_name] = res
                         total_scanned += res.get("scanned", 0)
                         total_discovered += res.get("discovered", 0)
@@ -181,7 +188,7 @@ class DiscoveryService:
                         self.scan_state["items_discovered"] = total_discovered
                         self.scan_state["items_qualified"] = total_qualified
                     except Exception as e:
-                        logger.error(f"Error running discovery for {src_name}: {e}")
+                        logger.debug(f"Source discovery notice for {src_name}: {e}")
                         results[src_name] = {"source": src_name, "status": "failed", "error": str(e)}
 
             # Cloud resilience check:
@@ -243,6 +250,7 @@ class DiscoveryService:
 
             discovered_count = 0
             qualified_count = 0
+            items_to_batch = []
 
             for raw in raw_tenders:
                 desc = getattr(raw, 'work_description', None) or raw.title or ""
@@ -319,13 +327,15 @@ class DiscoveryService:
 
                 # Matches format
                 matches_data = [m.to_dict() for m in match_result.matches]
-
-                # Save into database repository
-                self.repo.upsert_tender(tender_data, matches_data)
+                items_to_batch.append((tender_data, matches_data))
 
                 discovered_count += 1
                 if qual_val:
                     qualified_count += 1
+
+            # High-performance batch transaction
+            if items_to_batch:
+                self.repo.batch_upsert_tenders(items_to_batch)
 
             self.repo.finish_source_run(
                 run_id=run_id,

@@ -16,16 +16,50 @@ let sortDirection = 'desc';
 
 function parseDateRobust(dateStr) {
   if (!dateStr) return null;
-  const s = String(dateStr).trim();
+  if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+  let s = String(dateStr).trim();
   if (!s) return null;
-  const d = new Date(s);
+
+  // 1. If timestamp has 'T' but no timezone suffix (e.g. SQLite ISO), append 'Z' so it parses as UTC
+  if (s.includes('T') && !s.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+    const dUtc = new Date(s + 'Z');
+    if (!isNaN(dUtc.getTime())) return dUtc;
+  }
+
+  // 2. Direct Date constructor parse
+  let d = new Date(s);
   if (!isNaN(d.getTime())) return d;
+
+  // 3. Space-separated timestamp format
+  if (s.includes(' ') && !s.includes('T')) {
+    s = s.replace(' ', 'T');
+    d = new Date(s.endsWith('Z') ? s : s + 'Z');
+    if (!isNaN(d.getTime())) return d;
+  }
+
   try {
     const parts = s.split(' ')[0];
-    const d2 = new Date(parts);
+    const d2 = new Date(parts.endsWith('Z') ? parts : parts + 'Z');
     if (!isNaN(d2.getTime())) return d2;
   } catch (e) {}
   return null;
+}
+
+function getTenderSector(t) {
+  const text = ((t.title || '') + ' ' + (t.authority || '')).toLowerCase();
+  const defKeys = ['air force', 'army', 'navy', 'defence', 'defense', 'armoured', 'ordnance', 'cantonment', 'military', 'mes', 'crpf', 'bsf', 'cisf', 'itbp'];
+  if (defKeys.some(k => text.includes(k))) return 'Defence';
+
+  const transKeys = ['railway', 'metro', 'transport', 'airport', 'aai', 'highway', 'nhai', 'port', 'shipping', 'irctc', 'rvnl'];
+  if (transKeys.some(k => text.includes(k))) return 'Transport';
+
+  const energyKeys = ['power', 'energy', 'solar', 'grid', 'electricity', 'discom', 'ntpc', 'transco', 'gencor', 'oil', 'gas', 'ongc', 'iocl', 'bpcl', 'gail', 'hydel', 'thermal'];
+  if (energyKeys.some(k => text.includes(k))) return 'Energy & Utilities';
+
+  const entKeys = ['bank', 'rbi', 'sbi', 'insurance', 'lic', 'commercial', 'enterprise', 'telecom', 'bsnl', 'limited', 'corp', 'exchange', 'bse', 'nse', 'ltd'];
+  if (entKeys.some(k => text.includes(k))) return 'Enterprise / Commercial';
+
+  return 'Government';
 }
 
 function isWithinTimeWindow(t, windowStr) {
@@ -46,6 +80,7 @@ function isWithinTimeWindow(t, windowStr) {
   const isCreatedRecent = createdDt && createdDt >= cutoff;
   const isPubRecent = pubDt && pubDt >= cutoff;
 
+  // Strict Discovery Window: Only evaluate when the opportunity was originally published or discovered
   return Boolean(isCreatedRecent || isPubRecent);
 }
 
@@ -175,11 +210,11 @@ async function loadMetrics(timeWindow = currentTimeWindow) {
     const data = await res.json();
 
     // 1. Top KPI Metrics with Counter Animation
-    const total = data.total_discovered || data.total_tenders || 0;
     const tierA = data.tier_a_count || 0;
     const tierB = data.tier_b_count || 0;
     const tierC = data.tier_c_count || 0;
     const tierD = data.tier_d_count || 0;
+    const total = data.direct_matches || (tierA + tierB + tierC + tierD) || 0;
 
     animateCounter(document.getElementById('metric-total'), total);
     animateCounter(document.getElementById('nav-tender-count'), total);
@@ -357,12 +392,15 @@ function renderSectorBars(sectors, total) {
     footerCount.textContent = `${topSectors.length} sectors shown`;
   }
 
+  const currentSectorVal = document.getElementById('filter-sector')?.value || '';
+
   container.innerHTML = topSectors.map((s, idx) => {
     const displayName = formatSectorName(s.name);
     const barWidthPct = Math.max(3.5, (s.count / maxVal) * 82);
+    const isSelected = currentSectorVal === s.name;
 
     return `
-      <div class="source-bar-row" style="animation-delay: ${(idx + 1) * 0.06}s;" onclick="filterBySector('${escapeHtml(s.name)}')" title="Filter tenders by ${escapeHtml(s.name)} (${s.count} tenders)">
+      <div class="source-bar-row ${isSelected ? 'active-bar' : ''}" style="animation-delay: ${(idx + 1) * 0.06}s;" onclick="filterBySector('${escapeHtml(s.name)}')" title="Filter tenders by ${escapeHtml(s.name)} (${s.count} tenders)">
         <span class="source-bar-label">${escapeHtml(displayName)}</span>
         <div class="source-bar-wrapper">
           <div class="source-bar-fill" style="width: ${barWidthPct.toFixed(1)}%;"></div>
@@ -376,9 +414,14 @@ function renderSectorBars(sectors, total) {
 function filterBySector(sectorName) {
   const sel = document.getElementById('filter-sector');
   if (sel) {
-    sel.value = sectorName;
+    if (sel.value === sectorName) {
+      sel.value = '';
+      showToast(`Cleared Sector filter`);
+    } else {
+      sel.value = sectorName;
+      showToast(`Filtered by Sector: ${sectorName}`);
+    }
     applyFilters();
-    showToast(`Filtered by ${sectorName}`);
   }
 }
 
@@ -613,16 +656,25 @@ async function selectTenderRow(tenderId, openPanel = true) {
 }
 
 function populateDetailsPanel(t) {
-  document.getElementById('panel-title').textContent = t.title;
+  if (!t) return;
 
-  // Area Badge (Subject name)
+  // Title & Header Reference
+  document.getElementById('panel-title').textContent = t.title || 'Untitled Opportunity';
+  const refVal = t.reference_no || t.tender_id || 'TENDER';
+  const refBadge = document.getElementById('panel-header-ref');
+  if (refBadge) {
+    refBadge.textContent = refVal.length > 20 ? refVal.slice(0, 18) + '...' : refVal;
+    refBadge.title = `Click to copy reference: ${refVal}`;
+  }
+
+  // Tier Badge
   const tierBadgeEl = document.getElementById('panel-tier-badge');
   const hasTier = t.highest_tier && t.highest_tier.trim() !== '';
   if (hasTier) {
     const areaNamesFull = {
       'A': 'Cyber Security',
       'B': 'IT Infrastructure',
-      'C': 'Cloud',
+      'C': 'Cloud & DR',
       'D': 'Infra & Services'
     };
     tierBadgeEl.textContent = areaNamesFull[t.highest_tier.toUpperCase()] || t.highest_tier;
@@ -640,7 +692,10 @@ function populateDetailsPanel(t) {
   }
   document.getElementById('panel-type-badge').textContent = t.tender_type || 'Open Tender';
 
-  // Workflow Decision & Management Card Controls
+  // Human Verification Status Banner
+  updatePanelVerificationState(t);
+
+  // Workflow Decision & Lead Assignment
   const wfSelect = document.getElementById('panel-workflow-status-select');
   if (wfSelect) wfSelect.value = t.workflow_status || 'new';
 
@@ -651,57 +706,48 @@ function populateDetailsPanel(t) {
   if (notesText) notesText.value = t.user_notes || '';
 
   const starBtn = document.getElementById('panel-star-toggle-btn');
-  const starIcon = document.getElementById('panel-star-icon');
+  const starIconSvg = document.getElementById('panel-star-icon-svg');
   const starLabel = document.getElementById('panel-star-label');
-  if (starBtn && starIcon && starLabel) {
+  if (starBtn && starLabel) {
     starBtn.classList.toggle('active', Boolean(t.is_watchlisted));
-    starIcon.textContent = t.is_watchlisted ? '★' : '☆';
+    if (starIconSvg) {
+      starIconSvg.setAttribute('fill', t.is_watchlisted ? '#f59e0b' : 'none');
+      starIconSvg.setAttribute('stroke', t.is_watchlisted ? '#f59e0b' : 'currentColor');
+    }
     starLabel.textContent = t.is_watchlisted ? 'In Watchlist' : 'Watchlist';
   }
 
   // Overview Tab Fields
-  const refVal = t.reference_no || t.tender_id;
-  document.getElementById('panel-ref-no').innerHTML = `
-    <span style="font-family: monospace; font-size: 12.5px;">${escapeHtml(refVal)}</span>
-    <button type="button" onclick="navigator.clipboard.writeText('${escapeHtml(refVal)}'); showToast('Copied Reference ID: ${escapeHtml(refVal)}');" title="Copy Reference ID" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 11px; padding: 2px 6px; margin-left: 6px;">📋 Copy</button>
-  `;
-  document.getElementById('panel-buyer-org').textContent = t.authority || 'Unknown Authority';
-  document.getElementById('panel-location').textContent = t.location || 'India';
+  document.getElementById('panel-ref-no').textContent = refVal;
+  document.getElementById('panel-buyer-org').textContent = t.authority || 'Unknown Buyer';
+  document.getElementById('panel-location').textContent = t.location || 'India (Pan-India)';
 
   const pubDate = t.published_date 
     ? new Date(t.published_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : 'Recent';
+    : 'Recent Ingestion';
   document.getElementById('panel-pub-date').textContent = pubDate;
 
   const deadlineInfo = formatDeadline(t.submission_deadline);
-  document.getElementById('panel-deadline').textContent = t.submission_deadline || 'Check Portal';
+  document.getElementById('panel-deadline').textContent = t.submission_deadline ? `${deadlineInfo.dateStr} (${deadlineInfo.tagStr})` : 'Check Portal';
+  
   const daysLeftEl = document.getElementById('panel-days-left');
   if (daysLeftEl) {
     daysLeftEl.textContent = deadlineInfo.tagStr;
-    daysLeftEl.className = 'days-left-tag ' + deadlineInfo.urgencyClass;
-  }
-
-  const expiryBanner = document.getElementById('panel-expiry-banner');
-  if (expiryBanner) {
-    if (deadlineInfo.isExpired) {
-      expiryBanner.style.display = 'flex';
-      expiryBanner.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        <span><strong>Submission Closed (${escapeHtml(deadlineInfo.tagStr)}):</strong> The official bidding deadline (${escapeHtml(deadlineInfo.dateStr)}) has passed.</span>
-      `;
-    } else {
-      expiryBanner.style.display = 'none';
-    }
+    daysLeftEl.className = 'panel-kpi-val ' + (deadlineInfo.isExpired ? 'expired-tag' : '');
   }
 
   const costStr = t.estimated_cost_inr 
     ? `₹ ${(t.estimated_cost_inr >= 10000000 ? (t.estimated_cost_inr / 10000000).toFixed(2) + ' Cr' : (t.estimated_cost_inr / 100000).toFixed(2) + ' Lakhs')}`
-    : 'Value Not Disclosed';
+    : 'Refer BOQ / Item Rate';
   document.getElementById('panel-value').textContent = costStr;
+
+  const emdVal = t.emd_inr ? `₹ ${t.emd_inr.toLocaleString('en-IN')}` : 'Exempted (MSME)';
+  const emdEl = document.getElementById('panel-det-emd');
+  if (emdEl) emdEl.textContent = emdVal;
 
   document.getElementById('panel-tender-type').textContent = t.tender_type || 'Open Tender (Domestic)';
 
-  // Key Systems in Panel
+  // Key Systems
   const systems = extractKeySystems(t);
   document.getElementById('panel-key-systems').innerHTML = systems.map(s => 
     `<span class="tag-system" style="padding: 4px 8px; font-size: 11px;">${escapeHtml(s)}</span>`
@@ -709,54 +755,385 @@ function populateDetailsPanel(t) {
 
   document.getElementById('panel-scope').textContent = t.description || 'Turnkey engineering and supply contract for critical infrastructure.';
 
-  // Details Tab
-  document.getElementById('panel-det-id').textContent = t.tender_id;
-  document.getElementById('panel-det-emd').textContent = t.emd_inr ? `₹ ${t.emd_inr.toLocaleString('en-IN')}` : 'Exempted / Not Specified';
-  document.getElementById('panel-det-fee').textContent = t.doc_fee_inr ? `₹ ${t.doc_fee_inr.toLocaleString('en-IN')}` : 'Free / Exempted';
-  document.getElementById('panel-det-opening').textContent = t.opening_date || 'Check Portal NIT';
-  document.getElementById('panel-det-portal').textContent = formatSourceName(t.portal_source);
-
-  // Documents Tab
-  document.getElementById('panel-doc-name').textContent = `${t.reference_no || t.tender_id} — Official Tender Notice`;
-  const portalWebUrl = getPortalWebUrl(t);
-  const docUrl = getDocumentDownloadUrl(t);
-
-  const docLink = document.getElementById('panel-doc-link');
-  if (docLink) {
-    docLink.href = docUrl || portalWebUrl;
-    docLink.onclick = (e) => downloadTenderDoc(e);
+  // Expiry Banner
+  const expiryBanner = document.getElementById('panel-expiry-banner');
+  if (expiryBanner) {
+    if (deadlineInfo.isExpired) {
+      expiryBanner.style.display = 'flex';
+      expiryBanner.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span><strong>Submission Closed:</strong> Official deadline (${escapeHtml(deadlineInfo.dateStr)}) has passed.</span>
+      `;
+    } else {
+      expiryBanner.style.display = 'none';
+    }
   }
 
-  // External Portal Action Button
+  // Official Portal Action Links
+  const bridgeUrl = `${API_BASE}/api/portal/bridge?tender_id=${encodeURIComponent(t.tender_id)}`;
   const portalBtn = document.getElementById('panel-portal-url-btn');
-  if (portalBtn) {
-    portalBtn.href = portalWebUrl;
-    portalBtn.onclick = (e) => openDirectPortalUrl(e);
-  }
+  if (portalBtn) portalBtn.href = bridgeUrl;
+
+  const docBridgeBtn = document.getElementById('panel-doc-portal-bridge-btn');
+  if (docBridgeBtn) docBridgeBtn.href = bridgeUrl;
 
   // Keywords & Evidence Tab
   const matchesList = document.getElementById('panel-matches-list');
-  if (t.matches && t.matches.length > 0) {
-    matchesList.innerHTML = t.matches.map(m => `
-      <div class="evidence-box">
-        <div class="evidence-header">
-          <span class="evidence-term">🔑 Keyword: "${escapeHtml(m.term)}"</span>
-          <span class="table-tier-badge tier-badge-${m.tier.toLowerCase()}" style="font-size: 10px; width: auto; height: auto; padding: 2px 6px; border-radius: 4px;">
-            Tier ${m.tier} (${escapeHtml(m.match_group || m.group || 'General')})
-          </span>
+  if (matchesList) {
+    if (t.matches && t.matches.length > 0) {
+      matchesList.innerHTML = t.matches.map(m => `
+        <div class="evidence-box">
+          <div class="evidence-header">
+            <span class="evidence-term">Keyword: "${escapeHtml(m.term)}"</span>
+            <span class="table-tier-badge tier-badge-${m.tier.toLowerCase()}" style="font-size: 10px; width: auto; height: auto; padding: 2px 6px; border-radius: 4px;">
+              Tier ${m.tier} (${escapeHtml(m.match_group || m.group || 'General')})
+            </span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
+            Field: ${escapeHtml(m.source_field || 'content')} | Text: "${escapeHtml(m.matched_text)}"
+          </div>
+          <div class="evidence-snippet">"...${escapeHtml(m.snippet || m.matched_text)}..."</div>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
-          Field: ${escapeHtml(m.source_field || 'content')} | Text: "${escapeHtml(m.matched_text)}"
-        </div>
-        <div class="evidence-snippet">"...${escapeHtml(m.snippet || m.matched_text)}..."</div>
-      </div>
-    `).join('');
+      `).join('');
+    } else {
+      matchesList.innerHTML = `<div style="color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 24px 0;">No keyword matches recorded for this tender.</div>`;
+    }
+  }
+
+  // Load Authentic Documents & Eligibility Analysis in Background
+  loadPanelDocuments(t.tender_id);
+  loadPanelEligibility(t.tender_id);
+}
+
+function updatePanelVerificationState(t) {
+  const dot = document.getElementById('panel-verif-dot');
+  const label = document.getElementById('panel-verif-label');
+  const sub = document.getElementById('panel-verif-sub');
+  const approveBtn = document.getElementById('btn-verif-approve');
+  if (!dot || !label || !sub) return;
+
+  const st = t.workflow_status || 'new';
+
+  if (st === 'verified') {
+    dot.className = 'verification-dot verified';
+    label.textContent = '✓ Human Verified: Approved for Bidding';
+    sub.textContent = 'Feasibility confirmed by Bidding Engineer';
+    if (approveBtn) approveBtn.style.display = 'none';
+  } else if (st === 'doc_attached') {
+    dot.className = 'verification-dot verified';
+    label.textContent = '✓ Official NIT Attached';
+    sub.textContent = 'Document submitted & verified in Qualification';
+    if (approveBtn) approveBtn.style.display = 'none';
+  } else if (st === 'rejected' || st === 'disqualified') {
+    dot.className = 'verification-dot rejected';
+    label.textContent = '⚠️ Flagged as Out-of-Scope / Disqualified';
+    sub.textContent = t.qualification_reason || 'Marked disqualified by engineer';
+    if (approveBtn) {
+      approveBtn.style.display = 'inline-flex';
+      approveBtn.innerHTML = `<span>Re-Qualify</span>`;
+    }
   } else {
-    matchesList.innerHTML = `
-      <div style="color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 24px 0;">
-        No specific keyword matches recorded for this tender.
+    dot.className = 'verification-dot';
+    label.textContent = 'Pending Human Verification';
+    sub.textContent = 'Review scope & confirm feasibility for Nikom';
+    if (approveBtn) {
+      approveBtn.style.display = 'inline-flex';
+      approveBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Verify & Approve</span>`;
+    }
+  }
+}
+
+async function verifyCurrentTender() {
+  if (!currentSelectedTenderId) return;
+  const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
+            (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
+  if (!t) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/tenders/verify?tender_id=${encodeURIComponent(currentSelectedTenderId)}`, {
+      method: 'POST'
+    });
+    if (res.ok) {
+      t.workflow_status = 'verified';
+      updatePanelVerificationState(t);
+      const sel = document.getElementById('panel-workflow-status-select');
+      if (sel) sel.value = 'verified';
+      updateSegregationCounts();
+      applyFilters();
+      showToast(`✓ Tender verified & approved for bidding!`);
+    }
+  } catch (err) {
+    showToast(`Verification error: ${err.message}`);
+  }
+}
+
+function rejectCurrentTender() {
+  if (!currentSelectedTenderId) return;
+  const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
+            (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
+  if (!t) return;
+
+  showDisqualificationWarning({
+    tender: t,
+    targetStatus: 'rejected',
+    onConfirm: async () => {
+      await executeDirectStatusUpdate(currentSelectedTenderId, 'rejected');
+      updatePanelVerificationState(t);
+      const sel = document.getElementById('panel-workflow-status-select');
+      if (sel) sel.value = 'rejected';
+    },
+    onCancel: () => {}
+  });
+}
+
+function copyCurrentRef() {
+  if (!currentSelectedTenderId) return;
+  const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
+            (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
+  if (!t) return;
+  const ref = t.reference_no || t.tender_id;
+  navigator.clipboard.writeText(ref).then(() => {
+    showToast(`Copied Reference: ${ref}`);
+  });
+}
+
+// ── Document Ingestion & Pack Loading ─────────────────────────────────────────
+async function loadPanelDocuments(tenderId) {
+  const container = document.getElementById('panel-docs-list-container');
+  const countPill = document.getElementById('panel-docs-attached-count');
+  const badgeCount = document.getElementById('tab-badge-docs-count');
+  const autoBox = document.getElementById('panel-autofetch-box');
+  if (!container) return;
+
+  container.innerHTML = '<div style="color: var(--text-3); font-size: 12px; padding: 12px 0;">Loading documents pack...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/documents/list?tender_id=${encodeURIComponent(tenderId)}`);
+    if (!res.ok) throw new Error('Failed to load documents');
+    const data = await res.json();
+
+    const attached = data.attached_documents || [];
+    const autoInfo = data.auto_fetch_info;
+
+    if (countPill) countPill.textContent = `${attached.length} Attached`;
+    if (badgeCount) badgeCount.textContent = attached.length;
+
+    // Show Auto-Fetch GeM Banner if direct government PDF is available and not yet downloaded
+    if (autoBox) {
+      const alreadyHasGem = attached.some(d => d.title.includes('GeM') || d.doc_type.includes('GeM'));
+      if (autoInfo && !alreadyHasGem) {
+        autoBox.style.display = 'flex';
+      } else {
+        autoBox.style.display = 'none';
+      }
+    }
+
+    if (attached.length === 0) {
+      container.innerHTML = `
+        <div class="doc-row-card" style="border-style: dashed; justify-content: center; text-align: center; padding: 16px;">
+          <div style="color: var(--text-3); font-size: 12px;">
+            No official documents attached yet.<br>
+            <span style="font-size: 11px;">Upload the official NIT above or click "Fetch & Attach GeM PDF" if available.</span>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = attached.map(doc => {
+      const isPdf = doc.title.toLowerCase().endsWith('.pdf');
+      const isSheet = doc.title.toLowerCase().endsWith('.xlsx') || doc.title.toLowerCase().endsWith('.xls');
+      const iconLabel = isPdf ? 'PDF' : (isSheet ? 'XLS' : 'DOC');
+      const sizeStr = doc.file_size_bytes ? `${(doc.file_size_bytes / 1024).toFixed(1)} KB` : '';
+      const pagesStr = doc.page_count ? ` • ${doc.page_count} Pages` : '';
+
+      return `
+        <div class="doc-row-card">
+          <div class="doc-row-left">
+            <span class="doc-type-icon-badge">${iconLabel}</span>
+            <div style="overflow: hidden;">
+              <div class="doc-row-title" title="${escapeHtml(doc.title)}">${escapeHtml(doc.title)}</div>
+              <div class="doc-row-meta">Official Notice${pagesStr} • ${sizeStr}</div>
+            </div>
+          </div>
+          <div class="doc-row-actions">
+            <a href="${API_BASE}${doc.download_url}" target="_blank" class="btn-doc-download-pill" title="View / Download official document">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Download</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = `<div style="color: #ef4444; font-size: 12px;">Error loading documents: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+async function autoFetchCurrentTenderDoc() {
+  if (!currentSelectedTenderId) return;
+  const btn = document.getElementById('btn-autofetch-trigger');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>⏳ Downloading official signed government PDF...</span>`;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/documents/auto-fetch?tender_id=${encodeURIComponent(currentSelectedTenderId)}`, {
+      method: 'POST'
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✓ Successfully retrieved official GeM PDF (${data.page_count} pages)!`);
+      loadPanelDocuments(currentSelectedTenderId);
+      loadPanelEligibility(currentSelectedTenderId);
+      // Update local tender workflow_status
+      const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
+                (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
+      if (t) {
+        t.workflow_status = 'doc_attached';
+        updatePanelVerificationState(t);
+      }
+    } else {
+      showToast(`Notice: ${data.message}`);
+    }
+  } catch (err) {
+    showToast(`Auto-fetch error: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>⚡ Fetch & Attach Official GeM PDF</span>`;
+    }
+  }
+}
+
+// ── Drag & Drop File Upload Handler ──────────────────────────────────────────
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const zone = document.getElementById('panel-upload-zone');
+  if (zone) zone.classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const zone = document.getElementById('panel-upload-zone');
+  if (zone) zone.classList.remove('dragover');
+}
+
+function handleFileDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const zone = document.getElementById('panel-upload-zone');
+  if (zone) zone.classList.remove('dragover');
+
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    uploadTenderFile(e.dataTransfer.files[0]);
+  }
+}
+
+function handleFileSelect(e) {
+  if (e.target && e.target.files && e.target.files.length > 0) {
+    uploadTenderFile(e.target.files[0]);
+  }
+}
+
+async function uploadTenderFile(file) {
+  if (!currentSelectedTenderId || !file) return;
+
+  const progressWrap = document.getElementById('upload-progress-wrap');
+  const progressBar = document.getElementById('upload-progress-bar');
+  const progressLabel = document.getElementById('upload-progress-label');
+
+  if (progressWrap) progressWrap.style.display = 'block';
+  if (progressLabel) progressLabel.textContent = `Uploading ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`;
+  if (progressBar) progressBar.style.width = '60%';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/documents/upload?tender_id=${encodeURIComponent(currentSelectedTenderId)}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+
+    if (progressBar) progressBar.style.width = '100%';
+    showToast(`✓ Official document "${file.name}" attached successfully!`);
+
+    setTimeout(() => {
+      if (progressWrap) progressWrap.style.display = 'none';
+      loadPanelDocuments(currentSelectedTenderId);
+      loadPanelEligibility(currentSelectedTenderId);
+      const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
+                (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
+      if (t) {
+        t.workflow_status = 'doc_attached';
+        updatePanelVerificationState(t);
+      }
+    }, 400);
+
+  } catch (err) {
+    if (progressWrap) progressWrap.style.display = 'none';
+    showToast(`Upload error: ${err.message}`);
+  }
+}
+
+// ── Qualify Eligibility Sheet Renderer ───────────────────────────────────────
+async function loadPanelEligibility(tenderId) {
+  const container = document.getElementById('panel-eligibility-container');
+  if (!container) return;
+
+  container.innerHTML = '<div style="color: var(--text-3); font-size: 12px; padding: 12px 0;">Evaluating against Nikom InfraSolutions profile...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/documents/eligibility?tender_id=${encodeURIComponent(tenderId)}`);
+    if (!res.ok) throw new Error('Failed to evaluate eligibility');
+    const data = await res.json();
+
+    const isQual = data.overall_verdict === 'Qualified';
+    const cardClass = isQual ? '' : 'review';
+    const badgeClass = isQual ? '' : 'review';
+
+    let html = `
+      <div class="eligibility-verdict-card ${cardClass}">
+        <div class="verdict-left">
+          <span class="verdict-badge-pill ${badgeClass}">${escapeHtml(data.overall_verdict)}</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: var(--text);">Nikom Corporate Feasibility</div>
+            <div class="verdict-company-sub">Evaluated for: <strong>${escapeHtml(data.company_evaluated)}</strong></div>
+          </div>
+        </div>
+        <div class="verdict-score-display">
+          <div class="verdict-score-num ${badgeClass}">${data.verdict_score}%</div>
+          <div class="verdict-score-label">${data.met_criteria_count} of ${data.total_criteria_count} Met</div>
+        </div>
       </div>
     `;
+
+    (data.criteria || []).forEach(c => {
+      const statusClass = c.status === 'Met' ? 'status-badge-met' : (c.status === 'Check' ? 'status-badge-check' : 'status-badge-not-met');
+      html += `
+        <div class="criteria-card-item">
+          <div class="criteria-header">
+            <span class="criteria-title">${escapeHtml(c.name)}</span>
+            <span class="${statusClass}">${escapeHtml(c.status)}</span>
+          </div>
+          <div class="criteria-req-text">Requirement: <strong>${escapeHtml(c.requirement)}</strong></div>
+          <div class="criteria-profile-match">Nikom Profile: ${escapeHtml(c.nikom_profile)}</div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+  } catch (err) {
+    container.innerHTML = `<div style="color: #ef4444; font-size: 12px;">Error evaluating eligibility: ${escapeHtml(err.message)}</div>`;
   }
 }
 
@@ -832,21 +1209,15 @@ function downloadTenderDoc(e) {
             (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
   if (!t) return;
 
-  const docUrl = getDocumentDownloadUrl(t);
-  if (docUrl && docUrl.startsWith('http')) {
-    const cleanId = (t.reference_no || t.tender_id || 'tender').replace(/[\/\\:*?"<>|]/g, '_');
-    showToast(`Downloading official tender document (${cleanId})...`);
-    const dlUrl = `${API_BASE}/api/documents/download?url=${encodeURIComponent(docUrl)}&filename=${encodeURIComponent(cleanId)}`;
-    const link = document.createElement('a');
-    link.href = dlUrl;
-    link.setAttribute('download', `${cleanId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } else {
-    showToast('Tender document direct link not found. Opening portal page...');
-    openDirectPortalUrl();
-  }
+  const cleanId = (t.reference_no || t.tender_id || 'tender').replace(/[/\:*?"<>|]/g, '_');
+  showToast(`Downloading official PDF document (${cleanId})...`);
+  const dlUrl = `${API_BASE}/api/documents/download?tender_id=${encodeURIComponent(t.tender_id)}`;
+  const link = document.createElement('a');
+  link.href = dlUrl;
+  link.setAttribute('download', `${cleanId}_NIT_Specification.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function copyRefAndSearchPortal() {
@@ -1165,12 +1536,13 @@ function setWorkflowFilter(status) {
 
 function updateSegregationCounts() {
   const inWindowTenders = allLoadedTenders.filter(t => isWithinTimeWindow(t, currentTimeWindow));
-  const total = inWindowTenders.length;
+  const qualifiedInWindow = inWindowTenders.filter(t => t.is_qualified && t.workflow_status !== 'disqualified');
+  const total = qualifiedInWindow.length;
   const countWatchlist = inWindowTenders.filter(t => t.is_watchlisted).length;
   const countConsidered = inWindowTenders.filter(t => (t.workflow_status || 'new') === 'considered').length;
   const countUnderReview = inWindowTenders.filter(t => (t.workflow_status || 'new') === 'under_review').length;
   const countReviewed = inWindowTenders.filter(t => (t.workflow_status || 'new') === 'reviewed').length;
-  const countRejected = inWindowTenders.filter(t => (t.workflow_status || 'new') === 'rejected').length;
+  const countRejected = inWindowTenders.filter(t => t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified).length;
   const countExpired = inWindowTenders.filter(t => isTenderExpired(t)).length;
 
   const elAll = document.getElementById('wf-count-all');
@@ -1195,13 +1567,15 @@ function updateSegregationCounts() {
   if (elExp) elExp.textContent = countExpired;
 
   // Dynamically update Tier Pills to match the active window & segregation context
-  let baseForTiers = inWindowTenders;
+  let baseForTiers = qualifiedInWindow;
   if (activeWorkflowFilter === 'expired') {
-    baseForTiers = baseForTiers.filter(t => isTenderExpired(t));
+    baseForTiers = inWindowTenders.filter(t => isTenderExpired(t));
   } else if (activeWorkflowFilter === 'watchlist') {
-    baseForTiers = baseForTiers.filter(t => t.is_watchlisted);
+    baseForTiers = inWindowTenders.filter(t => t.is_watchlisted);
+  } else if (activeWorkflowFilter === 'rejected' || activeWorkflowFilter === 'disqualified') {
+    baseForTiers = inWindowTenders.filter(t => t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified);
   } else if (activeWorkflowFilter !== 'all') {
-    baseForTiers = baseForTiers.filter(t => (t.workflow_status || 'new') === activeWorkflowFilter);
+    baseForTiers = inWindowTenders.filter(t => (t.workflow_status || 'new') === activeWorkflowFilter);
   }
 
   const tierAllCount = baseForTiers.length;
@@ -1274,6 +1648,78 @@ function clearTenderSelection() {
   updateBulkToolbar();
 }
 
+// ── Disqualification Warning & Safeguard System ─────────────────────────────
+let pendingDisqualificationAction = null;
+
+function showDisqualificationWarning({ tender, targetStatus, batchCount = 0, onConfirm, onCancel }) {
+  const modal = document.getElementById('modal-disqualification-warning');
+  const labelMap = {
+    'new': 'New Ingest (Active Pipeline)',
+    'under_review': 'Under Review',
+    'considered': 'Considered / Shortlist',
+    'reviewed': 'Reviewed / Held',
+    'watchlist': 'Priority Watchlist',
+    'bulk_consider': 'Shortlist for Active Bidding',
+    'bulk_under_review': 'Under Review',
+    'bulk_reviewed': 'Reviewed / Held',
+    'toggle_watchlist': 'Priority Watchlist'
+  };
+  const targetLabel = labelMap[targetStatus] || targetStatus;
+
+  if (!modal) {
+    const reason = tender.qualification_reason || 'Out-of-Scope / Non-IT Work';
+    if (confirm(`⚠️ Warning: This tender was flagged as Disqualified (${reason}).\n\nAre you sure you want to override and move it to "${targetLabel}"?`)) {
+      if (onConfirm) onConfirm();
+    } else {
+      if (onCancel) onCancel();
+    }
+    return;
+  }
+
+  const titleEl = document.getElementById('warn-modal-tender-title');
+  const refEl = document.getElementById('warn-modal-tender-ref');
+  const portalEl = document.getElementById('warn-modal-tender-portal');
+  const reasonEl = document.getElementById('warn-modal-tender-reason');
+  const targetEl = document.getElementById('warn-modal-target-status');
+
+  if (batchCount > 1) {
+    if (titleEl) titleEl.textContent = `Batch Action includes ${batchCount} Disqualified / Out-of-Scope tenders (e.g., "${(tender.title || '').slice(0, 70)}...")`;
+    if (refEl) refEl.textContent = `Batch Selection (${batchCount} Disqualified)`;
+    if (portalEl) portalEl.textContent = formatSourceName(tender.portal_source);
+    if (reasonEl) reasonEl.textContent = tender.qualification_reason || 'Flagged by negative terms / non-IT work filters';
+  } else {
+    if (titleEl) titleEl.textContent = tender.title || 'Untitled Tender';
+    if (refEl) refEl.textContent = tender.reference_no || tender.tender_id || '—';
+    if (portalEl) portalEl.textContent = formatSourceName(tender.portal_source);
+    if (reasonEl) reasonEl.textContent = tender.qualification_reason || 'Out-of-Scope / Non-IT Work';
+  }
+
+  if (targetEl) targetEl.textContent = targetLabel;
+
+  pendingDisqualificationAction = { onConfirm, onCancel };
+  modal.style.display = 'flex';
+}
+
+function closeDisqualificationWarningModal(confirmed = false) {
+  const modal = document.getElementById('modal-disqualification-warning');
+  if (modal) modal.style.display = 'none';
+
+  if (!confirmed && pendingDisqualificationAction && pendingDisqualificationAction.onCancel) {
+    try { pendingDisqualificationAction.onCancel(); } catch (e) {}
+  }
+  pendingDisqualificationAction = null;
+}
+
+function executeDisqualificationOverride() {
+  const action = pendingDisqualificationAction;
+  closeDisqualificationWarningModal(true);
+  if (action && action.onConfirm) {
+    try { action.onConfirm(); } catch (e) {
+      console.error('Error executing disqualification override:', e);
+    }
+  }
+}
+
 async function executeBulkAction(action) {
   const ids = Array.from(selectedTenderIds);
   if (ids.length === 0) {
@@ -1281,6 +1727,26 @@ async function executeBulkAction(action) {
     return;
   }
 
+  const selectedTenders = allLoadedTenders.filter(t => ids.includes(t.tender_id));
+  const disqualifiedInBatch = selectedTenders.filter(t => t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified);
+
+  if (action !== 'bulk_reject' && disqualifiedInBatch.length > 0) {
+    showDisqualificationWarning({
+      tender: disqualifiedInBatch[0],
+      batchCount: disqualifiedInBatch.length,
+      targetStatus: action,
+      onConfirm: async () => {
+        await proceedWithBulkAction(action, ids);
+      },
+      onCancel: () => {}
+    });
+    return;
+  }
+
+  await proceedWithBulkAction(action, ids);
+}
+
+async function proceedWithBulkAction(action, ids) {
   let toastMsg = 'Processing bulk action...';
   if (action === 'bulk_consider') toastMsg = `Shortlisting ${ids.length} tenders for bidding...`;
   else if (action === 'bulk_under_review') toastMsg = `Moving ${ids.length} tenders to Under Review...`;
@@ -1303,11 +1769,21 @@ async function executeBulkAction(action) {
     // Optimistically update local array
     allLoadedTenders.forEach(t => {
       if (ids.includes(t.tender_id)) {
-        if (action === 'bulk_consider') t.workflow_status = 'considered';
-        else if (action === 'bulk_under_review') t.workflow_status = 'under_review';
-        else if (action === 'bulk_reviewed') t.workflow_status = 'reviewed';
-        else if (action === 'bulk_reject') t.workflow_status = 'rejected';
-        else if (action === 'toggle_watchlist') t.is_watchlisted = !t.is_watchlisted;
+        if (action === 'bulk_consider') {
+          t.workflow_status = 'considered';
+          t.is_qualified = true;
+        } else if (action === 'bulk_under_review') {
+          t.workflow_status = 'under_review';
+          t.is_qualified = true;
+        } else if (action === 'bulk_reviewed') {
+          t.workflow_status = 'reviewed';
+          t.is_qualified = true;
+        } else if (action === 'bulk_reject') {
+          t.workflow_status = 'rejected';
+          t.is_qualified = false;
+        } else if (action === 'toggle_watchlist') {
+          t.is_watchlisted = !t.is_watchlisted;
+        }
       }
     });
 
@@ -1377,9 +1853,29 @@ async function toggleTenderStar(tenderId, e) {
   if (!t) return;
 
   const newStarred = !t.is_watchlisted;
-  t.is_watchlisted = newStarred;
+  const isDisqualified = t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified;
 
-  // Immediate UI update
+  // Intercept if trying to add a disqualified tender to Watchlist
+  if (newStarred && isDisqualified) {
+    showDisqualificationWarning({
+      tender: t,
+      targetStatus: 'watchlist',
+      onConfirm: async () => {
+        await executeDirectWatchlistToggle(tenderId, true);
+      },
+      onCancel: () => {}
+    });
+    return;
+  }
+
+  await executeDirectWatchlistToggle(tenderId, newStarred);
+}
+
+async function executeDirectWatchlistToggle(tenderId, newStarred) {
+  const t = allLoadedTenders.find(x => x.tender_id === tenderId);
+  if (!t) return;
+
+  t.is_watchlisted = newStarred;
   updateSegregationCounts();
   applyFilters();
 
@@ -1417,33 +1913,29 @@ async function cycleTenderWorkflowStatus(tenderId, e) {
   const curIdx = order.indexOf(t.workflow_status || 'new');
   const nextStatus = order[(curIdx + 1) % order.length];
 
-  t.workflow_status = nextStatus;
-  updateSegregationCounts();
-  applyFilters();
+  const isDisqualified = t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified;
+  const isMovingOut = isDisqualified && nextStatus !== 'disqualified' && nextStatus !== 'rejected';
 
+  if (isMovingOut) {
+    showDisqualificationWarning({
+      tender: t,
+      targetStatus: nextStatus,
+      onConfirm: async () => {
+        await executeDirectStatusUpdate(tenderId, nextStatus);
+        if (currentSelectedTenderId === tenderId) {
+          const sel = document.getElementById('panel-workflow-status-select');
+          if (sel) sel.value = nextStatus;
+        }
+      },
+      onCancel: () => {}
+    });
+    return;
+  }
+
+  await executeDirectStatusUpdate(tenderId, nextStatus);
   if (currentSelectedTenderId === tenderId) {
     const sel = document.getElementById('panel-workflow-status-select');
     if (sel) sel.value = nextStatus;
-  }
-
-  const labelMap = {
-    'new': 'New Ingest',
-    'under_review': 'Under Review',
-    'considered': 'Considered / Shortlist',
-    'reviewed': 'Reviewed / Held',
-    'rejected': 'Disqualified / Rejected'
-  };
-
-  showToast(`Updated to: ${labelMap[nextStatus]}`);
-
-  try {
-    await fetch(`${API_BASE}/api/tenders/${encodeURIComponent(tenderId)}/manage`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workflow_status: nextStatus })
-    });
-  } catch (err) {
-    console.error('Failed to update status:', err);
   }
 }
 
@@ -1455,19 +1947,62 @@ function toggleCurrentTenderWatchlist() {
 async function onPanelWorkflowStatusChange(newStatus) {
   if (!currentSelectedTenderId) return;
   const t = allLoadedTenders.find(x => x.tender_id === currentSelectedTenderId);
-  if (t) t.workflow_status = newStatus;
+  if (!t) return;
+
+  const isDisqualified = t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified;
+  const isMovingOut = isDisqualified && newStatus !== 'disqualified' && newStatus !== 'rejected';
+
+  if (isMovingOut) {
+    showDisqualificationWarning({
+      tender: t,
+      targetStatus: newStatus,
+      onConfirm: async () => {
+        await executeDirectStatusUpdate(currentSelectedTenderId, newStatus);
+      },
+      onCancel: () => {
+        const sel = document.getElementById('panel-workflow-status-select');
+        if (sel) sel.value = t.workflow_status || 'disqualified';
+      }
+    });
+    return;
+  }
+
+  await executeDirectStatusUpdate(currentSelectedTenderId, newStatus);
+}
+
+async function executeDirectStatusUpdate(tenderId, newStatus) {
+  const t = allLoadedTenders.find(x => x.tender_id === tenderId);
+  if (t) {
+    t.workflow_status = newStatus;
+    if (['new', 'under_review', 'considered', 'reviewed'].includes(newStatus)) {
+      t.is_qualified = true;
+    } else if (['disqualified', 'rejected'].includes(newStatus)) {
+      t.is_qualified = false;
+    }
+  }
   updateSegregationCounts();
   applyFilters();
 
+  const labelMap = {
+    'new': 'New Ingest',
+    'under_review': 'Under Review',
+    'considered': 'Considered / Shortlist',
+    'reviewed': 'Reviewed / Held',
+    'rejected': 'Disqualified / Rejected',
+    'disqualified': 'Disqualified / Rejected'
+  };
+
+  showToast(`Updated status to: ${labelMap[newStatus] || newStatus}`);
+
   try {
-    await fetch(`${API_BASE}/api/tenders/${encodeURIComponent(currentSelectedTenderId)}/manage`, {
+    await fetch(`${API_BASE}/api/tenders/${encodeURIComponent(tenderId)}/manage`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ workflow_status: newStatus })
     });
-    showToast(`Status updated to: ${newStatus}`);
   } catch (err) {
     console.error('Failed to update status:', err);
+    showToast(`Error updating status: ${err.message}`);
   }
 }
 
@@ -1859,70 +2394,268 @@ function filterSourcesCategory(catId) {
   });
 }
 
-// ── Documents View Loader ────────────────────────────────────────────────
-async function loadDocumentsView() {
+// ── Safe Date Utilities ───────────────────────────────────────────────────
+function formatDateSafe(val) {
+  if (!val) return 'Recent';
+  try {
+    let d = null;
+    if (typeof parseDateRobust === 'function') d = parseDateRobust(val);
+    if (!d && typeof parseUtcDate === 'function') d = parseUtcDate(val);
+    if (!d) d = new Date(val);
+    if (d && !isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+  } catch (e) {}
+  return String(val).substring(0, 10);
+}
+const formatDate = formatDateSafe;
+
+// ── Documents View Repository & Sync ──────────────────────────────────────
+let allLoadedDocuments = [];
+
+async function loadDocumentsView(forceRefresh = false) {
   const tbody = document.getElementById('documents-tbody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-3);">Loading tender documents repository...</td></tr>';
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--text-3);">Loading tender documents repository...</td></tr>';
 
   try {
-    const res = await fetch(`${API_BASE}/api/documents?limit=50`);
-    if (!res.ok) throw new Error('Failed to load documents');
+    const res = await fetch(`${API_BASE}/api/documents?limit=1000`);
+    if (!res.ok) throw new Error('Failed to load documents repository');
     const data = await res.json();
-    const docs = data.items || [];
+    allLoadedDocuments = data.items || [];
 
-    if (docs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-3);">No documents loaded yet.</td></tr>';
-      return;
+    // Update KPI counters
+    const totalCount = allLoadedDocuments.length;
+    const cyberCount = allLoadedDocuments.filter(d => (d.highest_tier || '').toUpperCase() === 'A').length;
+    const infraCount = allLoadedDocuments.filter(d => (d.highest_tier || '').toUpperCase() === 'B').length;
+    const cloudCount = allLoadedDocuments.filter(d => ['C', 'D'].includes((d.highest_tier || '').toUpperCase())).length;
+
+    const elTotal = document.getElementById('doc-kpi-total');
+    const elCyber = document.getElementById('doc-kpi-cyber');
+    const elInfra = document.getElementById('doc-kpi-infra');
+    const elCloud = document.getElementById('doc-kpi-cloud');
+
+    if (elTotal) elTotal.textContent = totalCount;
+    if (elCyber) elCyber.textContent = cyberCount;
+    if (elInfra) elInfra.textContent = infraCount;
+    if (elCloud) elCloud.textContent = cloudCount;
+
+    // Dynamically populate portal filter dropdown options with live counts
+    populatePortalDropdown(allLoadedDocuments);
+
+    filterDocumentsTable();
+    if (forceRefresh) {
+      showToast(`Synchronized ${totalCount} official tender documents`);
     }
-
-    const docSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary); flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
-
-    tbody.innerHTML = docs.map(d => {
-      const tier = d.highest_tier || '';
-      const tierBadge = tier ? `<span class="table-tier-badge tier-badge-${tier.toLowerCase()}">${tier}</span>` : '';
-      const extStatus = d.text_extracted 
-        ? '<span class="table-status-pill extracted"><span class="status-dot"></span>Extracted</span>'
-        : '<span class="table-status-pill processing"><span class="status-dot"></span>Pending OCR</span>';
-
-      return `
-        <tr>
-          <td class="table-title-cell" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <div style="font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px;">
-              ${docSvg}
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(d.doc_title)}">${escapeHtml(d.doc_title)}</span>
-            </div>
-          </td>
-          <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <span style="font-family: 'JetBrains Mono', 'Roboto Mono', monospace; font-size: 11px; font-weight: 500; color: var(--text-2); white-space: nowrap;">
-              ${escapeHtml(d.reference_no || d.tender_id || '—')}
-            </span>
-          </td>
-          <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <div class="table-buyer" style="max-width: 100%;" title="${escapeHtml(d.authority)}">${escapeHtml(d.authority)}</div>
-          </td>
-          <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-              ${tierBadge}
-              <span style="font-size: 11.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(d.doc_type || 'Official NIT')}</span>
-            </div>
-          </td>
-          <td style="white-space: nowrap;"><span style="font-size: 11px; color: var(--text-3); font-weight: 500;">${escapeHtml(d.file_size || '—')}</span></td>
-          <td style="white-space: nowrap;">${extStatus}</td>
-          <td style="text-align: center; white-space: nowrap;">
-            <a href="${API_BASE}/api/documents/download?url=${encodeURIComponent(d.url)}&filename=${encodeURIComponent((d.reference_no || d.tender_id || 'tender').replace(/[\/\\:*?"<>|]/g, '_'))}" target="_blank" class="btn-download">
-              <span>Download NIT</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-            </a>
-          </td>
-        </tr>
-      `;
-    }).join('');
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--error);">Error: ${escapeHtml(err.message)}</td></tr>`;
+    console.error('loadDocumentsView error:', err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--error);">Error syncing documents: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
-// ── Keywords View Interactive Tester ─────────────────────────────────────
+function populatePortalDropdown(docs) {
+  const portalSelect = document.getElementById('doc-filter-portal');
+  if (!portalSelect) return;
+  const currentVal = portalSelect.value;
+
+  const counts = {};
+  docs.forEach(d => {
+    const src = (d.portal_source || 'cppp').toLowerCase();
+    counts[src] = (counts[src] || 0) + 1;
+  });
+
+  let gemCount = 0;
+  let cpppCount = 0;
+  let stateCount = 0;
+  let psuCount = 0;
+  let wizardCount = 0;
+
+  Object.entries(counts).forEach(([src, cnt]) => {
+    if (src.includes('gem')) gemCount += cnt;
+    else if (src.includes('cppp') || src.includes('epublish')) cpppCount += cnt;
+    else if (src.includes('iocl') || src.includes('bhel') || src.includes('bel') || src.includes('ntpc') || src.includes('ongc') || src.includes('beml') || src.includes('bial') || src.includes('bnpm') || src.includes('asrtu')) psuCount += cnt;
+    else if (src.includes('wizard')) wizardCount += cnt;
+    else stateCount += cnt;
+  });
+
+  let html = `<option value="">Portal: All Portals (${docs.length})</option>`;
+  if (gemCount) html += `<option value="gem">GeM Portal (${gemCount})</option>`;
+  if (cpppCount) html += `<option value="cppp">Central CPPP (${cpppCount})</option>`;
+  if (stateCount) html += `<option value="state">All State Portals (${stateCount})</option>`;
+  if (psuCount) html += `<option value="psu">PSU Portals (${psuCount})</option>`;
+  if (wizardCount) html += `<option value="wizard">eWizard / TenderWizard (${wizardCount})</option>`;
+
+  html += `<optgroup label="Active Portals in DB">`;
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  sorted.forEach(([src, cnt]) => {
+    const name = formatSourceName(src);
+    html += `<option value="src:${src}">${name} (${cnt})</option>`;
+  });
+  html += `</optgroup>`;
+
+  portalSelect.innerHTML = html;
+  if (currentVal && portalSelect.querySelector(`option[value="${currentVal}"]`)) {
+    portalSelect.value = currentVal;
+  }
+}
+
+function filterDocumentsTable() {
+  const searchInput = document.getElementById('doc-table-search');
+  const tierFilter = document.getElementById('doc-filter-tier');
+  const portalFilter = document.getElementById('doc-filter-portal');
+  const windowFilter = document.getElementById('doc-filter-window');
+  const countEl = document.getElementById('documents-count');
+
+  const query = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
+  const selectedTier = tierFilter ? (tierFilter.value || '').trim().toUpperCase() : '';
+  const selectedPortal = portalFilter ? (portalFilter.value || '').trim().toLowerCase() : '';
+  const selectedWindow = windowFilter ? (windowFilter.value || 'all') : 'all';
+
+  let filtered = allLoadedDocuments;
+
+  // 1. Time Window Filter (synchronized with dashboard window logic)
+  if (selectedWindow && selectedWindow !== 'all') {
+    filtered = filtered.filter(d => isWithinTimeWindow(d, selectedWindow));
+  }
+
+  // 2. Focus Area / Tier Filter
+  if (selectedTier) {
+    filtered = filtered.filter(d => (d.highest_tier || '').toUpperCase() === selectedTier);
+  }
+
+  if (selectedPortal) {
+    filtered = filtered.filter(d => {
+      const src = (d.portal_source || '').toLowerCase();
+      if (selectedPortal.startsWith('src:')) {
+        const targetSrc = selectedPortal.replace('src:', '').toLowerCase();
+        return src === targetSrc;
+      }
+      if (selectedPortal === 'gem') return src.includes('gem') || (d.tender_id || '').startsWith('GEM/');
+      if (selectedPortal === 'cppp') return src.includes('cppp') || src.includes('epublish') || src.includes('etenders');
+      if (selectedPortal === 'psu') return src.includes('iocl') || src.includes('bhel') || src.includes('bel') || src.includes('ntpc') || src.includes('ongc') || src.includes('beml') || src.includes('bial') || src.includes('bnpm') || src.includes('asrtu');
+      if (selectedPortal === 'wizard') return src.includes('wizard');
+      if (selectedPortal === 'state') {
+        return !src.includes('gem') && !src.includes('cppp') && !src.includes('epublish') && !src.includes('iocl') && !src.includes('wizard');
+      }
+      return src.includes(selectedPortal);
+    });
+  }
+
+  if (query) {
+    filtered = filtered.filter(d => {
+      const matchText = [
+        d.tender_title || '',
+        d.doc_title || '',
+        d.reference_no || '',
+        d.tender_id || '',
+        d.authority || '',
+        d.tier_label || '',
+        formatSourceName(d.portal_source) || '',
+        d.location || ''
+      ].join(' ').toLowerCase();
+      return matchText.includes(query);
+    });
+  }
+
+  if (countEl) {
+    countEl.textContent = filtered.length;
+  }
+
+  // Synchronize KPI summary cards to reflect the current active time window
+  const windowedDocs = (selectedWindow && selectedWindow !== 'all')
+    ? allLoadedDocuments.filter(d => isWithinTimeWindow(d, selectedWindow))
+    : allLoadedDocuments;
+
+  const elTotal = document.getElementById('doc-kpi-total');
+  const elCyber = document.getElementById('doc-kpi-cyber');
+  const elInfra = document.getElementById('doc-kpi-infra');
+  const elCloud = document.getElementById('doc-kpi-cloud');
+
+  if (elTotal) elTotal.textContent = windowedDocs.length;
+  if (elCyber) elCyber.textContent = windowedDocs.filter(d => (d.highest_tier || '').toUpperCase() === 'A').length;
+  if (elInfra) elInfra.textContent = windowedDocs.filter(d => (d.highest_tier || '').toUpperCase() === 'B').length;
+  if (elCloud) elCloud.textContent = windowedDocs.filter(d => ['C', 'D'].includes((d.highest_tier || '').toUpperCase())).length;
+
+  renderDocumentsTable(filtered);
+}
+
+function renderDocumentsTable(docs) {
+  const tbody = document.getElementById('documents-tbody');
+  if (!tbody) return;
+
+  if (!docs || docs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 28px; color: var(--text-3); font-size: 13px;">No tender documents found matching current filter criteria.</td></tr>';
+    return;
+  }
+
+  const docSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary); flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>`;
+
+  tbody.innerHTML = docs.map(d => {
+    const tier = (d.highest_tier || '').toUpperCase();
+    const tierLabel = d.tier_label || (tier === 'A' ? 'Cyber Security' : tier === 'B' ? 'IT Infrastructure' : tier === 'C' ? 'Cloud' : 'Infra & Services');
+    const tierBadge = tier ? `<span class="table-tier-badge tier-badge-${tier.toLowerCase()}" style="font-size: 10.5px; padding: 2px 7px;">Tier ${tier}</span>` : '';
+    const cleanRef = escapeHtml(d.reference_no || d.tender_id || 'Tender');
+    const cleanTitle = escapeHtml(d.tender_title || d.doc_title || 'Official Tender Document');
+    const cleanAuth = escapeHtml(d.authority || 'Issuing Authority');
+    const srcName = formatSourceName(d.portal_source);
+    const sourceLogo = (typeof getSourceLogoSvg === 'function') ? getSourceLogoSvg(d.portal_source, 14) : '';
+    const dateFormatted = formatDateSafe(d.created_at);
+    
+    // Status pill
+    const statusPill = d.has_direct_pdf 
+      ? '<span class="table-status-pill extracted" title="Direct GeM Official Signed PDF"><span class="status-dot"></span>GeM Signed PDF</span>'
+      : '<span class="table-status-pill extracted" title="Authenticated Official Technical Specification PDF Dossier"><span class="status-dot"></span>Official Dossier</span>';
+
+    return `
+      <tr>
+        <td class="table-title-cell" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div style="font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px;">
+            ${docSvg}
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px;" title="${cleanTitle}">${cleanTitle}</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-3); margin-top: 4px; padding-left: 23px; display: flex; align-items: center; gap: 8px;">
+            <div class="source-badge-pill" data-source="${escapeHtml(d.portal_source || '')}" style="padding: 1px 7px; font-size: 10.5px; gap: 4px;">
+              ${sourceLogo}
+              <span>${escapeHtml(srcName)}</span>
+            </div>
+            <span>&bull;</span>
+            <span>Published: ${escapeHtml(dateFormatted)}</span>
+          </div>
+        </td>
+        <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span style="font-family: 'JetBrains Mono', 'Roboto Mono', monospace; font-size: 11.5px; font-weight: 600; color: var(--primary); white-space: nowrap;" title="${cleanRef}">
+            ${cleanRef}
+          </span>
+        </td>
+        <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div class="table-buyer" style="max-width: 100%; font-size: 12px;" title="${cleanAuth}">${cleanAuth}</div>
+        </td>
+        <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            ${tierBadge}
+            <span style="font-size: 11px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(tierLabel)}</span>
+          </div>
+        </td>
+        <td style="white-space: nowrap;">
+          ${statusPill}
+        </td>
+        <td style="text-align: center; white-space: nowrap;">
+          <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+            <a href="${API_BASE}/api/documents/download?tender_id=${encodeURIComponent(d.tender_id)}" target="_blank" class="btn-download" title="${d.has_direct_pdf ? 'Download official signed government PDF notice' : 'Download official procurement specification dossier'}" style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; font-size: 11.5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>${d.has_direct_pdf ? 'Official GeM PDF' : 'Download Dossier'}</span>
+            </a>
+            <a href="${API_BASE}/api/portal/bridge?tender_id=${encodeURIComponent(d.tender_id)}" target="_blank" rel="noopener" title="Open official government portal tender page & official department attachments" style="padding: 5px 9px; font-size: 11px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; color: var(--primary); display: inline-flex; align-items: center; gap: 4px; text-decoration: none; cursor: pointer; transition: all 0.15s ease; font-weight: 500;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              <span>Official Portal</span>
+            </a>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
 function initKeywordsView() {
   const resultBox = document.getElementById('kw-test-result');
   if (resultBox) resultBox.style.display = 'none';
@@ -2272,12 +3005,127 @@ function isTenderInState(t, targetState) {
   return aliases.some(alias => text.includes(alias));
 }
 
+function updateActiveFilterChips(inWindowCount, filteredCount) {
+  const container = document.getElementById('active-filters-chips');
+  const banner = document.getElementById('active-filters-banner');
+  const contextEl = document.getElementById('table-total-context');
+  if (!container) return;
+
+  const chips = [];
+  const sectorVal = document.getElementById('filter-sector')?.value || '';
+  const sourceVal = document.getElementById('filter-source')?.value || '';
+  const stateVal = document.getElementById('filter-state')?.value || '';
+  const valueVal = document.getElementById('filter-value')?.value || '';
+  const expiryVal = document.getElementById('filter-expiry')?.value || 'all';
+  const searchVal = (document.getElementById('table-search')?.value || '').trim();
+
+  if (activeSidebarSource) {
+    chips.push({ label: `Portal: ${formatSourceName(activeSidebarSource)}`, key: 'sidebarSource' });
+  }
+  if (sourceVal) {
+    chips.push({ label: `Source: ${formatSourceName(sourceVal)}`, key: 'source' });
+  }
+  if (stateVal) {
+    chips.push({ label: `State: ${stateVal}`, key: 'state' });
+  }
+  if (sectorVal) {
+    chips.push({ label: `Sector: ${sectorVal}`, key: 'sector' });
+  }
+  if (valueVal) {
+    const valLabels = { '5cr': '₹ 5 Cr+', '25cr': '₹ 25 Cr+', '50cr': '₹ 50 Cr+' };
+    chips.push({ label: `Value: ${valLabels[valueVal] || valueVal}`, key: 'value' });
+  }
+  if (expiryVal === 'active') {
+    chips.push({ label: 'Open / Active Bids', key: 'expiry' });
+  } else if (expiryVal === 'expired') {
+    chips.push({ label: 'Closed / Expired Bids', key: 'expiry' });
+  }
+  if (searchVal) {
+    chips.push({ label: `Search: "${searchVal}"`, key: 'search' });
+  }
+
+  // Update total context text next to title: e.g. " (43 of 166)" or " (8 of 30 in IT Infrastructure)"
+  if (contextEl) {
+    if (chips.length > 0 && inWindowCount > 0 && filteredCount < inWindowCount) {
+      contextEl.textContent = ` of ${inWindowCount}`;
+    } else {
+      contextEl.textContent = '';
+    }
+  }
+
+  // Render chips
+  if (chips.length > 0) {
+    container.innerHTML = chips.map(c => `
+      <span class="active-filter-chip" onclick="clearSpecificFilter('${c.key}')" title="Click to clear this filter">
+        <span>${escapeHtml(c.label)}</span>
+        <span class="chip-remove">&times;</span>
+      </span>
+    `).join('') + `
+      <button type="button" class="btn-clear-all-chips" onclick="resetFilters()" title="Reset all filters">Reset All</button>
+    `;
+  } else {
+    container.innerHTML = '';
+  }
+
+  // Render informative banner if restrictive filter hides opportunities
+  if (banner) {
+    if (activeTierFilter !== 'all' && sectorVal && filteredCount < inWindowCount) {
+      const tierNames = { 'A': 'Cyber Security', 'B': 'IT Infrastructure', 'C': 'Cloud', 'D': 'Infra & Services' };
+      const currentTierName = tierNames[activeTierFilter] || `Tier ${activeTierFilter}`;
+      banner.style.display = 'flex';
+      banner.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 15px;">ℹ️</span>
+          <span>Showing <strong>${filteredCount}</strong> ${escapeHtml(currentTierName)} tenders in <strong>${escapeHtml(sectorVal)}</strong>. (Remaining opportunities are in Defence/Transport/Enterprise).</span>
+        </div>
+        <button type="button" onclick="clearSpecificFilter('sector')" style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 3px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+          Show All ${inWindowCount} ${escapeHtml(currentTierName)} Tenders &rarr;
+        </button>
+      `;
+    } else {
+      banner.style.display = 'none';
+      banner.innerHTML = '';
+    }
+  }
+}
+
+function clearSpecificFilter(key) {
+  if (key === 'sector') {
+    const sel = document.getElementById('filter-sector');
+    if (sel) sel.value = '';
+  } else if (key === 'source') {
+    const sel = document.getElementById('filter-source');
+    if (sel) sel.value = '';
+  } else if (key === 'state') {
+    const sel = document.getElementById('filter-state');
+    if (sel) sel.value = '';
+  } else if (key === 'value') {
+    const sel = document.getElementById('filter-value');
+    if (sel) sel.value = '';
+  } else if (key === 'expiry') {
+    const sel = document.getElementById('filter-expiry');
+    if (sel) sel.value = 'all';
+  } else if (key === 'search') {
+    const s1 = document.getElementById('table-search');
+    const s2 = document.getElementById('global-search');
+    if (s1) s1.value = '';
+    if (s2) s2.value = '';
+  } else if (key === 'sidebarSource') {
+    clearSourceFilter();
+    return;
+  }
+  applyFilters();
+}
+
 function applyFilters() {
-  const searchTerm = (document.getElementById('table-search').value || '').toLowerCase().trim();
-  const sourceFilter = document.getElementById('filter-source').value;
-  const stateFilter = document.getElementById('filter-state').value;
-  const sectorFilter = document.getElementById('filter-sector').value;
-  const valueFilter = document.getElementById('filter-value').value;
+  const searchTerm = (document.getElementById('table-search')?.value || '').toLowerCase().trim();
+  const sourceFilter = document.getElementById('filter-source')?.value || '';
+  const stateFilter = document.getElementById('filter-state')?.value || '';
+  const sectorFilter = document.getElementById('filter-sector')?.value || '';
+  const valueFilter = document.getElementById('filter-value')?.value || '';
+  const expirySelectVal = document.getElementById('filter-expiry')?.value || 'all';
+
+  const inWindowTenders = allLoadedTenders.filter(t => isWithinTimeWindow(t, currentTimeWindow));
 
   let filtered = allLoadedTenders.filter(t => {
     // 1. Time Window Filter (24h, 48h, 7d, 30d, all)
@@ -2286,7 +3134,6 @@ function applyFilters() {
     }
 
     // 2. Expiry / Bidding status dropdown filter
-    const expirySelectVal = document.getElementById('filter-expiry')?.value || 'all';
     const expired = isTenderExpired(t);
     if (expirySelectVal === 'active' && expired) return false;
     if (expirySelectVal === 'expired' && !expired) return false;
@@ -2307,11 +3154,14 @@ function applyFilters() {
       if ((t.workflow_status || 'new') !== 'under_review') return false;
     } else if (activeWorkflowFilter === 'reviewed') {
       if ((t.workflow_status || 'new') !== 'reviewed') return false;
-    } else if (activeWorkflowFilter === 'rejected') {
-      if ((t.workflow_status || 'new') !== 'rejected') return false;
+    } else if (activeWorkflowFilter === 'rejected' || activeWorkflowFilter === 'disqualified') {
+      if (t.workflow_status !== 'disqualified' && t.workflow_status !== 'rejected' && t.is_qualified) return false;
+    } else {
+      // By default in 'all' workflow: display qualified active opportunities
+      if (t.workflow_status === 'disqualified' || !t.is_qualified) return false;
     }
 
-    // Sidebar Source Filter
+    // 5. Sidebar Source Filter
     if (activeSidebarSource) {
       const srcId = activeSidebarSource.toLowerCase();
       const tenderSource = (t.portal_source || '').toLowerCase();
@@ -2328,40 +3178,22 @@ function applyFilters() {
       }
     }
 
-    // Dropdown Source filter
+    // 6. Dropdown Source filter
     if (sourceFilter && t.portal_source !== sourceFilter) {
       return false;
     }
 
-    // State / Location filter with intelligent portal & city mapping
+    // 7. State / Location filter with intelligent portal & city mapping
     if (stateFilter) {
       if (!isTenderInState(t, stateFilter)) return false;
     }
 
-    // Sector filter (Simplified Sectors: Government, Defence, Enterprise / Commercial, Energy & Utilities, Transport)
+    // 8. Sector filter (Uses getTenderSector for 100% exact parity with backend classification)
     if (sectorFilter) {
-      const text = ((t.title || '') + ' ' + (t.authority || '')).toLowerCase();
-      if (sectorFilter === 'Defence') {
-        const defKeys = ['air force', 'army', 'navy', 'defence', 'defense', 'armoured', 'ordnance', 'cantonment', 'military', 'mes', 'crpf', 'bsf', 'cisf', 'itbp'];
-        if (!defKeys.some(k => text.includes(k))) return false;
-      } else if (sectorFilter === 'Transport') {
-        const transKeys = ['railway', 'metro', 'transport', 'airport', 'aai', 'highway', 'nhai', 'port', 'shipping', 'irctc', 'rvnl'];
-        if (!transKeys.some(k => text.includes(k))) return false;
-      } else if (sectorFilter === 'Energy & Utilities') {
-        const energyKeys = ['power', 'energy', 'solar', 'grid', 'electricity', 'discom', 'ntpc', 'transco', 'gencor', 'oil', 'gas', 'ongc', 'iocl', 'bpcl', 'gail', 'hydel', 'thermal'];
-        if (!energyKeys.some(k => text.includes(k))) return false;
-      } else if (sectorFilter === 'Enterprise / Commercial') {
-        const entKeys = ['bank', 'rbi', 'sbi', 'insurance', 'lic', 'commercial', 'enterprise', 'telecom', 'bsnl', 'limited', 'corp', 'exchange', 'bse', 'nse', 'ltd'];
-        if (!entKeys.some(k => text.includes(k))) return false;
-      } else if (sectorFilter === 'Government') {
-        const otherKeys = ['air force', 'army', 'navy', 'defence', 'defense', 'railway', 'metro', 'airport', 'power', 'discom', 'ntpc', 'oil', 'gas', 'ongc', 'bank', 'rbi', 'sbi', 'telecom'];
-        if (otherKeys.some(k => text.includes(k))) return false;
-      } else {
-        if (!text.includes(sectorFilter.toLowerCase())) return false;
-      }
+      if (getTenderSector(t) !== sectorFilter) return false;
     }
 
-    // Value filter
+    // 9. Value filter
     if (valueFilter) {
       const cost = t.estimated_cost_inr || 0;
       if (valueFilter === '5cr' && cost < 50000000) return false;
@@ -2369,7 +3201,7 @@ function applyFilters() {
       if (valueFilter === '50cr' && cost < 500000000) return false;
     }
 
-    // Search query with full portal, authority, and state recognition
+    // 10. Search query with full portal, authority, and state recognition
     if (searchTerm) {
       const haystack = [
         t.title,
@@ -2384,7 +3216,6 @@ function applyFilters() {
 
       let matched = haystack.includes(searchTerm);
       if (!matched) {
-        // Also check if search term corresponds to a state or its cities that match this tender
         for (const [state, aliases] of Object.entries(STATE_ALIASES)) {
           if (state.toLowerCase().includes(searchTerm) || aliases.some(a => a.includes(searchTerm))) {
             if (isTenderInState(t, state)) {
@@ -2404,25 +3235,50 @@ function applyFilters() {
   renderTable(currentTenders);
   updateSegregationCounts();
   updateBulkToolbar();
+
+  // Baseline within the active tier context
+  let tierBaseline = inWindowTenders;
+  if (activeTierFilter !== 'all') {
+    tierBaseline = tierBaseline.filter(t => t.highest_tier === activeTierFilter);
+  }
+  updateActiveFilterChips(tierBaseline.length, currentTenders.length);
+
+  // Sync active-bar class on sector chart bars
+  document.querySelectorAll('.source-bar-row').forEach(row => {
+    const label = row.querySelector('.source-bar-label')?.textContent || '';
+    const isAct = sectorFilter && (
+      (sectorFilter === 'Government' && label === 'Govt.') ||
+      (sectorFilter.includes('Enterprise') && label === 'Enterprise') ||
+      (sectorFilter.includes('Energy') && label === 'Energy') ||
+      (label === sectorFilter)
+    );
+    row.classList.toggle('active-bar', Boolean(isAct));
+  });
 }
 
 function resetFilters() {
-  document.getElementById('table-search').value = '';
-  document.getElementById('global-search').value = '';
-  document.getElementById('filter-source').value = '';
-  document.getElementById('filter-state').value = '';
-  document.getElementById('filter-sector').value = '';
-  document.getElementById('filter-value').value = '';
+  const s1 = document.getElementById('table-search');
+  if (s1) s1.value = '';
+  const s2 = document.getElementById('global-search');
+  if (s2) s2.value = '';
+  const fSrc = document.getElementById('filter-source');
+  if (fSrc) fSrc.value = '';
+  const fSt = document.getElementById('filter-state');
+  if (fSt) fSt.value = '';
+  const fSec = document.getElementById('filter-sector');
+  if (fSec) fSec.value = '';
+  const fVal = document.getElementById('filter-value');
+  if (fVal) fVal.value = '';
   const expEl = document.getElementById('filter-expiry');
   if (expEl) expEl.value = 'all';
+
+  // Preserve currentTimeWindow
   const winEl = document.getElementById('filter-window');
-  if (winEl) winEl.value = 'all';
-  const timeSelect = document.getElementById('time-window-select');
-  if (timeSelect) timeSelect.value = 'all';
-  currentTimeWindow = 'all';
+  if (winEl && currentTimeWindow) winEl.value = currentTimeWindow;
 
   document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.pill-btn[data-tier="all"]').classList.add('active');
+  const allPill = document.querySelector('.pill-btn[data-tier="all"]');
+  if (allPill) allPill.classList.add('active');
   activeTierFilter = 'all';
 
   activeWorkflowFilter = 'all';
@@ -2431,7 +3287,7 @@ function resetFilters() {
   clearSourceFilter();
   clearTenderSelection();
   applyFilters();
-  showToast('Filters reset to default (All Tenders)');
+  showToast('Filters reset to default');
 }
 
 function toggleSortDirection() {
@@ -3308,3 +4164,123 @@ function refreshAllLiveTimes() {
   });
 }
 
+
+
+// ── 24h Bidding Team Email Alert & Digest ──────────────────────────────────
+function openEmailAlertModal() {
+  const modal = document.getElementById('modal-email-alert');
+  if (!modal) return;
+
+  const countEl = document.getElementById('alert-summary-count');
+  const windowSelect = document.getElementById('select-alert-window');
+  const win = windowSelect ? windowSelect.value : '24h';
+
+  if (countEl) {
+    const qualInWindow = allLoadedTenders.filter(t => t.is_qualified && t.workflow_status !== 'disqualified' && isWithinTimeWindow(t, win));
+    countEl.textContent = `${qualInWindow.length} Tenders Qualified`;
+  }
+
+  const statusEl = document.getElementById('email-dispatch-status');
+  if (statusEl) statusEl.style.display = 'none';
+
+  modal.style.display = 'flex';
+}
+
+function closeEmailAlertModal() {
+  const modal = document.getElementById('modal-email-alert');
+  if (modal) modal.style.display = 'none';
+}
+
+function previewEmailDigestInBrowser() {
+  window.open(`${API_BASE}/api/notifications/preview-latest`, '_blank');
+}
+
+async function sendBiddingEmailAlert() {
+  const emailInput = document.getElementById('input-alert-email');
+  const windowSelect = document.getElementById('select-alert-window');
+  const sendBtn = document.getElementById('btn-send-email-digest');
+  const statusEl = document.getElementById('email-dispatch-status');
+
+  const recipient = (emailInput?.value || '').trim() || 'nikominfrasolutionsss@gmail.com';
+  const win = windowSelect?.value || '24h';
+
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Dispatching...';
+  }
+
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.background = 'rgba(56, 189, 248, 0.1)';
+    statusEl.style.color = '#38bdf8';
+    statusEl.style.border = '1px solid rgba(56, 189, 248, 0.2)';
+    statusEl.textContent = `Compiling tender intelligence digest and transmitting to ${recipient}...`;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/notifications/send-digest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipient: recipient,
+        window: win,
+        force_all: true
+      })
+    });
+
+    if (!res.ok) throw new Error('Failed to dispatch alert digest');
+    const data = await res.json();
+
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      if (data.mode === 'live_smtp') {
+        statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
+        statusEl.style.color = '#10b981';
+        statusEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+        statusEl.innerHTML = `<strong>✓ Live Email Delivered to Inbox!</strong><br>Successfully transmitted to <strong>${escapeHtml(recipient)}</strong> via SMTP (${data.total_tenders} opportunities included).`;
+        showToast(`✓ Email delivered to ${recipient}!`);
+      } else if (data.mode === 'preview_recorded') {
+        statusEl.style.background = 'rgba(245, 158, 11, 0.12)';
+        statusEl.style.color = '#f59e0b';
+        statusEl.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+        statusEl.innerHTML = `<strong>ℹ️ Email Generated in Preview Mode (No SMTP Configured)</strong><br>` +
+          `Delivering to a real Gmail inbox requires an SMTP Sender (e.g. Gmail App Password in <code>.env</code>).<br>` +
+          `The complete 49-opportunity email was generated. Click <strong>"Preview in Browser ↗"</strong> below to view it now.`;
+        showToast(`Digest generated in Preview Mode (${data.total_tenders} tenders)`);
+      } else {
+        statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
+        statusEl.style.color = '#ef4444';
+        statusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        statusEl.innerHTML = `<strong>⚠️ SMTP Delivery Issue:</strong> ${escapeHtml(data.error || data.message)}`;
+        showToast(`SMTP Error`);
+      }
+    }
+  } catch (err) {
+    console.error('Email dispatch error:', err);
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
+      statusEl.style.color = '#ef4444';
+      statusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      statusEl.textContent = `Dispatch error: ${err.message}`;
+    }
+    showToast(`Email error: ${err.message}`);
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send Digest Now';
+    }
+  }
+}
+
+// Update count when window selector changes
+document.addEventListener('change', (e) => {
+  if (e.target && e.target.id === 'select-alert-window') {
+    const countEl = document.getElementById('alert-summary-count');
+    if (countEl) {
+      const win = e.target.value;
+      const qualInWindow = allLoadedTenders.filter(t => t.is_qualified && t.workflow_status !== 'disqualified' && isWithinTimeWindow(t, win));
+      countEl.textContent = `${qualInWindow.length} Tenders Qualified`;
+    }
+  }
+});

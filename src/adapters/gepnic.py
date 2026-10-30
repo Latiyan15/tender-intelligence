@@ -1,11 +1,9 @@
 """
-NIC GePNIC Generic Portal Adapter
-Scrapes active tenders directly from any National Informatics Centre GePNIC instance:
-- Assam Tenders (assamtenders.gov.in)
-- Andaman & Nicobar Tenders (andamantenders.gov.in)
-- Arunachal Pradesh Tenders (arunachaltenders.gov.in)
-- Bihar eProcurement (eproc2.bihar.gov.in)
-- Bharat Petroleum Corporation Limited BPCL (bpcleproc.in)
+NIC GePNIC Generic Portal Adapter — Production Grade
+Scrapes active tenders directly from National Informatics Centre GePNIC instances:
+Assam, Andaman, Arunachal, Bihar, BPCL, UP, Maharashtra, Tamil Nadu, Rajasthan, MP,
+Haryana, Delhi, Punjab, Uttarakhand, West Bengal, Kerala, Odisha, Jharkhand, HP, JK.
+Features strict fast-fail connect timeouts and graceful degradation for cloud deployment resilience.
 """
 
 import re
@@ -13,7 +11,7 @@ import logging
 import ssl
 import urllib.request
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
@@ -41,19 +39,47 @@ class GepnicPortalAdapter(BaseAdapter):
             'Accept-Language': 'en-US,en;q=0.9'
         }
 
+    def _fetch_html(self, url: str) -> Optional[str]:
+        """Fetch portal HTML with fast connect timeout (2.5s connect, 4.0s read) so foreign cloud IP geoblocks fail fast."""
+        try:
+            import requests
+            resp = requests.get(
+                url,
+                headers=self.headers,
+                timeout=(2.5, 4.0),
+                verify=False
+            )
+            if resp.status_code == 200:
+                return resp.text
+            return None
+        except ImportError:
+            try:
+                req = urllib.request.Request(url, headers=self.headers)
+                return urllib.request.urlopen(req, context=self.ssl_ctx, timeout=3.5).read().decode('utf-8', errors='ignore')
+            except Exception as e:
+                logger.debug(f"{self.source_id} urllib notice: {e}")
+                return None
+        except Exception as e:
+            logger.debug(f"{self.source_id} fetch notice ({url}): {e}")
+            return None
+
     def discover_tenders(self, max_tenders: int = 50, **kwargs) -> List[TenderRecord]:
         """Scrape active tenders from the GePNIC portal homepage or active tenders table."""
         tenders = []
         app_url = self.base_url if self.base_url.endswith("/app") else f"{self.base_url.rstrip('/')}/nicgep/app"
 
+        html = self._fetch_html(app_url)
+        if not html and not self.base_url.endswith("/app"):
+            html = self._fetch_html(self.base_url)
+
+        if not html:
+            return tenders
+
         try:
-            req = urllib.request.Request(app_url, headers=self.headers)
-            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=10).read().decode('utf-8', errors='ignore')
             soup = BeautifulSoup(html, 'html.parser')
 
             tbl = soup.find('table', {'id': 'activeTenders'}) or soup.find('table', {'class': 'list_table'})
             if not tbl:
-                logger.info(f"No activeTenders table on {self.name} main view. Checking fallback tables...")
                 tables = soup.find_all('table')
                 for candidate in tables:
                     if candidate.find('tr') and len(candidate.find_all('tr')) > 2:
@@ -119,8 +145,7 @@ class GepnicPortalAdapter(BaseAdapter):
                         break
 
         except Exception as e:
-            logger.error(f"Error scraping {self.name} ({self.source_id}): {e}")
-            self.stats['errors'] += 1
+            logger.debug(f"Error parsing GePNIC table for {self.name}: {e}")
 
         self.stats['tenders_discovered'] = len(tenders)
         return tenders

@@ -24,8 +24,21 @@ SEED_PATH = os.path.join(BASE_DIR, "data", "seed_tenders.json")
 
 
 def get_database_url() -> Optional[str]:
-    """Retrieve and normalize DATABASE_URL (handling Render's postgres:// prefix)."""
+    """Retrieve and normalize DATABASE_URL (handling Render's postgres:// prefix and local .env files)."""
     url = os.environ.get("DATABASE_URL")
+    if not url:
+        env_path = os.path.join(BASE_DIR, ".env")
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("DATABASE_URL="):
+                            url = line.split("=", 1)[1].strip().strip('"').strip("'")
+                            break
+            except Exception:
+                pass
+
     if not url:
         return None
     url = url.strip()
@@ -761,6 +774,151 @@ class TenderRepository:
         conn.close()
         return tender_db_id
 
+    def batch_upsert_tenders(self, items: List[tuple]) -> int:
+        """High-performance batch upsert of multiple tenders and their keyword matches in a single transaction."""
+        if not items:
+            return 0
+
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        now_str = datetime.utcnow().isoformat()
+        affected = 0
+
+        try:
+            for data, matches in items:
+                norm_pub = normalize_date_to_iso(data.get("published_date"))
+                norm_dl = normalize_date_to_iso(data.get("submission_deadline"))
+                norm_op = normalize_date_to_iso(data.get("opening_date"))
+
+                cursor.execute("SELECT id FROM tenders WHERE tender_id = ?", (data["tender_id"],))
+                row = cursor.fetchone()
+
+                if not row and data.get("reference_no") and len(str(data["reference_no"]).strip()) > 3 and data.get("portal_source"):
+                    cursor.execute("SELECT id FROM tenders WHERE portal_source = ? AND reference_no = ?", (data["portal_source"], str(data["reference_no"]).strip()))
+                    row = cursor.fetchone()
+
+                if not row and data.get("portal_url") and len(str(data["portal_url"]).strip()) > 20 and data.get("portal_source"):
+                    cursor.execute("SELECT id FROM tenders WHERE portal_source = ? AND portal_url = ?", (data["portal_source"], str(data["portal_url"]).strip()))
+                    row = cursor.fetchone()
+
+                if row:
+                    tender_db_id = row["id"]
+                    cursor.execute("""
+                        UPDATE tenders SET
+                            title = ?,
+                            authority = ?,
+                            reference_no = ?,
+                            tender_type = ?,
+                            estimated_cost_inr = ?,
+                            emd_inr = ?,
+                            doc_fee_inr = ?,
+                            published_date = ?,
+                            submission_deadline = ?,
+                            opening_date = ?,
+                            location = ?,
+                            portal_source = ?,
+                            portal_url = ?,
+                            description = ?,
+                            primary_category = ?,
+                            highest_tier = ?,
+                            is_qualified = ?,
+                            qualification_reason = ?,
+                            uncertain = ?,
+                            raw_metadata = ?,
+                            updated_at = ?
+                        WHERE id = ?
+                    """, (
+                        data.get("title", ""),
+                        data.get("authority", "Unknown Authority"),
+                        data.get("reference_no", ""),
+                        data.get("tender_type", ""),
+                        data.get("estimated_cost_inr"),
+                        data.get("emd_inr"),
+                        data.get("doc_fee_inr"),
+                        norm_pub,
+                        norm_dl,
+                        norm_op,
+                        data.get("location", ""),
+                        data.get("portal_source", "cppp_epublish"),
+                        data.get("portal_url", ""),
+                        data.get("description", ""),
+                        data.get("primary_category", ""),
+                        data.get("highest_tier", ""),
+                        1 if data.get("is_qualified") else 0,
+                        data.get("qualification_reason", ""),
+                        1 if data.get("uncertain") else 0,
+                        json.dumps(data.get("raw_metadata", {})) if data.get("raw_metadata") else None,
+                        now_str,
+                        tender_db_id
+                    ))
+                    cursor.execute("DELETE FROM keyword_matches WHERE tender_id_ref = ?", (tender_db_id,))
+                else:
+                    cursor.execute("""
+                        INSERT INTO tenders (
+                            tender_id, title, authority, reference_no, tender_type,
+                            estimated_cost_inr, emd_inr, doc_fee_inr,
+                            published_date, submission_deadline, opening_date,
+                            location, portal_source, portal_url, description,
+                            primary_category, highest_tier, is_qualified,
+                            qualification_reason, uncertain, raw_metadata, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        data["tender_id"],
+                        data.get("title", ""),
+                        data.get("authority", "Unknown Authority"),
+                        data.get("reference_no", ""),
+                        data.get("tender_type", ""),
+                        data.get("estimated_cost_inr"),
+                        data.get("emd_inr"),
+                        data.get("doc_fee_inr"),
+                        norm_pub,
+                        norm_dl,
+                        norm_op,
+                        data.get("location", ""),
+                        data.get("portal_source", "cppp_epublish"),
+                        data.get("portal_url", ""),
+                        data.get("description", ""),
+                        data.get("primary_category", ""),
+                        data.get("highest_tier", ""),
+                        1 if data.get("is_qualified") else 0,
+                        data.get("qualification_reason", ""),
+                        1 if data.get("uncertain") else 0,
+                        json.dumps(data.get("raw_metadata", {})) if data.get("raw_metadata") else None,
+                        now_str,
+                        now_str
+                    ))
+                    tender_db_id = cursor.lastrowid
+
+                for m in matches:
+                    cursor.execute("""
+                        INSERT INTO keyword_matches (
+                            tender_id_ref, term, tier, match_group, matched_text,
+                            snippet, position, source_field, is_contextual
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        tender_db_id,
+                        m.get("term", ""),
+                        m.get("tier", ""),
+                        m.get("group", ""),
+                        m.get("matched_text", ""),
+                        m.get("snippet", ""),
+                        m.get("position", 0),
+                        m.get("source_field", ""),
+                        1 if m.get("is_contextual") else 0
+                    ))
+                affected += 1
+
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Batch upsert error: {e}", exc_info=True)
+            raise
+        finally:
+            conn.close()
+
+        return affected
+
+
     def list_tenders(
         self,
         category: Optional[str] = None,
@@ -823,7 +981,7 @@ class TenderRepository:
                 hours = 24 * 30
 
             cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
-            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date >= ?))")
+            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
             params.extend([cutoff, cutoff])
 
         # Expiry status filter (active, expired, all)
@@ -1081,6 +1239,10 @@ class TenderRepository:
         if workflow_status is not None:
             updates.append("workflow_status = ?")
             params.append(workflow_status)
+            if workflow_status in ["rejected", "disqualified"]:
+                updates.append("is_qualified = 0")
+            elif workflow_status in ["considered", "under_review", "reviewed", "new"]:
+                updates.append("is_qualified = 1")
         if is_watchlisted is not None:
             updates.append("is_watchlisted = ?")
             params.append(1 if is_watchlisted else 0)
@@ -1116,6 +1278,10 @@ class TenderRepository:
         if workflow_status is not None:
             updates.append("workflow_status = ?")
             params.append(workflow_status)
+            if workflow_status in ["rejected", "disqualified"]:
+                updates.append("is_qualified = 0")
+            elif workflow_status in ["considered", "under_review", "reviewed", "new"]:
+                updates.append("is_qualified = 1")
         if is_watchlisted is not None:
             updates.append("is_watchlisted = ?")
             params.append(1 if is_watchlisted else 0)
@@ -1181,7 +1347,7 @@ class TenderRepository:
                 hours = 24 * 30
 
             cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
-            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date >= ?))")
+            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
             params.extend([cutoff, cutoff])
 
         base_where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""

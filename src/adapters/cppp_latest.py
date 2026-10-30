@@ -63,17 +63,28 @@ class CpppLatestTendersAdapter(BaseAdapter):
         """Discover tenders from CPPP across extensive multi-page depth (Central and State active feeds)."""
         all_tenders = []
 
-        # 1. Fetch Central Active Tenders across pages
-        logger.info(f"Fetching CPPP Central Active Tenders across {pages} pages...")
-        central_tenders = self._scrape_latest_tenders(self.CENTRAL_TENDERS_URL, "central", max_pages=pages)
-        all_tenders.extend(central_tenders)
-        logger.info(f"Discovered {len(central_tenders)} central tenders across {pages} pages")
+        # Concurrently fetch Central and State feeds for 2x speedup
+        from concurrent.futures import ThreadPoolExecutor
+        effective_pages = min(pages, 10)
+        logger.info(f"Fetching CPPP Central and State Active Tenders across {effective_pages} pages concurrently...")
 
-        # 2. Fetch State Active Tenders across pages
-        logger.info(f"Fetching CPPP State Active Tenders across {pages} pages...")
-        state_tenders = self._scrape_latest_tenders(self.STATE_TENDERS_URL, "state", max_pages=pages)
-        all_tenders.extend(state_tenders)
-        logger.info(f"Discovered {len(state_tenders)} state tenders across {pages} pages")
+        with ThreadPoolExecutor(max_workers=2) as feed_executor:
+            fut_central = feed_executor.submit(self._scrape_latest_tenders, self.CENTRAL_TENDERS_URL, "central", effective_pages)
+            fut_state = feed_executor.submit(self._scrape_latest_tenders, self.STATE_TENDERS_URL, "state", effective_pages)
+
+            try:
+                central_tenders = fut_central.result()
+                all_tenders.extend(central_tenders)
+                logger.info(f"Discovered {len(central_tenders)} central tenders")
+            except Exception as e:
+                logger.debug(f"CPPP central feed error: {e}")
+
+            try:
+                state_tenders = fut_state.result()
+                all_tenders.extend(state_tenders)
+                logger.info(f"Discovered {len(state_tenders)} state tenders")
+            except Exception as e:
+                logger.debug(f"CPPP state feed error: {e}")
 
         # Deduplicate
         seen_ids = set()

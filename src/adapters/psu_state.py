@@ -1,6 +1,7 @@
 """
-State e-Procurement and Central PSU Portal Adapter
+State e-Procurement and Central PSU Portal Adapter — Production Grade
 Retrieves active tenders for state procurement and public sector enterprises:
+- Karnataka eProcurement KPPP (kppp.karnataka.gov.in)
 - Andhra Pradesh eProcurement (tender.apeprocurement.gov.in)
 - Bharat Electronics Limited BEL (bel-india.in)
 - Bharat Heavy Electricals Limited BHEL (bhel.com)
@@ -10,6 +11,9 @@ Retrieves active tenders for state procurement and public sector enterprises:
 - Bharat ElectronicTender ETS (bharat-electronictender.com)
 - Association of State Road Transport Undertakings ASRTU (asrtu.org)
 - AIIMS Guwahati (aiimsguwahati.ac.in)
+- Gujarat nProcure (nprocure.com)
+- Chhattisgarh eProcurement (cgeprocurement.gov.in)
+Features fast-fail timeouts (2.5s connect, 4s read) to prevent blocking on geo-blocked cloud IPs.
 """
 
 import re
@@ -17,7 +21,7 @@ import logging
 import ssl
 import urllib.request
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
@@ -45,13 +49,35 @@ class PsuStatePortalAdapter(BaseAdapter):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         }
 
+    def _fetch_html(self, url: str) -> Optional[str]:
+        try:
+            import requests
+            resp = requests.get(
+                url,
+                headers=self.headers,
+                timeout=(2.5, 4.0),
+                verify=False
+            )
+            if resp.status_code == 200:
+                return resp.text
+            return None
+        except ImportError:
+            try:
+                req = urllib.request.Request(url, headers=self.headers)
+                return urllib.request.urlopen(req, context=self.ssl_ctx, timeout=3.5).read().decode('utf-8', errors='ignore')
+            except Exception:
+                return None
+        except Exception:
+            return None
+
     def discover_tenders(self, max_tenders: int = 50, **kwargs) -> List[TenderRecord]:
         tenders = []
-        try:
-            req = urllib.request.Request(self.base_url, headers=self.headers)
-            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=10).read().decode('utf-8', errors='ignore')
-            soup = BeautifulSoup(html, 'html.parser')
+        html = self._fetch_html(self.base_url)
+        if not html:
+            return tenders
 
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
             tables = soup.find_all('table')
             for tbl in tables:
                 rows = tbl.find_all('tr')
@@ -89,8 +115,10 @@ class PsuStatePortalAdapter(BaseAdapter):
                     tenders.append(tender)
                     if len(tenders) >= max_tenders:
                         break
+                if tenders:
+                    break
         except Exception as e:
-            logger.debug(f"Direct crawl note for {self.source_id}: {e}")
+            logger.debug(f"Direct crawl notice for {self.source_id}: {e}")
 
         self.stats['tenders_discovered'] = len(tenders)
         return tenders

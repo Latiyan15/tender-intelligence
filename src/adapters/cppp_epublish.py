@@ -214,10 +214,10 @@ class CpppEpublishAdapter(BaseAdapter):
                         opening_date_text, "opening_date"
                     )
 
-                    # Immediately fetch detail page in the same active session
-                    # This prevents Apache Tapestry 'Stale Session' errors
-                    if detail_url:
-                        self.get_tender_details(tender)
+                    # Fast discovery mode: avoid blocking Tapestry calls
+                    id_m = re.search(r'(\d{4}_[A-Za-z0-9]+_\d+_\d+)', (title_text or '') + ' ' + (ref_no or ''))
+                    if id_m:
+                        tender.tender_id = id_m.group(1)
 
                     # Record retrieval result
                     tender.retrieval_results.append(RetrievalResult(

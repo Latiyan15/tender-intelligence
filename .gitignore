@@ -112,3 +112,7 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 [Nn]anorc
+
+data/tender_documents/
+reports/emails/
+*.bak

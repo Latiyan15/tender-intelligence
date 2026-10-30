@@ -1,12 +1,3 @@
-# ──────────────────────────────────────────────────────────────────────────────
-# Nikom Tender Discovery — Keyword Configuration
-# Structured into 4 primary domains based on empirical Nikom contracts:
-# Tier A: Cyber Security (Firewalls, NGFW, UTM, SOC, SIEM, VAPT)
-# Tier B: IT Infrastructure (Compute, Storage, Switching, Racks, iPDU, Cabling)
-# Tier C: Cloud & DR (Public/GovCloud, DR Sites, Virtualization, Backup)
-# Tier D: Non-IT Infrastructure & Services (Turnkey DC, Modular UPS, PAC, Novec, CAMC, FMS)
-# ──────────────────────────────────────────────────────────────────────────────
-
 inclusion_rules:
   tier_a_min_matches: 1
   tier_b_min_matches: 1
@@ -14,1209 +5,2360 @@ inclusion_rules:
   tier_d_min_matches: 1
   tier_c_requires_dc_context: false
   tier_d_separate_category: false
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TIER A — Cyber Security (Critical Threat Protection, Compliance & Monitoring)
-# ─────────────────────────────────────────────────────────────────────────────
 tier_a:
-  label: "Cyber Security"
+  label: Cyber Security
   groups:
     soc_and_siem:
-      - "SOC"
-      - "SIEM"
-      - "security operations centre"
-      - "security operations center"
-      - "SOAR"
-      - "XDR"
-      - "MDR"
-      - "managed detection and response"
-      - "security monitoring"
-      - "incident response"
-
+    - SOC
+    - SIEM
+    - security operations centre
+    - security operations center
+    - SOAR
+    - XDR
+    - MDR
+    - managed detection and response
+    - security monitoring
+    - incident response
     firewalls_and_network_security:
-      - "next generation firewall"
-      - "next-generation firewall"
-      - "NGFW"
-      - "firewall"
-      - "firewalls"
-      - "firewall appliance"
-      - "firewall appliances"
-      - "hardware firewall"
-      - "network firewall"
-      - "perimeter firewall"
-      - "UTM"
-      - "unified threat management"
-      - "WAF"
-      - "web application firewall"
-      - "DDoS protection"
-      - "intrusion prevention system"
-      - "IPS"
-      - "intrusion detection system"
-      - "IDS"
-      - "network security"
-      - "VPN gateway"
-      - "secure web gateway"
-      - "SWG"
-
+    - next generation firewall
+    - next-generation firewall
+    - NGFW
+    - firewall
+    - firewalls
+    - firewall appliance
+    - firewall appliances
+    - hardware firewall
+    - network firewall
+    - perimeter firewall
+    - UTM
+    - unified threat management
+    - WAF
+    - web application firewall
+    - DDoS protection
+    - intrusion prevention system
+    - intrusion detection system
+    - network security
+    - VPN gateway
+    - secure web gateway
     endpoint_and_threat_defense:
-      - "endpoint detection and response"
-      - "EDR"
-      - "endpoint security"
-      - "antivirus"
-      - "anti-virus"
-      - "anti-malware"
-      - "anti-ransomware"
-      - "threat intelligence"
-      - "zero day protection"
-      - "zero-day protection"
-      - "vulnerability management"
-      - "patch management"
-
+    - endpoint detection and response
+    - EDR
+    - endpoint security
+    - antivirus
+    - anti-virus
+    - anti-malware
+    - anti-ransomware
+    - threat intelligence
+    - zero day protection
+    - zero-day protection
+    - vulnerability management
+    - patch management
     identity_and_access:
-      - "IAM"
-      - "identity and access management"
-      - "PAM"
-      - "privileged access management"
-      - "identity management"
-      - "multi factor authentication"
-      - "multi-factor authentication"
-      - "MFA"
-      - "2FA"
-      - "SSO"
-      - "single sign on"
-      - "zero trust"
-      - "zero trust network access"
-      - "ZTNA"
-
+    - IAM
+    - identity and access management
+    - PAM
+    - privileged access management
+    - identity management
+    - multi factor authentication
+    - multi-factor authentication
+    - MFA
+    - single sign on
+    - zero trust
+    - zero trust network access
     data_security_and_compliance:
-      - "DLP"
-      - "data loss prevention"
-      - "data leakage prevention"
-      - "encryption"
-      - "HSM"
-      - "hardware security module"
-      - "vulnerability assessment"
-      - "penetration testing"
-      - "VAPT"
-      - "cyber security audit"
-      - "cybersecurity audit"
-      - "CERT-In"
-      - "CERT-In empanelled"
-      - "ISO 27001"
-      - "information security"
-      - "cyber security"
-      - "cybersecurity"
-      - "cyber-security"
-      - "cyber audit"
-
+    - data loss prevention
+    - data leakage prevention
+    - encryption
+    - hardware security module
+    - vulnerability assessment
+    - penetration testing
+    - VAPT
+    - cyber security audit
+    - cybersecurity audit
+    - CERT-In
+    - CERT-In empanelled
+    - ISO 27001
+    - information security
+    - cyber security
+    - cybersecurity
+    - cyber-security
+    - cyber audit
   contextual_terms:
-    - term: "SOC"
-      group: "soc_and_siem"
-      require_context:
-        - "security"
-        - "cyber"
-        - "incident"
-        - "threat"
-        - "monitor"
-        - "siem"
-        - "network"
-      reject_context:
-        - "society"
-        - "soccer"
-        - "state of charge"
-
-    - term: "WAF"
-      group: "firewalls_and_network_security"
-      require_context:
-        - "firewall"
-        - "security"
-        - "web"
-        - "application"
-        - "traffic"
-        - "http"
-
-    - term: "UTM"
-      group: "firewalls_and_network_security"
-      require_context:
-        - "firewall"
-        - "threat"
-        - "security"
-        - "appliance"
-        - "gateway"
-
-    - term: "PAM"
-      group: "identity_and_access"
-      require_context:
-        - "privileged"
-        - "access"
-        - "credential"
-        - "security"
-        - "identity"
-
-    - term: "IAM"
-      group: "identity_and_access"
-      require_context:
-        - "identity"
-        - "access"
-        - "management"
-        - "security"
-        - "user"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TIER B — IT Infrastructure (Compute, Storage, Networking & Cabling)
-# ─────────────────────────────────────────────────────────────────────────────
+  - term: SOC
+    group: soc_and_siem
+    require_context:
+    - security
+    - cyber
+    - incident
+    - threat
+    - monitor
+    - siem
+    - network
+    - operations centre
+    - operations center
+    reject_context:
+    - society
+    - soccer
+    - state of charge
+    - soil organic carbon
+  - term: SIEM
+    group: soc_and_siem
+    require_context:
+    - security
+    - event
+    - log
+    - incident
+    - threat
+    - soc
+    - correlation
+    - audit
+    - cyber
+    reject_context:
+    - sim card
+    - sim slot
+  - term: SOAR
+    group: soc_and_siem
+    require_context:
+    - security
+    - orchestration
+    - automation
+    - response
+    - incident
+    - playbook
+    - soc
+    reject_context:
+    - soar high
+    - soaring
+  - term: EDR
+    group: endpoint_and_threat_defense
+    require_context:
+    - endpoint
+    - detection
+    - response
+    - antivirus
+    - malware
+    - agent
+    - threat
+    - cyber
+    - security
+    reject_context:
+    - early dispute resolution
+    - emergency department
+    - edr report
+  - term: XDR
+    group: soc_and_siem
+    require_context:
+    - extended
+    - detection
+    - response
+    - security
+    - threat
+    - telemetry
+    - soc
+    - cyber
+    reject_context:
+    - external debt
+    - x-ray diffraction
+    - x-ray
+  - term: MDR
+    group: soc_and_siem
+    require_context:
+    - managed
+    - detection
+    - response
+    - soc
+    - security
+    - monitoring
+    - threat
+    - cyber
+    reject_context:
+    - multi-drug resistant
+    - minimum daily requirement
+    - mdr-tb
+    - medical device regulation
+  - term: WAF
+    group: firewalls_and_network_security
+    require_context:
+    - firewall
+    - security
+    - web
+    - application
+    - traffic
+    - http
+    - https
+    - owasp
+    reject_context:
+    - water absorption
+    - world athletics
+  - term: UTM
+    group: firewalls_and_network_security
+    require_context:
+    - firewall
+    - threat
+    - security
+    - appliance
+    - gateway
+    - unified threat
+    reject_context:
+    - universal testing machine
+    - universal transverse mercator
+    - testing machine
+  - term: IPS
+    group: firewalls_and_network_security
+    require_context:
+    - intrusion
+    - prevention
+    - network
+    - security
+    - firewall
+    - inline
+    - threat
+    - traffic
+    - deep packet
+    reject_context:
+    - in-plane switching
+    - ips display
+    - ips monitor
+    - ips panel
+    - indian police
+    - investment promotion
+    - ips screen
+    - ips lcd
+    - led display
+    - smart tv
+  - term: IDS
+    group: firewalls_and_network_security
+    require_context:
+    - intrusion
+    - detection
+    - network
+    - security
+    - sensor
+    - signature
+    - traffic
+    - threat
+    - cyber
+    reject_context:
+    - identification
+    - integrated development
+    - ids scheme
+    - ids card
+    - smart card
+  - term: SWG
+    group: firewalls_and_network_security
+    require_context:
+    - secure
+    - web
+    - gateway
+    - proxy
+    - traffic
+    - url
+    - cloud
+    - threat
+    - filtering
+    - cyber
+    reject_context:
+    - standard wire gauge
+    - swg wire
+    - earthing wire
+    - copper wire
+    - gauge wire
+    - binding wire
+    - sheet metal
+    - copper strip
+    - gi wire
+    - ms wire
+    - swg gi
+    - swg copper
+    - wire gauge
+    - copper conductor
+  - term: PAM
+    group: identity_and_access
+    require_context:
+    - privileged
+    - access
+    - credential
+    - security
+    - identity
+    - session
+    - vault
+    - password
+    reject_context:
+    - pulses
+    - pregnancy
+    - pan-african
+    - food
+    - pam oil
+  - term: IAM
+    group: identity_and_access
+    require_context:
+    - identity
+    - access
+    - management
+    - security
+    - user
+    - authentication
+    - role-based
+    - rbac
+    reject_context:
+    - institute of aviation
+    - indian association
+  - term: MFA
+    group: identity_and_access
+    require_context:
+    - multi
+    - factor
+    - authentication
+    - credential
+    - login
+    - security
+    - otp
+    - token
+    - cyber
+    reject_context:
+    - master of fine arts
+    - ministry of foreign affairs
+  - term: 2FA
+    group: identity_and_access
+    require_context:
+    - two
+    - factor
+    - authentication
+    - credential
+    - login
+    - security
+    - otp
+    - token
+    - cyber
+    reject_context:
+    - 2 first aid
+    - 2 fa
+    - table 2fa
+  - term: SSO
+    group: identity_and_access
+    require_context:
+    - single
+    - sign
+    - 'on'
+    - authentication
+    - identity
+    - login
+    - credential
+    - saml
+    - oauth
+    reject_context:
+    - state security officer
+    - sub-station operator
+    - sub station operator
+    - sso operator
+    - sso sub
+  - term: ZTNA
+    group: identity_and_access
+    require_context:
+    - zero
+    - trust
+    - network
+    - access
+    - perimeter
+    - security
+    - remote
+    - cyber
+    reject_context:
+    - ztna zone
+  - term: HSM
+    group: data_security_and_compliance
+    require_context:
+    - hardware
+    - security
+    - module
+    - crypto
+    - cryptographic
+    - key
+    - fips
+    - pki
+    - signing
+    reject_context:
+    - high speed machining
+    - high speed manufacturing
+    - hsm tool
+  - term: DLP
+    group: data_security_and_compliance
+    require_context:
+    - data
+    - security
+    - loss
+    - leak
+    - leakage
+    - endpoint
+    - cyber
+    - exfiltration
+    - confidential
+    - policy
+    - compliance
+    reject_context:
+    - defect liability
+    - defects liability
+    - after dlp
+    - during dlp
+    - dlp period
+    - dlp of
+    - years after dlp
+    - oandm
+    - o&m
+    - waste water
+    - wastewater
+    - sewage
+    - stp
+    - stps
+    - construction
+    - erection
+    - civil
+    - road
+    - pipeline
+    - panipat
+    - mld
+    - highway
+    - culvert
+    - drainage
+    - water supply
 tier_b:
-  label: "IT Infrastructure"
+  label: IT Infrastructure
   groups:
     compute_servers:
-      - "rack server"
-      - "rack servers"
-      - "blade server"
-      - "blade servers"
-      - "tower server"
-      - "server chassis"
-      - "GPU server"
-      - "GPU servers"
-      - "compute nodes"
-      - "high performance computing"
-      - "HPC cluster"
-      - "2U server"
-      - "4U server"
-      - "server hardware"
-      - "server infrastructure"
-      - "database server"
-      - "application server"
-
+    - rack server
+    - rack servers
+    - blade server
+    - blade servers
+    - tower server
+    - server chassis
+    - GPU server
+    - GPU servers
+    - compute nodes
+    - high performance computing
+    - HPC cluster
+    - 2U server
+    - 4U server
+    - server hardware
+    - server infrastructure
+    - database server
+    - application server
     enterprise_storage:
-      - "SAN storage"
-      - "NAS storage"
-      - "storage area network"
-      - "network attached storage"
-      - "all-flash storage"
-      - "all flash array"
-      - "hybrid storage"
-      - "unified storage"
-      - "NVMe storage"
-      - "tape library"
-      - "storage array"
-      - "direct attached storage"
-      - "disk storage system"
-
+    - SAN storage
+    - NAS storage
+    - storage area network
+    - network attached storage
+    - all-flash storage
+    - all flash array
+    - hybrid storage
+    - unified storage
+    - NVMe storage
+    - tape library
+    - storage array
+    - direct attached storage
+    - disk storage system
     networking_and_switching:
-      - "core switch"
-      - "core switches"
-      - "aggregation switch"
-      - "access switch"
-      - "distribution switch"
-      - "leaf switch"
-      - "spine switch"
-      - "network switch"
-      - "network switches"
-      - "managed switch"
-      - "L2 switch"
-      - "L3 switch"
-      - "core router"
-      - "edge router"
-      - "SD-WAN"
-      - "load balancer"
-      - "ADC"
-      - "application delivery controller"
-      - "transceiver module"
-      - "SFP module"
-      - "enterprise networking"
-
+    - core switch
+    - core switches
+    - aggregation switch
+    - access switch
+    - distribution switch
+    - leaf switch
+    - spine switch
+    - network switch
+    - network switches
+    - managed switch
+    - L2 switch
+    - L3 switch
+    - core router
+    - edge router
+    - SD-WAN
+    - load balancer
+    - application delivery controller
+    - transceiver module
+    - SFP module
+    - enterprise networking
     passive_it_and_cabling:
-      - "structured cabling"
-      - "structured network cabling"
-      - "fiber optic cabling"
-      - "optical fibre cable"
-      - "OFC cable"
-      - "OFC laying"
-      - "fiber optic laying"
-      - "Cat6A"
-      - "Cat6"
-      - "patch panel"
-      - "patch panels"
-      - "fiber patch cord"
-      - "server rack"
-      - "server racks"
-      - "network rack"
-      - "network racks"
-      - "smart rack"
-      - "integrated server rack"
-      - "integrated racks infrastructure"
-      - "42U rack"
-      - "rack enclosure"
-      - "rack enclosures"
-      - "KVM switch"
-      - "KVM console"
-      - "iPDU"
-      - "smart PDU"
-      - "intelligent PDU"
-      - "metered PDU"
-      - "switched PDU"
-      - "aisle containment"
-      - "cold aisle containment"
-      - "hot aisle containment"
-      - "server room cabling"
-      - "copper pathways"
-      - "fibre pathways"
-      - "fiber pathways"
-
+    - structured cabling
+    - structured network cabling
+    - fiber optic cabling
+    - optical fibre cable
+    - OFC cable
+    - OFC laying
+    - fiber optic laying
+    - patch panel
+    - patch panels
+    - fiber patch cord
+    - server rack
+    - server racks
+    - network rack
+    - network racks
+    - smart rack
+    - integrated server rack
+    - integrated racks infrastructure
+    - 42U rack
+    - rack enclosure
+    - rack enclosures
+    - KVM switch
+    - KVM console
+    - iPDU
+    - smart PDU
+    - intelligent PDU
+    - metered PDU
+    - switched PDU
+    - aisle containment
+    - cold aisle containment
+    - hot aisle containment
+    - server room cabling
+    - copper pathways
+    - fibre pathways
+    - fiber pathways
     wireless_and_campus_it:
-      - "wireless access point"
-      - "Wi-Fi access point"
-      - "WLAN controller"
-      - "wireless controller"
-      - "IP PBX"
-      - "VoIP gateway"
-      - "IP phone"
-      - "video conferencing"
-      - "video conferencing system"
-      - "interactive flat panel"
-      - "IT infrastructure"
-      - "ICT infrastructure"
-      - "desktop computers"
-      - "workstations"
-
+    - wireless access point
+    - Wi-Fi access point
+    - WLAN controller
+    - wireless controller
+    - VoIP gateway
+    - IP phone
+    - video conferencing
+    - video conferencing system
+    - interactive flat panel
+    - IT infrastructure
+    - ICT infrastructure
+    - desktop computers
+    - workstations
   contextual_terms:
-    - term: "switch"
-      group: "networking_and_switching"
-      require_context:
-        - "network"
-        - "ethernet"
-        - "cisco"
-        - "juniper"
-        - "aruba"
-        - "port"
-        - "vlan"
-        - "lan"
-      reject_context:
-        - "light switch"
-        - "isolator switch"
-        - "switchboard"
-
-    - term: "server"
-      group: "compute_servers"
-      require_context:
-        - "rack"
-        - "blade"
-        - "compute"
-        - "memory"
-        - "storage"
-        - "xeon"
-        - "epyc"
-        - "it"
-        - "datacenter"
-        - "data center"
-      reject_context:
-        - "food server"
-        - "catering"
-        - "server staff"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TIER C — Cloud (Public, Private, Hybrid Cloud, DR Sites & Virtualization)
-# ─────────────────────────────────────────────────────────────────────────────
+  - term: switch
+    group: networking_and_switching
+    require_context:
+    - network
+    - ethernet
+    - cisco
+    - juniper
+    - aruba
+    - port
+    - vlan
+    - lan
+    - managed
+    - l2
+    - l3
+    - sfp
+    - fiber
+    - datacenter
+    - data center
+    - poe
+    - stacking
+    - transceiver
+    reject_context:
+    - light switch
+    - isolator switch
+    - switchboard
+    - knife switch
+    - limit switch
+    - changeover switch
+    - foot switch
+    - push button switch
+    - rocker switch
+    - toggle switch
+    - electrical switch
+    - rotary switch
+    - float switch
+    - gang switch
+    - modular switch for light
+    - automatic transfer switch
+    - transfer switch
+    - static transfer switch
+    - bypass switch
+    - ats panel
+    - power switch
+    - disconnect switch
+    - automatic transfer switches
+    - transfer switches
+    - static transfer switches
+  - term: switches
+    group: networking_and_switching
+    require_context:
+    - network
+    - ethernet
+    - cisco
+    - juniper
+    - aruba
+    - port
+    - vlan
+    - lan
+    - managed
+    - l2
+    - l3
+    - sfp
+    - fiber
+    - datacenter
+    - data center
+    - poe
+    - stackable
+    reject_context:
+    - light switches
+    - isolator switches
+    - switchboards
+    - knife switches
+    - limit switches
+    - changeover switches
+    - modular switches
+    - automatic transfer switch
+    - transfer switch
+    - static transfer switch
+    - bypass switch
+    - ats panel
+    - power switch
+    - disconnect switch
+    - automatic transfer switches
+    - transfer switches
+    - static transfer switches
+  - term: server
+    group: compute_servers
+    require_context:
+    - rack
+    - blade
+    - compute
+    - memory
+    - storage
+    - xeon
+    - epyc
+    - it
+    - datacenter
+    - data center
+    - cpu
+    - ram
+    - raid
+    - hdd
+    - ssd
+    - 1u
+    - 2u
+    - 4u
+    - chassis
+    - virtualization
+    - operating system
+    - hpc
+    - workstation
+    reject_context:
+    - food server
+    - catering
+    - server staff
+    - restaurant server
+    - banquet server
+    - wait staff
+    - beverage server
+  - term: servers
+    group: compute_servers
+    require_context:
+    - rack
+    - blade
+    - compute
+    - memory
+    - storage
+    - xeon
+    - epyc
+    - it
+    - datacenter
+    - data center
+    - cpu
+    - ram
+    - raid
+    - hdd
+    - ssd
+    - virtualization
+    - operating system
+    reject_context:
+    - food servers
+    - catering
+    - server staff
+    - restaurant servers
+    - banquet servers
+  - term: rack
+    group: passive_it_and_cabling
+    require_context:
+    - 19-inch
+    - 19 inch
+    - server
+    - network
+    - 42u
+    - 24u
+    - 12u
+    - 9u
+    - 6u
+    - enclosure
+    - cabinet
+    - datacenter
+    - data center
+    - server room
+    - pdu
+    - patch panel
+    - cable manager
+    reject_context:
+    - display rack
+    - shoe rack
+    - towel rack
+    - book rack
+    - storage rack
+    - luggage rack
+    - heavy duty pallet rack
+    - angle iron rack
+    - pigeon hole rack
+    - steel rack for store
+    - slotted angle rack
+    - library rack
+    - drying rack
+    - pan rack
+    - dish rack
+    - cycle rack
+  - term: racks
+    group: passive_it_and_cabling
+    require_context:
+    - 19-inch
+    - 19 inch
+    - server
+    - network
+    - 42u
+    - 24u
+    - 12u
+    - 9u
+    - 6u
+    - enclosure
+    - cabinet
+    - datacenter
+    - data center
+    - server room
+    - pdu
+    - patch panel
+    reject_context:
+    - display racks
+    - shoe racks
+    - towel racks
+    - book racks
+    - storage racks
+    - luggage racks
+    - pallet racks
+    - angle iron racks
+    - slotted angle racks
+    - library racks
+  - term: ADC
+    group: networking_and_switching
+    require_context:
+    - application
+    - delivery
+    - controller
+    - load
+    - balancer
+    - traffic
+    - citrix
+    - f5
+    - a10
+    - radware
+    - reverse proxy
+    - ssl offload
+    reject_context:
+    - analog to digital
+    - autonomous district
+    - aide-de-camp
+    - adc channel
+    - adc converter
+    - adc board
+  - term: Cat6
+    group: passive_it_and_cabling
+    require_context:
+    - cable
+    - cabling
+    - patch
+    - lan
+    - ethernet
+    - network
+    - structured
+    - rj45
+    - keystone
+    - utp
+    - stp
+    - information outlet
+    - patch cord
+    reject_context:
+    - caterpillar
+    - category 6 road
+    - cat-6 vehicle
+    - cat6 engine
+  - term: Cat6A
+    group: passive_it_and_cabling
+    require_context:
+    - cable
+    - cabling
+    - patch
+    - lan
+    - ethernet
+    - network
+    - structured
+    - rj45
+    - keystone
+    - utp
+    - stp
+    - information outlet
+    - 10g
+    reject_context:
+    - category 6a road
+    - caterpillar
+  - term: IP PBX
+    group: wireless_and_campus_it
+    require_context:
+    - voice
+    - telecom
+    - telephony
+    - voip
+    - extension
+    - intercom
+    - sip
+    - epabx
+    - call server
+    reject_context:
+    - pbx box
+    - junction box
 tier_c:
-  label: "Cloud"
+  label: Cloud
   groups:
     cloud_platforms:
-      - "cloud computing"
-      - "cloud hosting"
-      - "public cloud"
-      - "private cloud"
-      - "hybrid cloud"
-      - "community cloud"
-      - "government cloud"
-      - "GovCloud"
-      - "NIC Cloud"
-      - "MeitY empanelled cloud"
-      - "AWS"
-      - "Amazon Web Services"
-      - "Microsoft Azure"
-      - "Google Cloud Platform"
-      - "GCP"
-      - "Oracle Cloud"
-      - "cloud service provider"
-      - "CSP"
-      - "Disaster Recovery Center"
-      - "Disaster Recovery Site"
-      - "DR Site"
-      - "DR center"
-      - "Near Site Data Centre"
-      - "Near Site Data Center"
-
+    - cloud computing
+    - cloud hosting
+    - public cloud
+    - private cloud
+    - hybrid cloud
+    - community cloud
+    - government cloud
+    - GovCloud
+    - NIC Cloud
+    - MeitY empanelled cloud
+    - Amazon Web Services
+    - Microsoft Azure
+    - Google Cloud Platform
+    - GCP
+    - Oracle Cloud
+    - cloud service provider
+    - Disaster Recovery Center
+    - Disaster Recovery Site
+    - DR Site
+    - DR center
+    - Near Site Data Centre
+    - Near Site Data Center
     virtualization_and_hci:
-      - "virtual machine"
-      - "virtual machines"
-      - "virtualization"
-      - "hypervisor"
-      - "VMware"
-      - "vSphere"
-      - "ESXi"
-      - "vCenter"
-      - "Hyper-V"
-      - "KVM hypervisor"
-      - "Nutanix"
-      - "hyperconverged infrastructure"
-      - "hyper-converged infrastructure"
-      - "HCI"
-      - "software defined storage"
-      - "SDS"
-      - "software defined data center"
-      - "SDDC"
-
+    - virtual machine
+    - virtual machines
+    - virtualization
+    - hypervisor
+    - VMware
+    - vSphere
+    - ESXi
+    - vCenter
+    - Hyper-V
+    - KVM hypervisor
+    - Nutanix
+    - hyperconverged infrastructure
+    - hyper-converged infrastructure
+    - HCI
+    - software defined storage
+    - software defined data center
+    - SDDC
     containers_and_cloud_native:
-      - "Kubernetes"
-      - "K8s"
-      - "Docker"
-      - "containerization"
-      - "OpenShift"
-      - "container platform"
-      - "microservices"
-      - "serverless"
-      - "cloud native"
-
+    - Kubernetes
+    - K8s
+    - Docker
+    - containerization
+    - OpenShift
+    - container platform
+    - microservices
+    - serverless
+    - cloud native
     cloud_services_and_migration:
-      - "IaaS"
-      - "PaaS"
-      - "SaaS"
-      - "cloud migration"
-      - "cloud adoption"
-      - "cloud orchestration"
-      - "DRaaS"
-      - "disaster recovery as a service"
-      - "BaaS"
-      - "backup as a service"
-      - "cloud backup"
-      - "cloud disaster recovery"
-      - "cloud management platform"
-      - "CMP"
-      - "FinOps"
-
+    - IaaS
+    - PaaS
+    - SaaS
+    - cloud migration
+    - cloud adoption
+    - cloud orchestration
+    - DRaaS
+    - disaster recovery as a service
+    - backup as a service
+    - cloud backup
+    - cloud disaster recovery
+    - cloud management platform
+    - FinOps
   contextual_terms:
-    - term: "cloud"
-      group: "cloud_platforms"
-      require_context:
-        - "compute"
-        - "server"
-        - "hosting"
-        - "migration"
-        - "infrastructure"
-        - "storage"
-        - "platform"
-        - "service"
-        - "virtual"
-      reject_context:
-        - "cloud burst"
-        - "cloud point"
-        - "weather"
-        - "rain"
-
-    - term: "HCI"
-      group: "virtualization_and_hci"
-      require_context:
-        - "infrastructure"
-        - "hyperconverged"
-        - "server"
-        - "cluster"
-        - "compute"
-        - "storage"
-      reject_context:
-        - "human computer interaction"
-
-    - term: "GCP"
-      group: "cloud_platforms"
-      require_context:
-        - "cloud"
-        - "google"
-        - "platform"
-        - "hosting"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TIER D — Non-IT Infrastructure & Services (Data Center, Power, Cooling, Fire Safety, CAMC)
-# ─────────────────────────────────────────────────────────────────────────────
+  - term: cloud
+    group: cloud_platforms
+    require_context:
+    - compute
+    - server
+    - hosting
+    - migration
+    - infrastructure
+    - storage
+    - platform
+    - service
+    - virtual
+    - aws
+    - azure
+    - gcp
+    - meity
+    - vps
+    - tenant
+    - data center
+    reject_context:
+    - cloud burst
+    - cloud point
+    - weather
+    - rain
+    - point cloud
+    - clouding
+    - meteorological
+  - term: HCI
+    group: virtualization_and_hci
+    require_context:
+    - infrastructure
+    - hyperconverged
+    - server
+    - cluster
+    - compute
+    - storage
+    - nutanix
+    - vxrail
+    - simplivity
+    - datacenter
+    reject_context:
+    - human computer interaction
+    - heavy chemical industry
+    - hydrochloric
+  - term: GCP
+    group: cloud_platforms
+    require_context:
+    - cloud
+    - google
+    - platform
+    - hosting
+    - compute
+    - kubernetes
+    reject_context:
+    - gross concrete production
+    - galvanized corrugated plate
+    - ground control point
+    - good clinical practice
+  - term: AWS
+    group: cloud_platforms
+    require_context:
+    - amazon
+    - cloud
+    - web services
+    - ec2
+    - s3
+    - hosting
+    - compute
+    - cloud infrastructure
+    reject_context:
+    - all weather station
+    - automatic weather station
+    - aws weather
+    - american welding society
+    - welding
+  - term: CSP
+    group: cloud_platforms
+    require_context:
+    - cloud
+    - service
+    - provider
+    - hosting
+    - compute
+    - infrastructure
+    - meity
+    - platform
+    - datacenter
+    reject_context:
+    - concentrated solar power
+    - csp steel
+    - continuous slab production
+    - csp pipe
+    - csp plant
+    - csp solar
+  - term: SDS
+    group: virtualization_and_hci
+    require_context:
+    - software
+    - defined
+    - storage
+    - ceph
+    - san
+    - nas
+    - cluster
+    - scale-out
+    - block storage
+    reject_context:
+    - safety data sheet
+    - sodium dodecyl sulfate
+    - sodium dodecyl sulphate
+    - sample data sheet
+    - chemical
+  - term: CMP
+    group: cloud_services_and_migration
+    require_context:
+    - cloud
+    - management
+    - platform
+    - multi-cloud
+    - orchestration
+    - hybrid cloud
+    - self-service portal
+    reject_context:
+    - comprehensive mobility plan
+    - common minimum programme
+    - cmp road
+    - cmp traffic
+    - cmp transport
+  - term: BaaS
+    group: cloud_services_and_migration
+    require_context:
+    - backup
+    - as a service
+    - cloud
+    - recovery
+    - datacenter
+    - data protection
+    - veeam
+    - commvault
+    reject_context:
+    - battery as a service
+    - baas bus
+    - baas ev
+    - electric vehicle
+    - battery swap
+  - term: DPR
+    group: cloud_services_and_migration
+    require_context:
+    - data center
+    - datacenter
+    - server room
+    - it infrastructure
+    - disaster recovery
+    - dr site
+    - command center
+    - tier iii
+    - tier iv
+    reject_context:
+    - road
+    - highway
+    - widening
+    - culvert
+    - bridge
+    - flyover
+    - bypass
+    - sewage
+    - water supply
+    - irrigation
+    - building construction
+    - civil
+    - pcc
+    - rcc
+    - bitumen
+    - detailed project report for road
+    - dpr of road
+    - dpr for widening
+    - nh-
+    - national highway
+    - state highway
+    - pwd
+    - panipat
+    - pipeline
+  - term: DR
+    group: cloud_services_and_migration
+    require_context:
+    - disaster
+    - recovery
+    - site
+    - replication
+    - datacenter
+    - data center
+    - rpo
+    - rto
+    - bcp
+    - near site
+    reject_context:
+    - doctor
+    - driving
+    - dining room
+    - demand response
+    - dr.
+    - dr appointment
+    - dr team
+    - dr chamber
 tier_d:
-  label: "Non-IT Infrastructure & Services"
+  label: Non-IT Infrastructure & Services
   groups:
     datacenter_and_server_room:
-      - "data center"
-      - "data centre"
-      - "datacenter"
-      - "server room"
-      - "server rooms"
-      - "disaster recovery center"
-      - "disaster recovery centre"
-      - "disaster recovery site"
-      - "DR site"
-      - "DR centre"
-      - "DR center"
-      - "near site data centre"
-      - "near site data center"
-      - "turnkey data center"
-      - "turnkey data centre"
-      - "turnkey datacenter"
-      - "NOC room"
-      - "command centre"
-      - "command center"
-      - "DC infrastructure"
-
+    - data center
+    - data centre
+    - datacenter
+    - server room
+    - server rooms
+    - disaster recovery center
+    - disaster recovery centre
+    - disaster recovery site
+    - DR site
+    - DR centre
+    - DR center
+    - near site data centre
+    - near site data center
+    - turnkey data center
+    - turnkey data centre
+    - turnkey datacenter
+    - NOC room
+    - command centre
+    - command center
+    - DC infrastructure
     critical_power:
-      - "turnkey data center"
-      - "turnkey datacenter"
-      - "turnkey data centre"
-      - "data center establishment"
-      - "establishment of data center"
-      - "establishment of data centre"
-      - "creation of data center"
-      - "creation of data centre"
-      - "data center setup"
-      - "data centre setup"
-      - "server room revamping"
-      - "revamping of server room"
-      - "server room setup"
-      - "server room modernization"
-      - "data center modernization"
-      - "data centre modernization"
-      - "basic infrastructure for data center"
-      - "basic infrastructure for data centre"
-      - "non-IT infrastructure"
-      - "non IT infrastructure"
-      - "online UPS"
-      - "modular UPS"
-      - "modular online UPS"
-      - "online double conversion UPS"
-      - "monolithic UPS"
-      - "high capacity UPS"
-      - "lithium-ion UPS"
-      - "battery bank"
-      - "SMF battery"
-      - "VRLA battery"
-      - "Symetra PX"
-      - "LT panel"
-      - "HT panel"
-      - "PCC"
-      - "PDB"
-      - "busway"
-      - "bus duct"
-      - "rack PDU"
-      - "RPP"
-      - "ATS"
-      - "STS"
-      - "DG set"
-      - "diesel generator"
-      - "synchronising panel"
-      - "synchronizing panel"
-      - "isolation transformer"
-      - "electrical panel"
-      - "uninterrupted power supply"
-      - "uninterruptible power supply"
-      - "uninterruptible power system"
-      - "UPS system"
-      - "UPS systems"
-      - "centralized power monitoring"
-      - "power monitoring system"
-      - "smart power solution"
-
+    - turnkey data center
+    - turnkey datacenter
+    - turnkey data centre
+    - data center establishment
+    - establishment of data center
+    - establishment of data centre
+    - creation of data center
+    - creation of data centre
+    - data center setup
+    - data centre setup
+    - server room revamping
+    - revamping of server room
+    - server room setup
+    - server room modernization
+    - data center modernization
+    - data centre modernization
+    - basic infrastructure for data center
+    - basic infrastructure for data centre
+    - non-IT infrastructure
+    - non IT infrastructure
+    - online UPS
+    - modular UPS
+    - modular online UPS
+    - online double conversion UPS
+    - monolithic UPS
+    - high capacity UPS
+    - lithium-ion UPS
+    - battery bank
+    - SMF battery
+    - VRLA battery
+    - Symetra PX
+    - LT panel
+    - HT panel
+    - PDB
+    - busway
+    - bus duct
+    - rack PDU
+    - RPP
+    - synchronising panel
+    - synchronizing panel
+    - isolation transformer
+    - electrical panel
+    - uninterrupted power supply
+    - uninterruptible power supply
+    - uninterruptible power system
+    - UPS system
+    - UPS systems
+    - centralized power monitoring
+    - power monitoring system
+    - smart power solution
     precision_cooling_and_hvac:
-      - "precision air conditioner"
-      - "precision air conditioning"
-      - "precision air conditioners"
-      - "PAC"
-      - "CRAC"
-      - "CRAH"
-      - "precision cooling"
-      - "precision cooling system"
-      - "in-row cooling"
-      - "in row cooling"
-      - "rear-door heat exchanger"
-      - "chiller"
-      - "chilled water"
-      - "liquid cooling"
-      - "direct-to-chip"
-      - "immersion cooling"
-      - "cold-aisle containment"
-      - "cold aisle containment"
-      - "hot-aisle containment"
-      - "hot aisle containment"
-      - "HVAC system"
-      - "comfort AC"
-      - "data center cooling"
-      - "server room cooling"
-      - "data center humidifier"
-      - "dehumidifier for data center"
-
+    - precision air conditioner
+    - precision air conditioning
+    - precision air conditioners
+    - CRAC
+    - CRAH
+    - precision cooling
+    - precision cooling system
+    - in-row cooling
+    - in row cooling
+    - rear-door heat exchanger
+    - chilled water
+    - liquid cooling
+    - direct-to-chip
+    - immersion cooling
+    - cold-aisle containment
+    - cold aisle containment
+    - hot-aisle containment
+    - hot aisle containment
+    - data center cooling
+    - server room cooling
+    - data center humidifier
+    - dehumidifier for data center
     fire_safety_and_physical_security:
-      - "FM-200"
-      - "FM200"
-      - "Novec 1230"
-      - "Novec gas"
-      - "FK-5-1-12"
-      - "clean agent"
-      - "clean agent fire suppression"
-      - "gas suppression"
-      - "gas flooding"
-      - "gas flooding system"
-      - "VESDA"
-      - "aspirating smoke detection"
-      - "water leak detection"
-      - "water leak detection system"
-      - "WLD system"
-      - "rodent repellent"
-      - "rodent repellent system"
-      - "access control"
-      - "access control system"
-      - "biometric"
-      - "biometric system"
-      - "IP CCTV"
-      - "surveillance system"
-      - "mantrap"
-      - "raised floor"
-      - "raised access floor"
-      - "false flooring"
-      - "false flooring system"
-      - "raised flooring"
-      - "fire-rated partition"
-      - "fire rated door"
-      - "fire rated partition"
-      - "IBMS"
-      - "BMS"
-      - "DCIM"
-      - "environmental monitoring"
-      - "video wall"
-      - "DC build"
-      - "DC-build"
-
+    - FM-200
+    - FM200
+    - Novec 1230
+    - Novec gas
+    - FK-5-1-12
+    - clean agent
+    - clean agent fire suppression
+    - gas suppression
+    - gas flooding
+    - gas flooding system
+    - VESDA
+    - aspirating smoke detection
+    - water leak detection
+    - water leak detection system
+    - WLD system
+    - rodent repellent
+    - rodent repellent system
+    - access control system
+    - biometric system
+    - IP CCTV
+    - surveillance system
+    - mantrap
+    - raised floor
+    - raised access floor
+    - false flooring system
+    - fire-rated partition
+    - fire rated door
+    - fire rated partition
+    - environmental monitoring
+    - video wall
+    - DC build
+    - DC-build
     facility_and_annual_maintenance:
-      - "data center AMC"
-      - "datacenter AMC"
-      - "data centre AMC"
-      - "data center CAMC"
-      - "datacenter CAMC"
-      - "data centre CAMC"
-      - "data center FMS"
-      - "datacenter FMS"
-      - "data centre FMS"
-      - "DC CAMC"
-      - "DC AMC"
-      - "non-IT infrastructure AMC"
-      - "non-IT infrastructure CAMC"
-      - "UPS AMC"
-      - "UPS CAMC"
-      - "PAC AMC"
-      - "PAC CAMC"
-      - "precision cooling AMC"
-      - "IT infrastructure AMC"
-      - "server AMC"
-      - "network AMC"
-      - "firewall AMC"
-      - "annual maintenance of UPS"
-      - "annual maintenance of PAC"
-      - "annual maintenance of data center"
-      - "annual maintenance of data centre"
-      - "comprehensive annual maintenance of UPS"
-      - "comprehensive annual maintenance of PAC"
-      - "comprehensive annual maintenance contract of UPS"
-      - "comprehensive annual maintenance contract of data center"
-      - "maintenance of UPS system"
-      - "maintenance of data center"
-      - "maintenance of data centre"
-      - "onsite monitoring & management of critical equipment"
-      - "onsite monitoring and management of critical equipment"
-      - "data centre infra management"
-      - "data center infra management"
-      - "managed services of DC"
-      - "managed services of data center"
-      - "CAMC of non-IT infrastructure"
-      - "CAMC of IT infrastructure"
-      - "CAMC of UPS"
-      - "CAMC of PAC"
-      - "PWCAMC"
-      - "post warranty comprehensive annual maintenance contract"
-      - "post warranty CAMC"
-      - "data center health check"
-      - "data center operations and maintenance"
-      - "data centre operations and maintenance"
-      - "PUE audit"
-
+    - data center AMC
+    - datacenter AMC
+    - data centre AMC
+    - data center CAMC
+    - datacenter CAMC
+    - data centre CAMC
+    - data center FMS
+    - datacenter FMS
+    - data centre FMS
+    - DC CAMC
+    - DC AMC
+    - non-IT infrastructure AMC
+    - non-IT infrastructure CAMC
+    - UPS AMC
+    - UPS CAMC
+    - PAC AMC
+    - PAC CAMC
+    - precision cooling AMC
+    - IT infrastructure AMC
+    - server AMC
+    - network AMC
+    - firewall AMC
+    - annual maintenance of UPS
+    - annual maintenance of PAC
+    - annual maintenance of data center
+    - annual maintenance of data centre
+    - comprehensive annual maintenance of UPS
+    - comprehensive annual maintenance of PAC
+    - comprehensive annual maintenance contract of UPS
+    - comprehensive annual maintenance contract of data center
+    - maintenance of UPS system
+    - maintenance of data center
+    - maintenance of data centre
+    - onsite monitoring & management of critical equipment
+    - onsite monitoring and management of critical equipment
+    - data centre infra management
+    - data center infra management
+    - managed services of DC
+    - managed services of data center
+    - CAMC of non-IT infrastructure
+    - CAMC of IT infrastructure
+    - CAMC of UPS
+    - CAMC of PAC
+    - PWCAMC
+    - post warranty comprehensive annual maintenance contract
+    - post warranty CAMC
+    - data center health check
+    - data center operations and maintenance
+    - data centre operations and maintenance
+    - PUE audit
   contextual_terms:
-    - term: "UPS"
-      group: "critical_power"
-      reject_context:
-        - "UPS courier"
-        - "UPS for traffic"
-        - "traffic signal"
-      min_capacity_kva: 10
-
-    - term: "PAC"
-      group: "precision_cooling_and_hvac"
-      reject_context:
-        - "Provincial Armed Constabulary"
-        - "Public Accounts Committee"
-        - "PAC meeting"
-
-    - term: "CCTV"
-      group: "fire_safety_and_physical_security"
-      require_context:
-        - "surveillance"
-        - "security"
-        - "camera"
-        - "monitoring"
-        - "access"
-
-    - term: "transformer"
-      group: "critical_power"
-      reject_context:
-        - "distribution transformer"
-        - "pole mounted transformer"
-        - "pump set"
-        - "shiwane river"
-        - "rural electrification"
-
-    - term: "CAMC"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "cctv"
-        - "access control"
-        - "ibms"
-        - "dcim"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-        - "hvac"
-        - "chiller"
-        - "electrical"
-      reject_context:
-        - "medical gas"
-        - "hospital"
-        - "lift"
-        - "lifts"
-        - "elevator"
-        - "escalator"
-        - "weighbridge"
-        - "joinery"
-        - "carpentry"
-        - "water cooler"
-        - "drinking water"
-        - "sewage"
-        - "drainage"
-        - "sanitation"
-        - "housekeeping"
-        - "cleaning"
-        - "data entry"
-        - "canteen"
-        - "mess"
-        - "catering"
-        - "vehicle"
-
-    - term: "AMC"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "cctv"
-        - "access control"
-        - "ibms"
-        - "dcim"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-        - "hvac"
-        - "chiller"
-        - "electrical"
-      reject_context:
-        - "medical gas"
-        - "hospital"
-        - "lift"
-        - "lifts"
-        - "elevator"
-        - "escalator"
-        - "weighbridge"
-        - "joinery"
-        - "carpentry"
-        - "water cooler"
-        - "drinking water"
-        - "sewage"
-        - "drainage"
-        - "sanitation"
-        - "housekeeping"
-        - "cleaning"
-        - "data entry"
-        - "canteen"
-        - "mess"
-        - "catering"
-        - "vehicle"
-        - "lvs"
-        - "split ac"
-
-    - term: "annual maintenance contract"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "cctv"
-        - "access control"
-        - "ibms"
-        - "dcim"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-        - "hvac"
-        - "chiller"
-        - "electrical"
-      reject_context:
-        - "medical gas"
-        - "hospital"
-        - "lift"
-        - "elevator"
-        - "escalator"
-        - "weighbridge"
-        - "joinery"
-        - "carpentry"
-        - "water cooler"
-        - "sewage"
-        - "drainage"
-        - "housekeeping"
-        - "canteen"
-
-    - term: "comprehensive maintenance"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-        - "cctv"
-        - "access control"
-      reject_context:
-        - "joinery"
-        - "carpentry"
-        - "lift"
-        - "elevator"
-        - "weighbridge"
-        - "medical gas"
-        - "hospital"
-        - "water cooler"
-
-    - term: "comprehensive annual maintenance"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-      reject_context:
-        - "lift"
-        - "elevator"
-        - "medical gas"
-        - "hospital"
-        - "joinery"
-        - "weighbridge"
-
-    - term: "facility management services"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-      reject_context:
-        - "data entry"
-        - "housekeeping"
-        - "sweeper"
-        - "cleaning"
-        - "security guard"
-        - "canteen"
-        - "mess"
-        - "catering"
-        - "lumpsum based"
-
-    - term: "facility management"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-      reject_context:
-        - "data entry"
-        - "housekeeping"
-        - "sweeper"
-        - "cleaning"
-        - "security guard"
-        - "canteen"
-        - "mess"
-        - "catering"
-
-    - term: "FMS"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "cctv"
-        - "access control"
-        - "ibms"
-        - "dcim"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-      reject_context:
-        - "data entry"
-        - "housekeeping"
-        - "sweeper"
-        - "cleaning"
-        - "security guard"
-        - "canteen"
-        - "mess"
-        - "catering"
-
-    - term: "operation and maintenance"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-        - "battery"
-        - "electrical panel"
-      reject_context:
-        - "split air conditioner"
-        - "split ac"
-        - "water cooler"
-        - "drinking water"
-        - "reverse osmosis"
-        - "sewage"
-        - "drainage"
-        - "weighbridge"
-        - "lift"
-        - "elevator"
-
-    - term: "O&M"
-      group: "facility_and_annual_maintenance"
-      require_context:
-        - "data center"
-        - "data centre"
-        - "datacenter"
-        - "server"
-        - "ups"
-        - "pac"
-        - "precision"
-        - "power"
-        - "cooling"
-        - "network"
-        - "switch"
-        - "firewall"
-        - "non-it"
-        - "it infrastructure"
-      reject_context:
-        - "water cooler"
-        - "sewage"
-        - "lift"
-        - "elevator"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# NEGATIVE KEYWORDS — Filter or contextually reject noise
-# ─────────────────────────────────────────────────────────────────────────────
+  - term: PCC
+    group: critical_power
+    require_context:
+    - power
+    - control
+    - centre
+    - center
+    - panel
+    - switchgear
+    - electrical
+    - breaker
+    - lt
+    - ht
+    - busbar
+    - incomer
+    - acb
+    - vcb
+    - distribution board
+    - motor control center
+    reject_context:
+    - plain cement concrete
+    - pcc 1:2:4
+    - pcc 1:4:8
+    - pcc 1:3:6
+    - pcc 1:5:10
+    - pcc road
+    - pcc bed
+    - pcc work
+    - pcc flooring
+    - pcc slab
+    - concrete
+    - cement
+    - masonry
+    - road
+    - pavement
+    - drain
+    - culvert
+    - plaster
+    - brickwork
+    - excavation
+    - leveling course
+    - stone pitching
+    - retaining wall
+    - earthwork
+    - subgrade
+    - bituminous
+    - embankment
+  - term: ATS
+    group: critical_power
+    require_context:
+    - automatic
+    - transfer
+    - switch
+    - power
+    - generator
+    - mains
+    - panel
+    - ups
+    - source
+    - bypass
+    - transfer switch
+    reject_context:
+    - anti terrorism
+    - applicant tracking
+    - ats squad
+    - air traffic services
+    - ats building
+    - ats complex
+    - ats tower
+    - airportats
+    - passenger lift
+    - elevator
+    - escalator
+  - term: STS
+    group: critical_power
+    require_context:
+    - static
+    - transfer
+    - switch
+    - power
+    - source
+    - ups
+    - critical
+    - dual power
+    - redundancy
+    - thyristor
+    - pdu
+    reject_context:
+    - ship to ship
+    - state transport service
+    - science technology
+    - sts road
+    - vessel
+  - term: UPS
+    group: critical_power
+    require_context:
+    - online
+    - modular
+    - battery
+    - kva
+    - backup
+    - power
+    - phase
+    - inverter
+    - rectifier
+    - uninterruptible
+    - datacenter
+    - data center
+    - server room
+    - it equipment
+    - double conversion
+    - smf
+    - vrla
+    - igbt
+    - numeric
+    - apc
+    - schneider
+    - vertiv
+    - eaton
+    reject_context:
+    - ups courier
+    - ups express
+    - ups delivery
+    - ups for traffic
+    - traffic signal
+    - solar ups
+    - home ups
+    - water purifier
+    - domestic ups
+    - 600 va
+    - 800 va
+    - ro water
+    - drinking water
+  - term: PAC
+    group: precision_cooling_and_hvac
+    require_context:
+    - precision
+    - air
+    - cooling
+    - conditioning
+    - datacenter
+    - data center
+    - server room
+    - chiller
+    - crac
+    - crah
+    - sensible heat
+    - dx unit
+    - ec fan
+    - stulz
+    - vertiv
+    - schneider
+    reject_context:
+    - provincial armed constabulary
+    - public accounts committee
+    - pac meeting
+    - pac battalion
+    - pac force
+    - pac police
+    - pac camp
+    - pac ground
+  - term: transformer
+    group: critical_power
+    require_context:
+    - isolation
+    - dry type
+    - dry-type
+    - resin cast
+    - cast resin
+    - substation
+    - data center
+    - data centre
+    - server room
+    - step down
+    - step-down
+    - 11kv/415v
+    - 33kv/415v
+    - k-factor
+    - copper winding
+    - harmonic
+    - electrical panel
+    - substation equipment
+    reject_context:
+    - transformer oil
+    - oil bdv
+    - oil filtration
+    - oil testing
+    - bdv test
+    - ignition transformer
+    - furnace transformer
+    - pole mounted transformer
+    - pole mounted
+    - distribution transformer
+    - rural electrification
+    - tubewell
+    - pump set
+    - bushing hv
+    - bushing lv
+    - oil storage tank
+    - oil purification
+    - dehydration of transformer oil
+    - oil centrifuge
+    - welding transformer
+  - term: DG set
+    group: critical_power
+    require_context:
+    - kva
+    - backup
+    - power
+    - acoustic
+    - amf
+    - sync
+    - synchronizing
+    - data center
+    - data centre
+    - server room
+    - prime
+    - standby
+    - cpcb
+    - canopied
+    - cummins
+    - kirloskar
+    - caterpillar
+    - perkins
+    reject_context:
+    - mobile irrigation
+    - tractor
+    - flood relief
+    - agricultural
+    - road construction
+    - dewatering pump
+    - tractor mounted
+    - submersible pump
+  - term: diesel generator
+    group: critical_power
+    require_context:
+    - kva
+    - backup
+    - power
+    - acoustic
+    - amf
+    - sync
+    - synchronizing
+    - data center
+    - server room
+    - standby
+    - cpcb
+    - canopy
+    - cummins
+    - kirloskar
+    reject_context:
+    - irrigation
+    - tractor
+    - agriculture
+    - mobile van
+    - dewatering
+  - term: chiller
+    group: precision_cooling_and_hvac
+    require_context:
+    - data center
+    - data centre
+    - server room
+    - precision
+    - chilled water
+    - hvac plant
+    - scroll chiller
+    - screw chiller
+    - magnetic bearing
+    - ahu
+    - cooling capacity
+    - tr
+    - cooling tower
+    reject_context:
+    - milk chiller
+    - bulk milk chiller
+    - water cooler
+    - drinking water chiller
+    - carcass chiller
+    - mortuary chiller
+    - fish chiller
+    - dairy chiller
+    - meat chiller
+    - brewery
+  - term: HVAC
+    group: precision_cooling_and_hvac
+    require_context:
+    - data center
+    - data centre
+    - server room
+    - precision
+    - chiller
+    - cooling
+    - air conditioning
+    - clean room
+    - command center
+    - noc room
+    - tier iii
+    - tier iv
+    - ductable
+    reject_context:
+    - window ac
+    - split ac
+    - residential quarters
+    - staff quarters
+    - hostel
+    - hospital ward
+    - passenger coach
+    - train coach
+    - mess hall
+    - barrack
+  - term: BMS
+    group: fire_safety_and_physical_security
+    require_context:
+    - building
+    - management
+    - system
+    - automation
+    - datacenter
+    - data center
+    - monitoring
+    - scada
+    - hvac
+    - ddc
+    - sensor
+    - bacnet
+    - modbus
+    - server room
+    - ibms
+    reject_context:
+    - bachelor of management studies
+    - battery management system
+    - biomedical sciences
+    - building material
+    - bms college
+    - bms course
+    - ev battery
+    - solar battery
+  - term: IBMS
+    group: fire_safety_and_physical_security
+    require_context:
+    - integrated
+    - building
+    - management
+    - system
+    - datacenter
+    - data center
+    - automation
+    - scada
+    - plc
+    - ddc
+    - server room
+    - cctv
+    - fire alarm
+    - access control
+    reject_context:
+    - building material
+    - civil construction
+    - brickwork
+  - term: DCIM
+    group: fire_safety_and_physical_security
+    require_context:
+    - data
+    - center
+    - centre
+    - infrastructure
+    - management
+    - monitoring
+    - power
+    - rack
+    - capacity
+    - thermal
+    - asset
+    - pue
+    - server room
+    reject_context:
+    - direct current
+    - digital camera
+    - dc motor
+  - term: access control
+    group: fire_safety_and_physical_security
+    require_context:
+    - biometric
+    - rfid
+    - card
+    - reader
+    - door
+    - security
+    - datacenter
+    - data center
+    - server room
+    - controller
+    - electromagnetic lock
+    - em lock
+    - turnstile
+    - flap barrier
+    - smart card
+    reject_context:
+    - boom barrier
+    - toll plaza
+    - parking gate
+    - perimeter gate
+    - highway barrier
+    - entry gate boom barrier
+    - vehicle barrier
+    - traffic barrier
+  - term: biometric
+    group: fire_safety_and_physical_security
+    require_context:
+    - access control
+    - attendance
+    - authentication
+    - fingerprint
+    - facial
+    - iris
+    - security
+    - reader
+    - door
+    - turnstile
+    - flap barrier
+    - datacenter
+    - server room
+    reject_context:
+    - aadhaar pos
+    - pos machine
+    - ration shop
+    - mid-day meal
+    - anganwadi
+    - pds machine
+    - biometric pos
+    - fair price shop
+    - electronic weighing machine
+  - term: false flooring
+    group: fire_safety_and_physical_security
+    require_context:
+    - data center
+    - data centre
+    - server room
+    - perforated
+    - tile
+    - pedestal
+    - stringer
+    - access floor
+    - underfloor
+    - antistatic
+    - anti-static
+    - calcium sulphate
+    - cementitious
+    - raised floor
+    reject_context:
+    - stage flooring
+    - wooden flooring
+    - dance floor
+    - sports flooring
+    - badminton court
+    - gym flooring
+    - vinyl flooring in ward
+    - carpet flooring
+  - term: raised flooring
+    group: fire_safety_and_physical_security
+    require_context:
+    - data center
+    - data centre
+    - server room
+    - perforated
+    - tile
+    - pedestal
+    - stringer
+    - access floor
+    - underfloor
+    - antistatic
+    - anti-static
+    - calcium sulphate
+    - server rack
+    reject_context:
+    - auditorium stage
+    - dance floor
+    - badminton court
+    - stage platform
+  - term: CCTV
+    group: fire_safety_and_physical_security
+    require_context:
+    - surveillance
+    - security
+    - camera
+    - monitoring
+    - access
+    - nvr
+    - ip camera
+    - network video
+    - datacenter
+    - server room
+    - command center
+    reject_context:
+    - traffic challan
+    - red light violation
+    - police body worn
+  - term: CAMC
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - cctv
+    - access control
+    - ibms
+    - dcim
+    - non-it
+    - it infrastructure
+    - battery
+    - hvac
+    - chiller
+    - electrical
+    reject_context:
+    - medical gas
+    - hospital
+    - lift
+    - lifts
+    - elevator
+    - escalator
+    - weighbridge
+    - joinery
+    - carpentry
+    - water cooler
+    - drinking water
+    - sewage
+    - drainage
+    - sanitation
+    - housekeeping
+    - cleaning
+    - data entry
+    - canteen
+    - mess
+    - catering
+    - vehicle
+  - term: AMC
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - cctv
+    - access control
+    - ibms
+    - dcim
+    - non-it
+    - it infrastructure
+    - battery
+    - hvac
+    - chiller
+    - electrical
+    reject_context:
+    - medical gas
+    - hospital
+    - lift
+    - lifts
+    - elevator
+    - escalator
+    - weighbridge
+    - joinery
+    - carpentry
+    - water cooler
+    - drinking water
+    - sewage
+    - drainage
+    - sanitation
+    - housekeeping
+    - cleaning
+    - data entry
+    - canteen
+    - mess
+    - catering
+    - vehicle
+    - lvs
+    - split ac
+  - term: annual maintenance contract
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - cctv
+    - access control
+    - ibms
+    - dcim
+    - non-it
+    - it infrastructure
+    - battery
+    - hvac
+    - chiller
+    - electrical
+    reject_context:
+    - medical gas
+    - hospital
+    - lift
+    - elevator
+    - escalator
+    - weighbridge
+    - joinery
+    - carpentry
+    - water cooler
+    - sewage
+    - drainage
+    - housekeeping
+    - canteen
+  - term: comprehensive maintenance
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    - battery
+    - cctv
+    - access control
+    reject_context:
+    - joinery
+    - carpentry
+    - lift
+    - elevator
+    - weighbridge
+    - medical gas
+    - hospital
+    - water cooler
+  - term: comprehensive annual maintenance
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    - battery
+    reject_context:
+    - lift
+    - elevator
+    - medical gas
+    - hospital
+    - joinery
+    - weighbridge
+  - term: facility management services
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    - battery
+    reject_context:
+    - data entry
+    - housekeeping
+    - sweeper
+    - cleaning
+    - security guard
+    - canteen
+    - mess
+    - catering
+    - lumpsum based
+  - term: facility management
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    - battery
+    reject_context:
+    - data entry
+    - housekeeping
+    - sweeper
+    - cleaning
+    - security guard
+    - canteen
+    - mess
+    - catering
+  - term: FMS
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - cctv
+    - access control
+    - ibms
+    - dcim
+    - non-it
+    - it infrastructure
+    - battery
+    reject_context:
+    - data entry
+    - housekeeping
+    - sweeper
+    - cleaning
+    - security guard
+    - canteen
+    - mess
+    - catering
+  - term: operation and maintenance
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    - battery
+    - electrical panel
+    reject_context:
+    - split air conditioner
+    - split ac
+    - water cooler
+    - drinking water
+    - reverse osmosis
+    - sewage
+    - drainage
+    - weighbridge
+    - lift
+    - elevator
+  - term: O&M
+    group: facility_and_annual_maintenance
+    require_context:
+    - data center
+    - data centre
+    - datacenter
+    - server
+    - ups
+    - pac
+    - precision
+    - power
+    - cooling
+    - network
+    - switch
+    - firewall
+    - non-it
+    - it infrastructure
+    reject_context:
+    - water cooler
+    - sewage
+    - lift
+    - elevator
+    - waste water
+    - pipeline
 negatives:
   hard_reject_terms:
     civil_heavy_construction:
-      - "road construction"
-      - "highway construction"
-      - "expressway"
-      - "bituminous road"
-      - "asphalt road"
-      - "concrete road"
-      - "cc road"
-      - "culvert"
-      - "hume pipe culvert"
-      - "flyover"
-      - "bridge construction"
-      - "approach road"
-      - "footpath"
-      - "pavement"
-      - "boundary wall"
-      - "barbed wire fencing"
-      - "chain link fencing"
-      - "earthwork"
-      - "excavation for pond"
-      - "dredging"
-      - "brick masonry"
-      - "plastering work"
-      - "whitewash"
-      - "painting of quarters"
-      - "residential quarters"
-      - "staff quarters"
-      - "hostel building"
-      - "barrack"
-      - "joinery work"
-      - "carpentry work"
-      - "horticulture"
-      - "landscaping"
-      - "tree plantation"
-      - "gardening"
-      - "grass cutting"
-
+    - road widening
+    - widening strengthening
+    - reconstruction of road
+    - DPR for road
+    - DPR for highway
+    - DPR for widening
+    - road construction
+    - highway construction
+    - expressway
+    - bituminous road
+    - asphalt road
+    - concrete road
+    - cc road
+    - culvert
+    - hume pipe culvert
+    - flyover
+    - bridge construction
+    - approach road
+    - footpath
+    - pavement
+    - boundary wall
+    - barbed wire fencing
+    - chain link fencing
+    - earthwork
+    - excavation for pond
+    - dredging
+    - brick masonry
+    - plastering work
+    - whitewash
+    - painting of quarters
+    - residential quarters
+    - staff quarters
+    - hostel building
+    - barrack
+    - joinery work
+    - carpentry work
+    - horticulture
+    - landscaping
+    - tree plantation
+    - gardening
+    - grass cutting
+    - plain cement concrete
+    - PCC work
+    - PCC road
+    - PCC 1:2:4
+    - PCC 1:4:8
+    - PCC 1:3:6
+    - PCC bed
+    - RCC work
+    - passenger lift
+    - elevator replacement
+    - ATS building
+    - air traffic services
+    - air traffic complex
     sanitary_water_sewage:
-      - "sewage treatment plant"
-      - "sewage treatment plants"
-      - "sewage treatment"
-      - "STP plant"
-      - "STP plants"
-      - "septic tank"
-      - "septic tanks"
-      - "drainage work"
-      - "drain construction"
-      - "storm water drain"
-      - "sewer pipe"
-      - "sewer pipes"
-      - "sewerage line"
-      - "drinking water fountain"
-      - "drinking water fountains"
-      - "water cooler"
-      - "water coolers"
-      - "reverse osmosis"
-      - "RO plant"
-      - "RO plants"
-      - "mineral water plant"
-      - "mineral water plants"
-      - "borewell"
-      - "tube well"
-      - "motor pump set"
-      - "motor pump sets"
-      - "pump set"
-      - "pump sets"
-      - "motor pump"
-      - "motor pumps"
-      - "water supply pipeline"
-      - "penstock"
-
+    - waste water
+    - wastewater
+    - treated waste water
+    - STP
+    - STPs
+    - MLD
+    - sewage
+    - sewer
+    - sewerage
+    - defect liability period
+    - defects liability period
+    - sewage treatment plant
+    - sewage treatment plants
+    - sewage treatment
+    - STP plant
+    - STP plants
+    - septic tank
+    - septic tanks
+    - drainage work
+    - drain construction
+    - storm water drain
+    - sewer pipe
+    - sewer pipes
+    - sewerage line
+    - drinking water fountain
+    - drinking water fountains
+    - water cooler
+    - water coolers
+    - reverse osmosis
+    - RO plant
+    - RO plants
+    - mineral water plant
+    - mineral water plants
+    - borewell
+    - tube well
+    - motor pump set
+    - motor pump sets
+    - pump set
+    - pump sets
+    - motor pump
+    - motor pumps
+    - water supply pipeline
+    - penstock
+    - water purifier
+    - heavy duty water purifier
+    - RO water purifier
+    - drinking water cooler
+    - reverse osmosis plant
     medical_and_hospital:
-      - "medical gas"
-      - "medical gas pipe"
-      - "medical gas pipeline"
-      - "hospital bed"
-      - "hospital beds"
-      - "operation theatre"
-      - "surgical equipment"
-      - "pharmaceutical"
-      - "drugs and medicines"
-      - "biomedical waste"
-      - "patient trolley"
-      - "ambulance"
-      - "optogenetic system"
-      - "blood bank"
-
+    - medical gas
+    - medical gas pipe
+    - medical gas pipeline
+    - hospital bed
+    - hospital beds
+    - operation theatre
+    - surgical equipment
+    - pharmaceutical
+    - drugs and medicines
+    - biomedical waste
+    - patient trolley
+    - ambulance
+    - optogenetic system
+    - blood bank
     machinery_and_vehicles:
-      - "passenger lift"
-      - "passenger lifts"
-      - "passenger elevator"
-      - "passenger elevators"
-      - "goods lift"
-      - "goods lifts"
-      - "freight elevator"
-      - "freight elevators"
-      - "escalator"
-      - "escalators"
-      - "kone lift"
-      - "kone lifts"
-      - "otis lift"
-      - "schindler lift"
-      - "lift maintenance"
-      - "lifts maintenance"
-      - "lorry weighbridge"
-      - "lorry weighbridges"
-      - "electronic weighbridge"
-      - "electronic weighbridges"
-      - "weighbridge"
-      - "weighbridges"
-      - "bandsaw machine"
-      - "scaffolding job"
-      - "vehicle hiring"
-      - "car rental"
-      - "taxi hiring"
-      - "bus hiring"
-      - "truck hiring"
-      - "transportation service"
-      - "motor vehicle"
-
+    - passenger lift
+    - passenger lifts
+    - passenger elevator
+    - passenger elevators
+    - goods lift
+    - goods lifts
+    - freight elevator
+    - freight elevators
+    - escalator
+    - escalators
+    - kone lift
+    - kone lifts
+    - otis lift
+    - schindler lift
+    - lift maintenance
+    - lifts maintenance
+    - lorry weighbridge
+    - lorry weighbridges
+    - electronic weighbridge
+    - electronic weighbridges
+    - weighbridge
+    - weighbridges
+    - bandsaw machine
+    - scaffolding job
+    - vehicle hiring
+    - car rental
+    - taxi hiring
+    - bus hiring
+    - truck hiring
+    - transportation service
+    - motor vehicle
     manpower_and_low_end_services:
-      - "data entry operator"
-      - "data entry operators"
-      - "computer operator"
-      - "peon"
-      - "office boy"
-      - "security guard"
-      - "security guards"
-      - "watchman"
-      - "safai karmachari"
-      - "sweeper"
-      - "sweepers"
-      - "sanitation worker"
-      - "housekeeping staff"
-      - "janitorial services"
-      - "mess service"
-      - "canteen service"
-      - "catering service"
-      - "cooked meal"
-      - "pantry boy"
-
+    - data entry operator
+    - data entry operators
+    - computer operator
+    - peon
+    - office boy
+    - security guard
+    - security guards
+    - watchman
+    - safai karmachari
+    - sweeper
+    - sweepers
+    - sanitation worker
+    - housekeeping staff
+    - janitorial services
+    - mess service
+    - canteen service
+    - catering service
+    - cooked meal
+    - pantry boy
     office_supplies_and_commodities:
-      - "table calendars"
-      - "wall calendars"
-      - "printing of calendars"
-      - "printing and stationery"
-      - "supply of stationery"
-      - "paper reams"
-      - "envelopes"
-      - "office furniture"
-      - "wooden chair"
-      - "executive chair"
-      - "steel almirah"
-      - "stitching of uniform"
-      - "uniforms and shoes"
-      - "various screw"
-
+    - table calendars
+    - wall calendars
+    - printing of calendars
+    - printing and stationery
+    - supply of stationery
+    - paper reams
+    - envelopes
+    - office furniture
+    - wooden chair
+    - executive chair
+    - steel almirah
+    - stitching of uniform
+    - uniforms and shoes
+    - various screw
     comfort_cooling_appliances:
-      - "split air conditioner"
-      - "split air conditioners"
-      - "window air conditioner"
-      - "split ac"
-
+    - split air conditioner
+    - split air conditioners
+    - window air conditioner
+    - split ac
     noise_reject:
-      - "district collector"
-      - "direct current"
-      - "DC motor"
-      - "DC drive"
-      - "Deputy Commissioner"
-      - "UPS courier"
-      - "UPS for traffic signal"
-      - "UPS for traffic signals"
-      - "Provincial Armed Constabulary"
-      - "Public Accounts Committee"
-      - "data collection"
-      - "census data"
-      - "data digitisation"
-      - "data digitization"
-      - "warehouse rack"
-      - "storage rack"
-      - "pallet rack"
-
+    - district collector
+    - direct current
+    - DC motor
+    - DC drive
+    - Deputy Commissioner
+    - UPS courier
+    - UPS for traffic signal
+    - UPS for traffic signals
+    - Provincial Armed Constabulary
+    - Public Accounts Committee
+    - data collection
+    - census data
+    - data digitisation
+    - data digitization
+    - warehouse rack
+    - storage rack
+    - pallet rack
+    oil_petroleum_and_lubricants:
+    - transformer oil
+    - hydraulic oil
+    - engine oil
+    - gear oil
+    - lubricating oil
+    - lubricant
+    - grease
+    - oil filtration
+    - oil bdv test
+    - oil bdv
+    - fuel nozzle
+    - fuel injection pump
+    - ignition transformer
+    - storage tank for oil
+    - dehydration of transformer oil
+    - oil centrifuge
+    - transformer oil bd test
+    studio_and_stage_equipment:
+    - chroma keyer
+    - music notation stand
+    - monopod
+    - musical instrument
+    - stage lighting
+    - auditorium chair
+    - auditorium sound
+    - choir mic
+    domestic_and_kitchen_appliances:
+    - water purifier with storage
+    - desert cooler
+    - ceiling fan
+    - water geyser
+    - microwave oven
+    - refrigerator
+    - water dispensing unit
   soft_reject_terms:
     hardware_only:
-      description: "Generic office supply without IT or infrastructure scope."
+      description: Generic office supply without IT or infrastructure scope.
       terms:
-        - "supply of stationery"
-        - "printing and stationery"
-        - "cleaning services"
-        - "housekeeping services"
+      - supply of stationery
+      - printing and stationery
+      - cleaning services
+      - housekeeping services
       override_if_also_contains:
-        - "server"
-        - "firewall"
-        - "UPS"
-        - "cloud"
-        - "data center"
-        - "datacenter"
-        - "AMC"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURABLE THRESHOLDS
-# ─────────────────────────────────────────────────────────────────────────────
+      - server
+      - firewall
+      - UPS
+      - cloud
+      - data center
+      - datacenter
+      - AMC
 thresholds:
   min_value_inr: 0
   min_ups_kva: 10

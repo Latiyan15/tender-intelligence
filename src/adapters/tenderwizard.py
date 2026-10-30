@@ -1,8 +1,7 @@
 """
-TenderWizard (Antares) Portal Adapter
-Retrieves active tenders from TenderWizard portals:
-- All India Institute of Medical Sciences (AIIMS TenderWizard: tenderwizard.com/AIIMS)
-- Bharat Heavy Electricals Limited (BHEL TenderWizard: tenderwizard.com/BHEL)
+TenderWizard (Antares) Portal Adapter — Production Grade
+Retrieves active tenders from TenderWizard portals: AIIMS, BHEL.
+Equipped with strict fast-fail connect timeouts to maintain high discovery throughput.
 """
 
 import re
@@ -10,7 +9,7 @@ import logging
 import ssl
 import urllib.request
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
@@ -37,13 +36,35 @@ class TenderWizardPortalAdapter(BaseAdapter):
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         }
 
+    def _fetch_html(self, url: str) -> Optional[str]:
+        try:
+            import requests
+            resp = requests.get(
+                url,
+                headers=self.headers,
+                timeout=(2.5, 4.0),
+                verify=False
+            )
+            if resp.status_code == 200:
+                return resp.text
+            return None
+        except ImportError:
+            try:
+                req = urllib.request.Request(url, headers=self.headers)
+                return urllib.request.urlopen(req, context=self.ssl_ctx, timeout=3.5).read().decode('utf-8', errors='ignore')
+            except Exception:
+                return None
+        except Exception:
+            return None
+
     def discover_tenders(self, max_tenders: int = 50, **kwargs) -> List[TenderRecord]:
         tenders = []
-        try:
-            req = urllib.request.Request(self.base_url, headers=self.headers)
-            html = urllib.request.urlopen(req, context=self.ssl_ctx, timeout=10).read().decode('utf-8', errors='ignore')
-            soup = BeautifulSoup(html, 'html.parser')
+        html = self._fetch_html(self.base_url)
+        if not html:
+            return tenders
 
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
             tables = soup.find_all('table')
             for tbl in tables:
                 rows = tbl.find_all('tr')
@@ -81,6 +102,8 @@ class TenderWizardPortalAdapter(BaseAdapter):
                     tenders.append(tender)
                     if len(tenders) >= max_tenders:
                         break
+                if tenders:
+                    break
         except Exception as e:
             logger.debug(f"TenderWizard live crawl notice ({self.source_id}): {e}")
 

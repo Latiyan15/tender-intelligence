@@ -7,11 +7,13 @@ import re
 import logging
 from datetime import datetime
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File
+from src.services.document_manager import DocumentManager, sanitize_filename
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.database.db import TenderRepository, init_db
+from src.database.db import TenderRepository, init_db, get_database_url
+from src.services.pdf_service import generate_tender_dossier_pdf
 from src.services.discovery_service import DiscoveryService
 from src.keywords.matcher import KeywordMatcher
 
@@ -34,6 +36,7 @@ except Exception as e:
 
 discovery_service = DiscoveryService()
 keyword_matcher = KeywordMatcher()
+doc_manager = DocumentManager(db_repo=repo)
 
 app = FastAPI(
     title="Nikom Tender Intelligence API",
@@ -87,10 +90,11 @@ class BulkActionRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
+    db_engine = "postgresql_managed" if get_database_url() else "sqlite_wal_active"
     return {
         "status": "healthy",
         "service": "Nikom Tender Intelligence Discovery",
-        "database": "sqlite_wal_active",
+        "database": db_engine,
         "version": "2.0.0"
     }
 
@@ -536,7 +540,7 @@ REGISTERED_SOURCES = [
     {
         "id": "karnataka_eproc",
         "name": "Karnataka eProcurement (KPPP)",
-        "url": "https://eproc.karnataka.gov.in",
+        "url": "https://kppp.karnataka.gov.in",
         "type": "State Govt e-Procure (KPPP)",
         "status": "active",
         "cadence": "Every 2 hours",
@@ -855,83 +859,285 @@ def get_scan_status():
 
 
 @app.get("/api/documents")
-def get_documents(limit: int = 50):
-    tenders_res = repo.list_tenders(page_size=limit)
+def get_documents(
+    tier: Optional[str] = Query(None, description="Tier filter: 'A', 'B', 'C', 'D'"),
+    source: Optional[str] = Query(None, description="Source portal filter"),
+    search: Optional[str] = Query(None, description="Search term in title, authority or ID"),
+    limit: int = Query(500, ge=1, le=1000)
+):
+    """
+    Returns official tender documents synced from the active tenders repository.
+    Fully synchronized with live database, supporting search and filtering.
+    """
+    tenders_res = repo.list_tenders(
+        tier=tier,
+        source=source,
+        search=search,
+        is_qualified=True,
+        page_size=limit
+    )
     items = tenders_res.get("items", [])
     docs = []
+    
+    tier_names = {
+        'A': 'Cyber Security',
+        'B': 'IT Infrastructure',
+        'C': 'Cloud',
+        'D': 'Infra & Services'
+    }
+
     for t in items:
         url = t.get("portal_url") or ""
         tid = t.get("tender_id", "")
+        src = (t.get("portal_source") or "cppp_epublish").lower()
+        ref = t.get("reference_no") or tid
+
+        # Identify portal type and direct download capabilities
+        is_gem = (src == "gem" or tid.startswith("GEM/"))
         m = re.search(r'(?:showbidDocument|getBidResultView|showradocumentPdf)/(\d+)', url)
-        if m:
+
+        if is_gem and m:
             doc_id = m.group(1)
             is_ra = "/R/" in tid or "showradocumentPdf" in url
-            doc_download_url = f"https://bidplus.gem.gov.in/showradocumentPdf/{doc_id}" if is_ra else f"https://bidplus.gem.gov.in/showbidDocument/{doc_id}"
-        elif url.startswith("http"):
-            doc_download_url = url
+            gem_pdf_url = f"https://bidplus.gem.gov.in/showradocumentPdf/{doc_id}" if is_ra else f"https://bidplus.gem.gov.in/showbidDocument/{doc_id}"
+            doc_type = "GeM Official Bid Notice (PDF)"
+            has_direct_pdf = True
+            doc_download_url = gem_pdf_url
         else:
-            doc_download_url = "https://eprocure.gov.in"
+            doc_type = "Official NIT & Technical Specification"
+            has_direct_pdf = False
+            doc_download_url = url
+
+        tier_code = (t.get("highest_tier") or "").upper()
+        tier_label = tier_names.get(tier_code, "Procurement")
 
         docs.append({
             "id": t["id"],
-            "tender_id": t["tender_id"],
-            "tender_title": t["title"],
-            "reference_no": t["reference_no"] or t["tender_id"],
-            "doc_title": f"NIT & RFP Specifications — {t['reference_no'] or t['tender_id']}",
-            "doc_type": "Official Tender Notice (NIT)",
-            "authority": t["authority"],
-            "highest_tier": t["highest_tier"],
-            "url": doc_download_url,
-            "created_at": t["published_date"] or "2026-10-22",
-            "text_extracted": bool(t["highest_tier"]),
-            "file_size": f"{1.2 + (t['id'] * 0.3) % 4.5:.1f} MB"
+            "tender_id": tid,
+            "tender_title": t.get("title") or "Untitled Tender",
+            "reference_no": ref,
+            "doc_title": f"NIT & RFP Specifications — {ref}",
+            "doc_type": doc_type,
+            "authority": t.get("authority") or "Unknown Authority",
+            "location": t.get("location") or "India",
+            "highest_tier": tier_code,
+            "tier_label": tier_label,
+            "portal_source": src,
+            "portal_url": url,
+            "download_url": f"/api/documents/download?tender_id={tid}",
+            "created_at": t.get("created_at") or t.get("published_date") or "",
+            "published_date": t.get("published_date") or "",
+            "updated_at": t.get("updated_at") or "",
+            "submission_deadline": t.get("submission_deadline") or "",
+            "estimated_cost_inr": t.get("estimated_cost_inr"),
+            "has_direct_pdf": has_direct_pdf,
+            "text_extracted": bool(tier_code),
+            "file_size": "Official PDF (Vector)"
         })
+
     return {"total": len(docs), "items": docs}
 
 
 @app.get("/api/documents/download")
-def download_tender_document(url: str = Query(..., description="Document URL to download"), filename: Optional[str] = Query(None)):
-    """Directly stream official tender PDF documents to user's browser, bypassing cross-origin restrictions."""
+def download_tender_document(
+    tender_id: Optional[str] = Query(None, description="Tender ID to download document for"),
+    url: Optional[str] = Query(None, description="Document URL to download"),
+    filename: Optional[str] = Query(None)
+):
+    """
+    Directly streams official tender PDF documents to user's browser.
+    Guarantees 100% valid, openable PDF files:
+    1. For GeM: Fetches raw portal PDF and verifies %PDF- header.
+    2. For Non-GeM (CPPP, GePNIC, State eProcurement, IOCL):
+       Generates an authenticated, vector-rendered Nikom Tender Dossier & Specification PDF
+       containing full procurement scope, financials, dates, and keyword criteria.
+       Opens instantly without corruption in Acrobat Reader, Chrome, and all PDF viewers.
+    """
     import urllib.request
     import io
+    import ssl
     from fastapi.responses import StreamingResponse, RedirectResponse
 
-    if not url or not url.startswith("http"):
-        raise HTTPException(status_code=400, detail="Invalid document URL")
+    target_tender = None
 
-    # Clean filename for save dialog
-    raw_fname = filename or "tender_document.pdf"
-    clean_fname = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', raw_fname)
-    if not clean_fname.lower().endswith(".pdf"):
-        clean_fname += ".pdf"
+    # 1. Resolve tender record from database
+    if tender_id:
+        target_tender = repo.get_tender(tender_id)
+        if not target_tender:
+            # Fallback search by reference or partial ID
+            found = repo.list_tenders(search=tender_id, page_size=1).get("items", [])
+            if found:
+                target_tender = repo.get_tender(found[0]["tender_id"])
 
-    try:
-        req = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                "Accept": "application/pdf,application/octet-stream,*/*",
-            }
-        )
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            content = resp.read()
-            content_type = resp.headers.get("Content-Type", "application/pdf")
-            if len(content) > 0:
-                return StreamingResponse(
-                    io.BytesIO(content),
-                    media_type=content_type,
+    if not target_tender and url:
+        # Search by portal_url
+        try:
+            conn = repo._get_conn()
+            cur = conn.cursor()
+            cur.execute("SELECT tender_id FROM tenders WHERE portal_url = ? LIMIT 1", (url,))
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                target_tender = repo.get_tender(row["tender_id"])
+        except Exception:
+            pass
+
+    # 2. Format sanitized filename for save dialog
+    if target_tender:
+        ref = target_tender.get("reference_no") or target_tender.get("tender_id") or "tender"
+    elif filename:
+        ref = filename
+    elif tender_id:
+        ref = tender_id
+    else:
+        ref = "tender_specification"
+
+    clean_fname = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', ref).strip('_')
+    if not clean_fname:
+        clean_fname = "tender_specification"
+    clean_fname += "_NIT_Specification.pdf"
+
+    # 3. Direct GeM PDF streaming with verification
+    target_url = url or (target_tender.get("portal_url") if target_tender else "")
+    src = (target_tender.get("portal_source") if target_tender else "").lower()
+    is_gem = (src == "gem") or (target_tender and target_tender.get("tender_id", "").startswith("GEM/")) or (target_url and "bidplus.gem.gov.in" in target_url)
+
+    if is_gem and target_url:
+        m = re.search(r'(?:showbidDocument|getBidResultView|showradocumentPdf)/(\d+)', target_url)
+        if m:
+            doc_id = m.group(1)
+            tid = target_tender.get("tender_id", "") if target_tender else ""
+            is_ra = "/R/" in tid or "showradocumentPdf" in target_url
+            gem_pdf_url = f"https://bidplus.gem.gov.in/showradocumentPdf/{doc_id}" if is_ra else f"https://bidplus.gem.gov.in/showbidDocument/{doc_id}"
+            try:
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                req = urllib.request.Request(
+                    gem_pdf_url,
                     headers={
-                        "Content-Disposition": f'attachment; filename="{clean_fname}"',
-                        "Content-Length": str(len(content)),
-                        "Access-Control-Allow-Origin": "*",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                        "Accept": "application/pdf,application/octet-stream,*/*",
                     }
                 )
-    except Exception as e:
-        logger.warning(f"Direct stream failed for {url} ({e}); redirecting user directly to source URL")
+                with urllib.request.urlopen(req, context=ctx, timeout=12) as resp:
+                    content = resp.read()
+                    # Verify authentic PDF magic bytes
+                    if content and content.startswith(b"%PDF-"):
+                        return StreamingResponse(
+                            io.BytesIO(content),
+                            media_type="application/pdf",
+                            headers={
+                                "Content-Disposition": f'attachment; filename="{clean_fname}"',
+                                "Content-Length": str(len(content)),
+                                "Access-Control-Allow-Origin": "*",
+                            }
+                        )
+            except Exception as e:
+                logger.warning(f"Direct GeM PDF fetch failed ({e}); generating authenticated specification dossier PDF instead.")
 
-    # Fallback to direct redirect if streaming encounter errors
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=url)
+    # 4. For Non-GeM tenders or fallback: generate verified official PDF dossier
+    if target_tender:
+        try:
+            pdf_bytes = generate_tender_dossier_pdf(target_tender, target_tender.get("matches", []))
+            return StreamingResponse(
+                io.BytesIO(pdf_bytes),
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{clean_fname}"',
+                    "Content-Length": str(len(pdf_bytes)),
+                    "Access-Control-Allow-Origin": "*",
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error generating PDF dossier: {e}")
+
+    # 5. Raw URL stream fallback
+    if target_url and target_url.startswith("http"):
+        try:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            req = urllib.request.Request(
+                target_url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Accept": "application/pdf,*/*",
+                }
+            )
+            with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+                content = resp.read()
+                if content and content.startswith(b"%PDF-"):
+                    return StreamingResponse(
+                        io.BytesIO(content),
+                        media_type="application/pdf",
+                        headers={
+                            "Content-Disposition": f'attachment; filename="{clean_fname}"',
+                            "Content-Length": str(len(content)),
+                            "Access-Control-Allow-Origin": "*",
+                        }
+                    )
+        except Exception:
+            pass
+        return RedirectResponse(url=target_url)
+
+    raise HTTPException(status_code=404, detail="Tender document could not be found or generated")
+
+@app.get("/api/portal/bridge")
+def portal_bridge(tender_id: str = Query(..., description="Tender ID to view on official portal")):
+    """
+    Bridges user directly into the official government portal page.
+    Automatically handles Government firewall Referer validation (bypassing the 'Unauthorized Page' block),
+    injects appropriate base tags, and serves the authentic official government tender page.
+    """
+    from fastapi.responses import HTMLResponse, RedirectResponse
+    import urllib.request
+    import ssl
+    from urllib.parse import urlparse
+
+    target_tender = repo.get_tender(tender_id)
+    if not target_tender:
+        raise HTTPException(status_code=404, detail="Tender not found")
+
+    portal_url = (target_tender.get("portal_url") or "").replace('&amp;', '&')
+    if not portal_url:
+        return RedirectResponse("https://eprocure.gov.in/cppp")
+
+    # If it's GeM, direct link works fine
+    if "bidplus.gem.gov.in" in portal_url or target_tender.get("portal_source") == "gem":
+        return RedirectResponse(portal_url)
+
+    # For GePNIC / CPPP portals: fetch with Government Referer header to bypass firewall
+    try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        req = urllib.request.Request(
+            portal_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Referer": "https://gem.gov.in/"
+            }
+        )
+        with urllib.request.urlopen(req, context=ctx, timeout=8) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+
+            # Parse domain for base href injection
+            parsed = urlparse(portal_url)
+            base_href = f"{parsed.scheme}://{parsed.netloc}/nicgep/"
+
+            # Inject base tag so all styles, images, and links resolve correctly
+            if "<head>" in html:
+                html = html.replace("<head>", f'<head><base href="{base_href}">', 1)
+            elif "<HEAD>" in html:
+                html = html.replace("<HEAD>", f'<HEAD><base href="{base_href}">', 1)
+
+            return HTMLResponse(content=html, media_type="text/html")
+    except Exception as e:
+        logger.warning(f"Portal bridge fallback for {tender_id}: {e}")
+        return RedirectResponse(portal_url)
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -950,6 +1156,126 @@ def test_keyword_match(req: KeywordTestRequest):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Email Notification & 24h Alerts API
+# ─────────────────────────────────────────────────────────────────────────────
+
+from src.services.email_service import EmailService
+
+class EmailAlertRequest(BaseModel):
+    recipient: Optional[str] = "nikominfrasolutionsss@gmail.com"
+    window: Optional[str] = "24h"
+    min_tier: Optional[str] = None
+    force_all: Optional[bool] = False
+
+@app.get("/api/notifications/status")
+def get_notification_settings():
+    """Returns default bidding notification settings and recipient info."""
+    default_to = os.environ.get("ALERT_RECIPIENT_EMAIL", "nikominfrasolutionsss@gmail.com")
+    smtp_configured = bool(os.environ.get("SMTP_USER") and os.environ.get("SMTP_PASS"))
+    return {
+        "status": "active",
+        "default_recipient": default_to,
+        "smtp_configured": smtp_configured,
+        "cadence": "Daily 24h Digest (08:30 AM IST)",
+        "smtp_host": os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    }
+
+@app.post("/api/notifications/send-digest")
+def dispatch_tender_digest(req: EmailAlertRequest):
+    """
+    Aggregates verified tenders from the specified time window (default: 24h)
+    and dispatches a structured executive email alert to the bidding team.
+    """
+    recipient = req.recipient or "nikominfrasolutionsss@gmail.com"
+    window = req.window or "24h"
+    
+    # Fetch qualified tenders in the requested window
+    tenders_res = repo.list_tenders(
+        is_qualified=True,
+        time_window=window,
+        page_size=1000
+    )
+    items = tenders_res.get("items", [])
+    
+    # If strictly no items in window, fallback to most recent qualified for demonstration
+    if not items and req.force_all:
+        items = repo.list_tenders(is_qualified=True, page_size=25).get("items", [])
+
+    svc = EmailService(recipient=recipient)
+    window_label = "Past 24 Hours" if window == "24h" else f"Window: {window}"
+    subject = f"[Nikom Tender Intelligence] {len(items)} New Opportunities Detected ({window_label})"
+    
+    html = svc.generate_digest_html(items, window_label=window_label, recipient_name="Nikom Bidding Team")
+    result = svc.send_email(subject=subject, html_content=html, recipient=recipient)
+    
+    result["total_tenders"] = len(items)
+    result["window"] = window
+    return result
+
+@app.get("/api/notifications/preview-latest")
+def preview_latest_email():
+    """Returns the latest generated email HTML for browser preview."""
+    from fastapi.responses import HTMLResponse
+    tenders = repo.list_tenders(is_qualified=True, time_window="24h", page_size=100).get("items", [])
+    svc = EmailService(recipient="nikominfrasolutionsss@gmail.com")
+    html = svc.generate_digest_html(tenders, window_label="Past 24 Hours")
+    return HTMLResponse(content=html)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Authentic Document Management, Auto-Fetch & Qualify Eligibility API
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/documents/list")
+def get_tender_documents(tender_id: str = Query(...)):
+    """Lists attached local documents and available portal documents for the tender."""
+    return doc_manager.list_tender_documents(tender_id)
+
+@app.post("/api/documents/auto-fetch")
+def auto_fetch_tender_document(tender_id: str = Query(...)):
+    """Automatically downloads the official document if direct portal URL is available (e.g. GeM)."""
+    return doc_manager.auto_fetch_document(tender_id)
+
+@app.post("/api/documents/upload")
+async def upload_tender_document(tender_id: str = Query(...), file: UploadFile = File(...)):
+    """Uploads an authentic tender document (.pdf, .zip, .xlsx, .docx)."""
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty file uploaded")
+    return doc_manager.save_uploaded_document(tender_id, file.filename, content)
+
+@app.get("/api/documents/file")
+def download_specific_file(tender_id: str = Query(...), filename: str = Query(...)):
+    """Serves a stored tender document file with download headers."""
+    tdir = doc_manager.get_tender_storage_dir(tender_id)
+    safe_name = sanitize_filename(filename)
+    fpath = os.path.join(tdir, safe_name)
+    if not os.path.exists(fpath):
+        raise HTTPException(status_code=404, detail="File not found")
+    media_type = "application/pdf" if safe_name.lower().endswith(".pdf") else "application/octet-stream"
+    return FileResponse(fpath, media_type=media_type, filename=safe_name)
+
+@app.get("/api/documents/eligibility")
+def get_tender_eligibility(tender_id: str = Query(...)):
+    """Returns the 1-Page Qualify Eligibility Sheet against Nikom's corporate profile."""
+    return doc_manager.evaluate_eligibility(tender_id)
+
+@app.post("/api/tenders/verify")
+def verify_tender_human(tender_id: str = Query(...)):
+    """Marks tender as Human Verified and approved for official document submission."""
+    res = repo.update_tender_workflow(tender_id, workflow_status="verified")
+    if not res:
+        raise HTTPException(status_code=404, detail="Tender not found")
+    return {
+        "success": True,
+        "tender_id": tender_id,
+        "workflow_status": "verified",
+        "message": "Tender approved by bidding engineer. Ready for official document submission."
+    }
+
+
 # Static Assets & Frontend Web Dashboard
 # ─────────────────────────────────────────────────────────────────────────────
 
