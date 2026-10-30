@@ -444,6 +444,57 @@ class DocumentManager:
             "generated_at": datetime.utcnow().isoformat()
         }
 
+    def delete_document(self, tender_id: str, document_id: int):
+        """
+        Deletes an attached document by ID: removes the physical file from disk
+        and deletes the record from tender_documents. If no documents remain,
+        reverts workflow_status from doc_attached to new.
+        """
+        tender = self.repo.get_tender(tender_id)
+        if not tender:
+            raise ValueError(f"Tender {tender_id} not found")
+
+        conn = self.repo._get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, title, local_path
+            FROM tender_documents
+            WHERE id = ? AND tender_id_ref = ?
+        """, (document_id, tender["id"]))
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            raise ValueError(f"Document {document_id} not found for tender {tender_id}")
+
+        doc_dict = dict(row)
+        lpath = doc_dict.get("local_path")
+
+        if lpath and os.path.exists(lpath):
+            try:
+                os.remove(lpath)
+                logger.info(f"Removed physical document file: {lpath}")
+            except Exception as e:
+                logger.warning(f"Could not remove file {lpath}: {e}")
+
+        cursor.execute("DELETE FROM tender_documents WHERE id = ?", (document_id,))
+        conn.commit()
+
+        cursor.execute("SELECT COUNT(*) FROM tender_documents WHERE tender_id_ref = ?", (tender["id"],))
+        remaining_count = cursor.fetchone()[0]
+        conn.close()
+
+        if remaining_count == 0:
+            current_status = tender.get("workflow_status")
+            if current_status == "doc_attached":
+                self.repo.update_tender_workflow(tender_id, workflow_status="new")
+
+        return {
+            "success": True,
+            "message": f"Document '{doc_dict.get('title')}' removed successfully.",
+            "remaining_count": remaining_count
+        }
+
     def _insert_document_record(
         self,
         tender_db_id: int,

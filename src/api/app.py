@@ -1256,6 +1256,17 @@ async def upload_tender_document(tender_id: str = Query(...), file: UploadFile =
         raise HTTPException(status_code=400, detail="Empty file uploaded")
     return doc_manager.save_uploaded_document(tender_id, file.filename, content)
 
+@app.delete("/api/documents/delete")
+@app.post("/api/documents/delete")
+def delete_tender_document(tender_id: str = Query(...), document_id: int = Query(...)):
+    """Deletes an attached tender document."""
+    try:
+        return doc_manager.delete_document(tender_id, document_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/documents/file")
 def download_specific_file(tender_id: str = Query(...), filename: str = Query(...)):
     """Serves a stored tender document file with download headers."""

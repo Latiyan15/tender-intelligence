@@ -4907,6 +4907,28 @@ body {
   color: #ffffff;
 }
 
+.btn-doc-remove-pill {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-doc-remove-pill:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+
 /* Portal Bridge Card */
 .portal-bridge-card {
   padding: 12px 14px;

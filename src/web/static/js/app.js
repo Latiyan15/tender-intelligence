@@ -961,6 +961,10 @@ async function loadPanelDocuments(tenderId) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               <span>Download</span>
             </a>
+            <button type="button" class="btn-doc-remove-pill" onclick="removeUploadedDocument('${escapeHtml(tenderId)}', ${doc.id}, '${escapeHtml(doc.title)}')" title="Remove / Delete uploaded document">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              <span>Remove</span>
+            </button>
           </div>
         </div>
       `;
@@ -968,6 +972,43 @@ async function loadPanelDocuments(tenderId) {
 
   } catch (err) {
     container.innerHTML = `<div style="color: #ef4444; font-size: 12px;">Error loading documents: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+
+async function removeUploadedDocument(tenderId, docId, docTitle) {
+  if (!confirm(`Are you sure you want to remove this uploaded document?\n\n"${docTitle}"`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/documents/delete?tender_id=${encodeURIComponent(tenderId)}&document_id=${encodeURIComponent(docId)}`, {
+      method: 'POST'
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.detail || data.message || 'Failed to remove document');
+    }
+
+    showToast(`✓ Removed "${docTitle}"`);
+
+    // Reload documents list and eligibility sheet
+    await loadPanelDocuments(tenderId);
+    await loadPanelEligibility(tenderId);
+
+    // If no documents remain, update local tender workflow_status
+    if (data.remaining_count === 0) {
+      const t = (currentTenders || []).find(x => x.tender_id === tenderId) ||
+                (allLoadedTenders || []).find(x => x.tender_id === tenderId);
+      if (t) {
+        if (t.workflow_status === 'doc_attached') {
+          t.workflow_status = 'new';
+        }
+        updatePanelVerificationState(t);
+      }
+    }
+  } catch (err) {
+    showToast(`Error removing document: ${err.message}`);
   }
 }
 
