@@ -28,11 +28,10 @@ init_db()
 
 repo = TenderRepository()
 try:
-    if repo.count_tenders() < 50:
-        logger.info("Database has fewer than 50 tenders. Running baseline opportunity sync...")
-        repo.sync_seed_tenders()
+    logger.info("Ensuring full opportunity repository is synchronized with latest seed dataset...")
+    repo.sync_seed_tenders(force=True)
 except Exception as e:
-    logger.warning(f"Could not verify initial tender count on startup: {e}")
+    logger.warning(f"Seed synchronization warning on startup: {e}")
 
 discovery_service = DiscoveryService()
 keyword_matcher = KeywordMatcher()
@@ -97,6 +96,17 @@ def health_check():
         "database": db_engine,
         "version": "2.0.0"
     }
+
+
+@app.post("/api/admin/sync-seed")
+def sync_seed_opportunities():
+    """Force manual synchronization of all seed and benchmark tenders into the active database."""
+    try:
+        result = repo.sync_seed_tenders(force=True)
+        return {"status": "success", "result": result}
+    except Exception as e:
+        logger.error(f"Error syncing seed tenders: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
