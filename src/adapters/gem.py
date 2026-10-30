@@ -66,10 +66,30 @@ class GemAdapter(BaseAdapter):
         self.ssl_ctx = ssl.create_default_context()
         self.ssl_ctx.check_hostname = False
         self.ssl_ctx.verify_mode = ssl.CERT_NONE
-        self.opener = urllib.request.build_opener(
+
+        handlers = [
             urllib.request.HTTPCookieProcessor(self.cj),
             urllib.request.HTTPSHandler(context=self.ssl_ctx)
-        )
+        ]
+        try:
+            from src.utils.http_client import get_configured_proxy
+            proxy = get_configured_proxy()
+            if proxy:
+                if "socks" in proxy:
+                    import socks
+                    from sockshandler import SocksiPyHandler
+                    parsed = urllib.parse.urlparse(proxy)
+                    p_host = parsed.hostname
+                    p_port = parsed.port or 1080
+                    handlers.insert(0, SocksiPyHandler(socks.SOCKS5, p_host, p_port))
+                    logger.info(f"GeM adapter using SOCKS5 proxy: {p_host}:{p_port}")
+                else:
+                    handlers.insert(0, urllib.request.ProxyHandler({'http': proxy, 'https': proxy}))
+                    logger.info(f"GeM adapter using HTTP proxy: {proxy}")
+        except Exception as pe:
+            logger.warning(f"Could not initialize proxy for GeM: {pe}")
+
+        self.opener = urllib.request.build_opener(*handlers)
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             'Accept': 'application/json, text/javascript, */*; q=0.01',

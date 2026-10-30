@@ -14,6 +14,26 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 
+def get_configured_proxy() -> Optional[str]:
+    """Retrieve and normalize configured proxy URL from environment variables."""
+    raw = (
+        os.environ.get("PROXY_URL")
+        or os.environ.get("SOCKS_PROXY")
+        or os.environ.get("ALL_PROXY")
+        or os.environ.get("HTTPS_PROXY")
+        or os.environ.get("HTTP_PROXY")
+    )
+    if not raw:
+        return None
+    raw = raw.strip()
+    if not raw:
+        return None
+    # Normalize bare host:port (like 140.238.243.61:1080) to SOCKS5h
+    if not any(raw.startswith(proto) for proto in ("http://", "https://", "socks5://", "socks5h://", "socks4://")):
+        return f"socks5h://{raw}"
+    return raw
+
+
 class HttpClient:
     """HTTP client with retry, rate-limiting, and disk cache."""
 
@@ -29,7 +49,8 @@ class HttpClient:
                  rate_limit_seconds: float = 1.0,
                  max_retries: int = 1,
                  timeout: int = 10,
-                 cache_ttl_hours: int = 24):
+                 cache_ttl_hours: int = 24,
+                 proxy_url: Optional[str] = None):
         self.cache_dir = cache_dir
         self.rate_limit = rate_limit_seconds
         self.max_retries = max_retries
@@ -38,6 +59,13 @@ class HttpClient:
         self.last_request_time = 0
         self.session = requests.Session()
         self.session.headers.update(self.DEFAULT_HEADERS)
+        self.proxy_url = proxy_url or get_configured_proxy()
+        if self.proxy_url:
+            self.session.proxies = {
+                'http': self.proxy_url,
+                'https': self.proxy_url
+            }
+            logger.info(f"HttpClient initialized with proxy: {self.proxy_url}")
         self.request_count = 0
         self.error_count = 0
 
