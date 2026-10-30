@@ -1531,6 +1531,13 @@ function setWorkflowFilter(status) {
   document.querySelectorAll('.wf-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.status === status);
   });
+
+  // Always reset tier filter to 'all' on tab switch so all tenders in this tab appear immediately
+  activeTierFilter = 'all';
+  document.querySelectorAll('.pill-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tier === 'all');
+  });
+
   applyFilters();
 }
 
@@ -3133,10 +3140,12 @@ function applyFilters() {
       if (!isWithinTimeWindow(t, currentTimeWindow)) return false;
     }
 
-    // 2. Expiry / Bidding status dropdown filter
+    // 2. Expiry / Bidding status dropdown filter (bypass if user explicitly selected expired or rejected tab)
     const expired = isTenderExpired(t);
-    if (expirySelectVal === 'active' && expired) return false;
-    if (expirySelectVal === 'expired' && !expired) return false;
+    if (activeWorkflowFilter !== 'expired' && activeWorkflowFilter !== 'rejected' && activeWorkflowFilter !== 'disqualified') {
+      if (expirySelectVal === 'active' && expired) return false;
+      if (expirySelectVal === 'expired' && !expired) return false;
+    }
 
     // 3. Tier filter
     if (activeTierFilter !== 'all') {
@@ -3144,6 +3153,7 @@ function applyFilters() {
     }
 
     // 4. Workflow Lifecycle & Segregation Filter
+    const isDisq = t.workflow_status === 'disqualified' || t.workflow_status === 'rejected' || !t.is_qualified;
     if (activeWorkflowFilter === 'expired') {
       if (!expired) return false;
     } else if (activeWorkflowFilter === 'watchlist') {
@@ -3155,10 +3165,10 @@ function applyFilters() {
     } else if (activeWorkflowFilter === 'reviewed') {
       if ((t.workflow_status || 'new') !== 'reviewed') return false;
     } else if (activeWorkflowFilter === 'rejected' || activeWorkflowFilter === 'disqualified') {
-      if (t.workflow_status !== 'disqualified' && t.workflow_status !== 'rejected' && t.is_qualified) return false;
+      if (!isDisq) return false;
     } else {
       // By default in 'all' workflow: display qualified active opportunities
-      if (t.workflow_status === 'disqualified' || !t.is_qualified) return false;
+      if (isDisq) return false;
     }
 
     // 5. Sidebar Source Filter
