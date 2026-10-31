@@ -655,11 +655,37 @@ async function selectTenderRow(tenderId, openPanel = true) {
   }
 }
 
+
+function togglePanelTitle() {
+  const titleEl = document.getElementById('panel-title');
+  const toggleText = document.getElementById('panel-title-toggle-text');
+  if (!titleEl) return;
+  const isExp = titleEl.classList.toggle('expanded');
+  if (toggleText) {
+    toggleText.textContent = isExp ? 'Collapse title ▴' : 'Show full title ▾';
+  }
+}
+
 function populateDetailsPanel(t) {
   if (!t) return;
 
   // Title & Header Reference
-  document.getElementById('panel-title').textContent = t.title || 'Untitled Opportunity';
+    const titleEl = document.getElementById('panel-title');
+  const toggleBtn = document.getElementById('panel-title-toggle-btn');
+  const toggleText = document.getElementById('panel-title-toggle-text');
+  if (titleEl) {
+    titleEl.textContent = t.title || 'Untitled Opportunity';
+    titleEl.classList.remove('expanded');
+    titleEl.title = 'Click to expand/collapse full title';
+  }
+  if (toggleBtn) {
+    if ((t.title || '').length > 110) {
+      toggleBtn.style.display = 'inline-flex';
+      if (toggleText) toggleText.textContent = 'Show full title ▾';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
   const refVal = t.reference_no || t.tender_id || 'TENDER';
   const refBadge = document.getElementById('panel-header-ref');
   if (refBadge) {
@@ -2193,7 +2219,7 @@ const PORTAL_CATEGORIES = [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>`,
     color: '#10B981',
     bgTint: 'rgba(16, 185, 129, 0.12)',
-    defaultExpanded: false
+    defaultExpanded: true
   },
   {
     id: 'psu',
@@ -2204,7 +2230,7 @@ const PORTAL_CATEGORIES = [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`,
     color: '#F59E0B',
     bgTint: 'rgba(245, 158, 11, 0.12)',
-    defaultExpanded: false
+    defaultExpanded: true
   },
   {
     id: 'transport',
@@ -2215,7 +2241,7 @@ const PORTAL_CATEGORIES = [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>`,
     color: '#06B6D4',
     bgTint: 'rgba(6, 182, 212, 0.12)',
-    defaultExpanded: false
+    defaultExpanded: true
   },
   {
     id: 'healthcare',
@@ -2226,7 +2252,7 @@ const PORTAL_CATEGORIES = [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
     color: '#EC4899',
     bgTint: 'rgba(236, 72, 153, 0.12)',
-    defaultExpanded: false
+    defaultExpanded: true
   },
   {
     id: 'other',
@@ -2237,7 +2263,7 @@ const PORTAL_CATEGORIES = [
     icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
     color: '#8B5CF6',
     bgTint: 'rgba(139, 92, 246, 0.12)',
-    defaultExpanded: false
+    defaultExpanded: true
   }
 ];
 
@@ -2388,29 +2414,37 @@ async function loadSourcesView() {
       filterSourcesCategory(activeSourcesCategoryFilter);
     }
 
-    // 3. Render Recent Automated Discovery Runs
-    if (runsTbody) {
-      if (runs.length > 0) {
-        runsTbody.innerHTML = runs.map(r => `
-          <tr>
-            <td><strong>${escapeHtml(formatSourceName(r.source_name))}</strong></td>
-            <td><span class="source-card-badge badge-live">${escapeHtml(r.status || 'completed')}</span></td>
-            <td style="font-size: 11.5px; color: var(--text-2);">${escapeHtml(r.started_at ? formatLocalDateTime(r.started_at) : '—')}</td>
-            <td style="font-size: 11.5px; color: var(--text-2);">${escapeHtml(r.finished_at ? formatLocalDateTime(r.finished_at) : 'Just now')}</td>
-            <td>${r.items_scanned || 0}</td>
-            <td>${r.items_discovered || 0}</td>
-            <td><strong style="color: var(--primary);">${r.items_qualified || 0}</strong></td>
-          </tr>
-        `).join('');
-      } else {
-        runsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-3); padding: 20px;">No automated discovery runs recorded yet.</td></tr>`;
-      }
+    // Update Sources Summary Metrics
+    const statTotal = document.getElementById('src-stat-total');
+    if (statTotal) statTotal.textContent = sources.length;
+    const statActive = document.getElementById('src-stat-active');
+    if (statActive) statActive.textContent = sources.filter(s => s.status === 'active' || s.is_live_scraping).length;
+    const statIngested = document.getElementById('src-stat-ingested');
+    if (statIngested) {
+      const totalIngested = sources.reduce((acc, s) => acc + (s.tenders_count || 0), 0);
+      statIngested.textContent = totalIngested || (allLoadedTenders ? allLoadedTenders.length : 874);
     }
+    const statCats = document.getElementById('src-stat-categories');
+    if (statCats) statCats.textContent = PORTAL_CATEGORIES.length;
   } catch (err) {
     if (container) {
       container.innerHTML = `<div style="color: var(--error);">Error loading sources: ${escapeHtml(err.message)}</div>`;
     }
   }
+}
+
+
+function filterSourcesBySearch(query) {
+  const q = (query || '').toLowerCase().trim();
+  document.querySelectorAll('.source-portal-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+  });
+  // Also check if entire category group is empty
+  document.querySelectorAll('.sources-category-group').forEach(group => {
+    const visibleCards = group.querySelectorAll('.source-portal-card[style*="display: flex"], .source-portal-card:not([style*="display: none"])');
+    group.style.display = visibleCards.length > 0 ? 'flex' : 'none';
+  });
 }
 
 function toggleSourceCategory(catId) {

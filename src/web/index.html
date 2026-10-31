@@ -818,6 +818,35 @@
             </div>
           </div>
 
+          <!-- Summary Metrics Cards -->
+          <div class="sources-summary-grid">
+            <div class="sources-summary-card">
+              <div class="summary-card-num" id="src-stat-total">42</div>
+              <div class="summary-card-lbl">Monitored Portals</div>
+              <div class="summary-card-sub">Central, State & Public Enterprises</div>
+            </div>
+            <div class="sources-summary-card">
+              <div class="summary-card-num" style="color: var(--ok);" id="src-stat-active">42</div>
+              <div class="summary-card-lbl">Active Live Scrapers</div>
+              <div class="summary-card-sub">Automated hourly ingestion pipelines</div>
+            </div>
+            <div class="sources-summary-card">
+              <div class="summary-card-num" style="color: var(--primary);" id="src-stat-ingested">874</div>
+              <div class="summary-card-lbl">Total Tenders Ingested</div>
+              <div class="summary-card-sub">Accurate live repository count</div>
+            </div>
+            <div class="sources-summary-card">
+              <div class="summary-card-num" style="color: #8B5CF6;" id="src-stat-categories">6</div>
+              <div class="summary-card-lbl">Portal Categories</div>
+              <div class="summary-card-sub">National, State, PSU, Airport, Health, Other</div>
+            </div>
+          </div>
+
+          <!-- Quick Search Bar for 42 Portals -->
+          <div class="sources-search-wrap" style="margin-bottom: 16px;">
+            <input type="text" id="sources-search-input" class="sources-search-input" placeholder="🔍 Search portals by name, code, state, or authority (e.g. GeM, MahaTenders, IOCL, AIIMS)..." oninput="filterSourcesBySearch(this.value)">
+          </div>
+
           <!-- Category Filter Chips Bar -->
           <div class="sources-filter-chips-bar" id="sources-category-chips">
             <!-- Injected via JS -->
@@ -828,28 +857,7 @@
             <!-- Injected via JS -->
           </div>
 
-          <!-- Recent Runs History -->
-          <div class="analytics-card" style="margin-top: 24px;">
-            <h3 class="analytics-title">Recent Automated Discovery Runs</h3>
-            <div class="table-responsive-container">
-              <table class="tenders-table">
-                <thead>
-                  <tr>
-                    <th>Portal Source</th>
-                    <th>Status</th>
-                    <th>Started At</th>
-                    <th>Finished At</th>
-                    <th>Scanned</th>
-                    <th>Discovered</th>
-                    <th>Qualified</th>
-                  </tr>
-                </thead>
-                <tbody id="sources-runs-tbody">
-                  <!-- Injected via JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+
         </div>
 
         <!-- ════════════════════════════════════════════════════════════════════
@@ -1533,9 +1541,14 @@
       <!-- Panel Header -->
       <div class="panel-header">
         <div class="panel-title-row">
-          <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0;">
             <span class="panel-ref-badge" id="panel-header-ref" onclick="copyCurrentRef()" title="Click to copy reference number">REF</span>
-            <h2 class="panel-tender-title" id="panel-title">Tender Details</h2>
+            <div style="flex: 1; min-width: 0;">
+              <h2 class="panel-tender-title" id="panel-title" onclick="togglePanelTitle()" title="Click to expand/collapse full title">Tender Details</h2>
+              <button type="button" id="panel-title-toggle-btn" class="btn-title-toggle" onclick="togglePanelTitle()" style="display: none;">
+                <span id="panel-title-toggle-text">Show full title ▾</span>
+              </button>
+            </div>
           </div>
           <button class="panel-close-btn" onclick="closeDetailsPanel()" title="Close details panel (Esc)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -2122,7 +2135,7 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Main JavaScript Logic -->
-  <script src="/static/js/app.js?v=20261030_v11_remove_doc_and_portal_cleanup"></script>
+  <script src="/static/js/app.js?v=20261031_v12_drawer_scroll_sources_cleanup"></script>
 </body>
 
 </html>

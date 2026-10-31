@@ -745,7 +745,7 @@ def get_source_category(source_id: str, source_type: str = "") -> str:
 
 @app.get("/api/sources")
 def get_sources():
-    recent_runs = repo.get_source_runs(limit=30)
+    recent_runs = repo.get_source_runs(limit=100)
 
     # Dynamic count mapping from DB
     metrics = repo.get_dashboard_metrics()
