@@ -7,8 +7,9 @@ import re
 import logging
 from datetime import datetime
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File, Form
 from src.services.document_manager import DocumentManager, sanitize_filename, extract_pdf_info
+from src.services.drafting_service import DraftingService
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -38,7 +39,12 @@ discovery_service = DiscoveryService()
 keyword_matcher = KeywordMatcher()
 doc_manager = DocumentManager(db_repo=repo)
 bedrock_service = BedrockTenderService()
+drafting_service = DraftingService(db_repo=repo, doc_manager=doc_manager)
 _ai_analysis_cache: dict = {}
+
+class GenerateDocRequest(BaseModel):
+    doc_key: str
+    custom_content: Optional[str] = None
 
 class AIChatRequest(BaseModel):
     question: str
@@ -1386,6 +1392,97 @@ def ask_ai_tender_copilot(tender_id: str, req: AIChatRequest):
         return res
     except Exception as e:
         logger.error(f"Error in Bedrock Copilot chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# Bid Preparation & Drafting Pack API
+# =============================================================================
+
+@app.get("/api/drafting/{tender_id:path}/details")
+def get_bid_drafting_details(tender_id: str):
+    """Returns the comprehensive Bid Preparation Pack status, missing documents, and generated declarations."""
+    try:
+        return drafting_service.get_drafting_pack_details(tender_id)
+    except Exception as e:
+        logger.error(f"Error fetching drafting details for {tender_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/drafting/{tender_id:path}/generate-doc")
+def generate_draft_declaration(tender_id: str, req: GenerateDocRequest):
+    """Generates an official statutory declaration or undertaking on Nikom letterhead."""
+    try:
+        return drafting_service.generate_letterhead_declaration_pdf(
+            tender_id=tender_id,
+            doc_key=req.doc_key,
+            custom_content=req.custom_content
+        )
+    except Exception as e:
+        logger.error(f"Error generating declaration {req.doc_key} for {tender_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/drafting/{tender_id:path}/upload-missing")
+async def upload_missing_document(
+    tender_id: str,
+    requirement_key: str = Form(...),
+    file: UploadFile = File(...)
+):
+    """Saves a specifically requested missing document (e.g. Site Visit Certificate, Signed OEM MAF, CA UDIN)."""
+    try:
+        content = await file.read()
+        return drafting_service.save_uploaded_missing_document(
+            tender_id=tender_id,
+            requirement_key=requirement_key,
+            filename=file.filename,
+            file_bytes=content
+        )
+    except Exception as e:
+        logger.error(f"Error uploading missing document for {tender_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/drafting/{tender_id:path}/download-doc")
+def download_generated_draft(tender_id: str, doc_key: str = Query(...)):
+    """Serves a generated letterhead declaration PDF."""
+    manifest = drafting_service._load_manifest(tender_id)
+    gen_entry = manifest.get("generated_docs", {}).get(doc_key)
+    if not gen_entry or not os.path.exists(gen_entry.get("path", "")):
+        try:
+            res = drafting_service.generate_letterhead_declaration_pdf(tender_id, doc_key)
+            ddir = drafting_service.get_tender_drafting_dir(tender_id)
+            fpath = os.path.join(ddir, "generated", res["filename"])
+            if os.path.exists(fpath):
+                return FileResponse(fpath, media_type="application/pdf", filename=res["filename"])
+        except Exception:
+            pass
+        raise HTTPException(status_code=404, detail="Document not generated yet")
+    return FileResponse(gen_entry["path"], media_type="application/pdf", filename=gen_entry["filename"])
+
+
+@app.get("/api/drafting/{tender_id:path}/download-missing")
+def download_uploaded_missing_file(tender_id: str, requirement_key: str = Query(...)):
+    """Serves an uploaded missing document."""
+    manifest = drafting_service._load_manifest(tender_id)
+    entry = manifest.get("uploaded_missing", {}).get(requirement_key)
+    if not entry or not os.path.exists(entry.get("local_path", "")):
+        raise HTTPException(status_code=404, detail="Uploaded file not found")
+    media_type = "application/pdf" if entry["filename"].lower().endswith(".pdf") else "application/octet-stream"
+    return FileResponse(entry["local_path"], media_type=media_type, filename=entry["filename"])
+
+
+@app.get("/api/drafting/{tender_id:path}/export-zip")
+def export_complete_bid_pack_zip(tender_id: str):
+    """Compiles and downloads the complete Technical & PQQ Bid Submission Pack as a ZIP archive."""
+    try:
+        zip_path = drafting_service.export_submission_pack_zip(tender_id)
+        if not os.path.exists(zip_path):
+            raise HTTPException(status_code=500, detail="Failed to create ZIP pack")
+        fname = os.path.basename(zip_path)
+        return FileResponse(zip_path, media_type="application/zip", filename=fname)
+    except Exception as e:
+        logger.error(f"Error exporting ZIP pack for {tender_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

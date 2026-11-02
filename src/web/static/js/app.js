@@ -1279,6 +1279,12 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
           <div class="verdict-score-label">${data.met_criteria_count || 0} of ${data.total_criteria_count || (data.criteria ? data.criteria.length : 0)} Met</div>
         </div>
       </div>
+
+      <!-- Action Button: Open Bid Drafting Studio -->
+      <button type="button" onclick="openBidDraftingStudio('${escapeHtml(tenderId)}')" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 16px; margin: 0 0 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: all 0.2s ease;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Open Bid Drafting Studio (Auto-Generate Declarations & Resolve Missing Docs) →</span>
+      </button>
     `;
 
     // 3. Strategic Executive Summary
@@ -1450,6 +1456,331 @@ async function askBedrockPromptQuick(tenderId, question) {
   } finally {
     if (sendBtn) sendBtn.disabled = false;
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BID PREPARATION & DRAFTING STUDIO (PHASE 2 WORKFLOW)
+// ═══════════════════════════════════════════════════════════════════════════
+let currentDraftingTenderId = null;
+
+function openBidDraftingStudio(tenderId) {
+  currentDraftingTenderId = tenderId;
+  const modal = document.getElementById('modal-bid-drafting');
+  const pill = document.getElementById('drafting-tender-id-pill');
+  if (pill) pill.textContent = tenderId;
+  if (modal) modal.style.display = 'flex';
+  loadDraftingPackDetails(tenderId);
+}
+
+function closeBidDraftingModal() {
+  const modal = document.getElementById('modal-bid-drafting');
+  if (modal) modal.style.display = 'none';
+  currentDraftingTenderId = null;
+}
+
+async function loadDraftingPackDetails(tenderId) {
+  const container = document.getElementById('drafting-studio-body');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="padding: 40px 16px; text-align: center; color: var(--text-2);">
+      <div style="display: inline-block; width: 34px; height: 34px; border: 3px solid rgba(37, 99, 235, 0.15); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
+      <div style="font-weight: 700; font-size: 14px; color: var(--text);">Auditing Document Vault & Preparing Drafts...</div>
+      <div style="font-size: 12px; color: var(--text-3); margin-top: 4px;">Checking corporate certificates, mapping past experience, and scanning for missing RFP requirements</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/drafting/${encodeURIComponent(tenderId)}/details`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to load bid drafting pack');
+    }
+    const data = await res.json();
+    renderDraftingStudio(data);
+  } catch (err) {
+    container.innerHTML = `
+      <div style="padding: 20px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: var(--error); font-size: 13px;">
+        <div style="font-weight: 700; margin-bottom: 4px;">Error Loading Drafting Studio</div>
+        <div style="color: var(--text-2);">${escapeHtml(err.message)}</div>
+        <button type="button" onclick="loadDraftingPackDetails('${escapeHtml(tenderId)}')" style="margin-top: 12px; padding: 6px 14px; background: var(--surface-raised); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--error); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Retry</button>
+      </div>
+    `;
+  }
+}
+
+function renderDraftingStudio(data) {
+  const container = document.getElementById('drafting-studio-body');
+  if (!container) return;
+
+  const tenderId = data.tender_id;
+  const missingCount = (data.missing_documents || []).filter(m => m.status === 'missing').length;
+
+  let html = '';
+
+  // ── 1. Top Readiness Progress & Metadata Ribbon ──────────────────────────
+  const pct = data.readiness_pct || 0;
+  const barColor = pct >= 80 ? 'var(--ok)' : (pct >= 50 ? 'var(--primary)' : 'var(--warn)');
+
+  html += `
+    <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 18px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-3);">Bid Submission Readiness</span>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text); margin-top: 2px;">${pct}% Technical & PQQ Pack Complete</div>
+        </div>
+        <div style="text-align: right;">
+          <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; background: ${missingCount > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)'}; color: ${missingCount > 0 ? 'var(--error)' : 'var(--ok)'}; border: 1px solid ${missingCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'};">
+            ${missingCount > 0 ? `⚠️ ${missingCount} Action${missingCount > 1 ? 's' : ''} Required` : '✓ All Items Attached'}
+          </span>
+          <div style="font-size: 11px; color: var(--text-3); margin-top: 3px;">${data.ready_items_count} of ${data.total_items_count} Items Ready</div>
+        </div>
+      </div>
+
+      <!-- Visual Progress Bar -->
+      <div style="width: 100%; height: 8px; background: var(--border); border-radius: 10px; overflow: hidden;">
+        <div style="width: ${pct}%; height: 100%; background: ${barColor}; border-radius: 10px; transition: width 0.4s ease;"></div>
+      </div>
+    </div>
+  `;
+
+  // ── 2. AI MISSING DOCUMENTS CALLOUT (High Priority Upload Area) ─────────
+  if (data.missing_documents && data.missing_documents.length > 0) {
+    html += `
+      <div style="margin-bottom: 20px; border: 1px solid ${missingCount > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}; background: ${missingCount > 0 ? 'rgba(239, 68, 68, 0.04)' : 'rgba(16, 185, 129, 0.04)'}; border-radius: 10px; padding: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">${missingCount > 0 ? '🚨' : '✓'}</span>
+            <span style="font-size: 13.5px; font-weight: 700; color: ${missingCount > 0 ? 'var(--error)' : 'var(--ok)'};">
+              ${missingCount > 0 ? 'Missing Mandatory RFP Documents (AI Detected)' : 'All Specific RFP Documents Attached'}
+            </span>
+          </div>
+          <span style="font-size: 11px; color: var(--text-3); font-weight: 500;">Required for envelope qualification</span>
+        </div>
+
+        <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+          ${missingCount > 0 ? 'The AI specifically scanned the tender clauses and identified the following documents that must be provided from external sources or site inspection before submission:' : 'All required buyer certificates and OEM forms have been successfully attached to your bid pack.'}
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          ${data.missing_documents.map(m => {
+            const isMissing = m.status === 'missing';
+            return `
+              <div style="padding: 12px 14px; background: var(--surface); border: 1px solid ${isMissing ? 'rgba(239, 68, 68, 0.3)' : 'var(--border)'}; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                  <div>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text);">${escapeHtml(m.title)}</span>
+                    <div style="font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;">📋 ${escapeHtml(m.clause_reference)}</div>
+                  </div>
+                  <span style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: ${isMissing ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)'}; color: ${isMissing ? 'var(--error)' : 'var(--ok)'}; border: 1px solid ${isMissing ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'};">
+                    ${isMissing ? 'Missing: Upload Needed' : '✓ Attached & Verified'}
+                  </span>
+                </div>
+                <div style="font-size: 11.5px; color: var(--text-2); line-height: 1.45; margin-bottom: 10px;">
+                  💡 <strong>AI Guidance:</strong> ${escapeHtml(m.ai_guidance)}
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px;">
+                  ${isMissing ? `
+                    <div style="font-size: 11.5px; color: var(--error); font-weight: 500;">Awaiting document attachment from engineer</div>
+                    <div>
+                      <input type="file" id="input-missing-${m.key}" accept=".pdf,.docx,.png,.jpg,.jpeg" onchange="uploadMissingDraftDocument('${escapeHtml(tenderId)}', '${m.key}', this)" style="display: none;" />
+                      <button type="button" onclick="document.getElementById('input-missing-${m.key}').click()" style="padding: 6px 14px; background: var(--surface-raised); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--error); border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;">
+                        <span>📎 Browse & Upload ${escapeHtml(m.title)}</span>
+                      </button>
+                    </div>
+                  ` : `
+                    <div style="font-size: 11.5px; color: var(--ok); font-weight: 600;">
+                      File: <span style="font-weight: 700; color: var(--text);">${escapeHtml(m.uploaded_file)}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <a href="/api/drafting/${encodeURIComponent(tenderId)}/download-missing?requirement_key=${m.key}" target="_blank" style="padding: 5px 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--ok); border-radius: 6px; font-size: 11px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                        <span>View Uploaded PDF</span> ↗
+                      </a>
+                      <input type="file" id="input-replace-${m.key}" accept=".pdf,.docx,.png,.jpg,.jpeg" onchange="uploadMissingDraftDocument('${escapeHtml(tenderId)}', '${m.key}', this)" style="display: none;" />
+                      <button type="button" onclick="document.getElementById('input-replace-${m.key}').click()" style="background: var(--surface-raised); border: 1px solid var(--border); color: var(--text-2); padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                        Replace
+                      </button>
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── 3. Nikom Letterhead Statutory Undertakings (1-Click Auto-Draft) ─────
+  html += `
+    <div style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2);">
+          Nikom Letterhead Statutory Undertakings
+        </div>
+        <span style="font-size: 11px; color: var(--primary); font-weight: 600;">Auto-drafted on official Nehru Place letterhead</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${(data.declarations || []).map(d => {
+          const isGen = d.status === 'generated';
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+              <div style="flex: 1; padding-right: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">${escapeHtml(d.title)}</span>
+                  <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: ${isGen ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.1)'}; color: ${isGen ? 'var(--ok)' : 'var(--primary)'}; border: 1px solid ${isGen ? 'rgba(16,185,129,0.25)' : 'rgba(37,99,235,0.2)'};">
+                    ${isGen ? '✓ Generated' : 'Ready to Draft'}
+                  </span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-3); margin-top: 3px;">
+                  Ref: ${escapeHtml(d.statutory_ref)} • ${escapeHtml(d.description)}
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" onclick="generateLetterheadDraft('${escapeHtml(tenderId)}', '${d.key}')" style="padding: 6px 13px; background: ${isGen ? 'var(--surface-raised)' : 'var(--primary)'}; border: 1px solid ${isGen ? 'var(--border)' : 'var(--primary)'}; color: ${isGen ? 'var(--text-2)' : '#ffffff'}; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;">
+                  ${isGen ? '↻ Re-Generate' : '⚡ Generate PDF'}
+                </button>
+                ${isGen ? `
+                  <a href="/api/drafting/${encodeURIComponent(tenderId)}/download-doc?doc_key=${d.key}" target="_blank" style="padding: 6px 12px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--ok); border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;">
+                    Preview ↗
+                  </a>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  // ── 4. OEM Manufacturer Authorization Forms (MAF Request Drafter) ──────
+  html += `
+    <div style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2);">
+          OEM Manufacturer Authorization Forms (MAF)
+        </div>
+        <span style="font-size: 11px; color: var(--text-3);">Direct OEM Back-to-Back Warranty Guarantee</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${(data.oem_requests || []).map(oem => {
+          return `
+            <div style="padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">Equipment: ${escapeHtml(oem.equipment)}</span>
+                <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(37,99,235,0.1); color: var(--primary); border: 1px solid rgba(37,99,235,0.2);">Alliance Partners</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-3); margin-bottom: 8px;">
+                Recommended Partners: ${(oem.recommended_oems || []).join(' • ')}
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                <div style="font-size: 11.5px; color: var(--text-2); line-height: 1.4;">${escapeHtml(oem.description)}</div>
+                <button type="button" onclick="generateLetterheadDraft('${escapeHtml(tenderId)}', 'oem_maf_request')" style="padding: 6px 13px; background: var(--surface-raised); border: 1px solid var(--border); color: var(--primary); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; transition: all 0.15s;">
+                  <span>Generate MAF Request Letter</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  // ── 5. Past Work Experience (Smart Credential Optimization) ─────────────
+  if (data.past_experience && data.past_experience.recommended_primary) {
+    const pw = data.past_experience.recommended_primary;
+    html += `
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin-bottom: 10px;">
+          Optimized Past Work Experience Match
+        </div>
+        <div style="padding: 12px 14px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--ok);">${escapeHtml(pw.client)} — ₹ ${pw.completed_value_cr} Crores</span>
+            <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: var(--ok); border: 1px solid rgba(16, 185, 129, 0.25);">Verified in Vault</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text); font-weight: 600; margin-bottom: 4px;">Project: ${escapeHtml(pw.work_name)} (PO No: ${escapeHtml(pw.po_no)})</div>
+          <div style="font-size: 11px; color: var(--text-3);">Completed on: ${escapeHtml(pw.completion_date)} • ${escapeHtml(pw.relevance)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── 6. Corporate Vault Credentials (Pre-Verified) ──────────────────────
+  html += `
+    <div style="margin-bottom: 10px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-2); margin-bottom: 10px;">
+        Nikom Corporate Vault Attachments (Auto-Bundled)
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px;">
+        ${(data.vault_docs || []).map(v => `
+          <div style="padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text);">${escapeHtml(v.name)}</div>
+            <div style="font-size: 11px; color: var(--ok); margin-top: 3px; font-weight: 500;">✓ ${escapeHtml(v.validity)} • ${escapeHtml(v.source)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+async function generateLetterheadDraft(tenderId, docKey) {
+  showToast('Generating official declaration on Nikom letterhead...');
+  try {
+    const res = await fetch(`${API_BASE}/api/drafting/${encodeURIComponent(tenderId)}/generate-doc`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_key: docKey })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Drafting failed');
+    }
+    const data = await res.json();
+    showToast(`✓ Generated ${data.filename}!`);
+    await loadDraftingPackDetails(tenderId);
+    if (data.download_url) {
+      window.open(data.download_url, '_blank', 'noopener,noreferrer');
+    }
+  } catch (err) {
+    showToast(`Error generating draft: ${err.message}`);
+  }
+}
+
+async function uploadMissingDraftDocument(tenderId, requirementKey, inputEl) {
+  if (!inputEl || !inputEl.files || inputEl.files.length === 0) return;
+  const file = inputEl.files[0];
+
+  showToast(`Uploading ${file.name}...`);
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('requirement_key', requirementKey);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/drafting/${encodeURIComponent(tenderId)}/upload-missing`, {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Upload failed');
+    }
+    showToast(`✓ Uploaded and attached: ${file.name}!`);
+    await loadDraftingPackDetails(tenderId);
+  } catch (err) {
+    showToast(`Upload error: ${err.message}`);
+  }
+}
+
+function downloadBidSubmissionZip() {
+  if (!currentDraftingTenderId) return;
+  showToast('Compiling and downloading complete Bid Pack (ZIP)...');
+  window.open(`${API_BASE}/api/drafting/${encodeURIComponent(currentDraftingTenderId)}/export-zip`, '_blank');
 }
 
 function getPortalWebUrl(t) {
