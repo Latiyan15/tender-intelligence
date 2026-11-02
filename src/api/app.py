@@ -1288,9 +1288,9 @@ def download_specific_file(tender_id: str = Query(...), filename: str = Query(..
     return FileResponse(fpath, media_type=media_type, filename=safe_name)
 
 @app.get("/api/documents/eligibility")
-def get_tender_eligibility(tender_id: str = Query(...)):
-    """Returns the 1-Page Qualify Eligibility Sheet against Nikom's corporate profile."""
-    return doc_manager.evaluate_eligibility(tender_id)
+def get_tender_eligibility(tender_id: str = Query(...), force_refresh: bool = Query(False)):
+    """Returns the AI Qualify & Eligibility evaluation against Nikom's corporate profile."""
+    return doc_manager.evaluate_eligibility(tender_id, force_refresh=force_refresh)
 
 @app.post("/api/tenders/verify")
 def verify_tender_human(tender_id: str = Query(...)):

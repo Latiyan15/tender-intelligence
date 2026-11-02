@@ -430,8 +430,8 @@ Respond strictly in valid JSON format:
     {{
       "key": "turnover",
       "name": "Annual Financial Turnover",
-      "requirement": "<exact requirement extracted from uploaded document>",
-      "nikom_profile": "<how Nikom's ₹42+ Cr compares with exact numbers>",
+      "requirement": "<exact requirement extracted from uploaded document or 'Not specified in RFP'>",
+      "nikom_profile": "<how Nikom's audited ₹70.11 Cr 3-yr avg / ₹123.07 Cr prov compares with exact numbers>",
       "status": "Met" | "Check" | "Not Met",
       "badge_color": "green" | "amber" | "red",
       "notes": "<audited balance sheet note or verification remark>"
