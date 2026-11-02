@@ -8,13 +8,14 @@ import logging
 from datetime import datetime
 from typing import Optional, List
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File
-from src.services.document_manager import DocumentManager, sanitize_filename
+from src.services.document_manager import DocumentManager, sanitize_filename, extract_pdf_info
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from src.database.db import TenderRepository, init_db, get_database_url
 from src.services.pdf_service import generate_tender_dossier_pdf
 from src.services.discovery_service import DiscoveryService
+from src.services.bedrock_service import BedrockTenderService
 from src.keywords.matcher import KeywordMatcher
 
 logging.basicConfig(
@@ -36,6 +37,14 @@ except Exception as e:
 discovery_service = DiscoveryService()
 keyword_matcher = KeywordMatcher()
 doc_manager = DocumentManager(db_repo=repo)
+bedrock_service = BedrockTenderService()
+_ai_analysis_cache: dict = {}
+
+class AIChatRequest(BaseModel):
+    question: str
+
+class AIAnalysisRequest(BaseModel):
+    force_refresh: bool = False
 
 app = FastAPI(
     title="Nikom Tender Intelligence API",
@@ -1295,6 +1304,90 @@ def verify_tender_human(tender_id: str = Query(...)):
         "workflow_status": "verified",
         "message": "Tender approved by bidding engineer. Ready for official document submission."
     }
+
+
+# =============================================================================
+# AWS Bedrock Foundation Model Endpoints (Claude Sonnet 4.6 / Haiku)
+# =============================================================================
+
+@app.get("/api/bedrock/status")
+def get_bedrock_status():
+    """Returns current AWS Bedrock connectivity, model status, latency, and privacy profile."""
+    return bedrock_service.test_connection()
+
+
+@app.post("/api/tenders/{tender_id:path}/ai-analysis")
+def get_or_run_ai_feasibility(tender_id: str, req: Optional[AIAnalysisRequest] = None):
+    """
+    Runs or retrieves deep AWS Bedrock (Claude Sonnet) Feasibility and Eligibility evaluation.
+    Grounds evaluation with both tender metadata and extracted PDF documents.
+    """
+    tender = repo.get_tender(tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail=f"Tender '{tender_id}' not found")
+
+    force = req.force_refresh if req else False
+    if not force and tender_id in _ai_analysis_cache:
+        return _ai_analysis_cache[tender_id]
+
+    doc_text = ""
+    try:
+        tdir = doc_manager.get_tender_storage_dir(tender_id)
+        if os.path.exists(tdir):
+            parts = []
+            for fname in os.listdir(tdir):
+                if fname.lower().endswith(".pdf"):
+                    fpath = os.path.join(tdir, fname)
+                    info = extract_pdf_info(fpath)
+                    if info.get("text"):
+                        parts.append(f"--- Document: {fname} ---\n{info['text']}")
+            doc_text = "\n\n".join(parts)
+    except Exception as e:
+        logger.warning(f"Could not load PDF text for AI analysis: {e}")
+
+    try:
+        analysis = bedrock_service.analyze_tender_feasibility(tender, document_text=doc_text)
+        _ai_analysis_cache[tender_id] = analysis
+        return analysis
+    except Exception as e:
+        logger.error(f"Error in Bedrock tender analysis: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/tenders/{tender_id:path}/ai-chat")
+def ask_ai_tender_copilot(tender_id: str, req: AIChatRequest):
+    """
+    Interactive RFP Copilot allowing bidding engineers to ask specific questions about tender specs and clauses.
+    """
+    tender = repo.get_tender(tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail=f"Tender '{tender_id}' not found")
+
+    if not req.question or not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+
+    doc_text = ""
+    try:
+        tdir = doc_manager.get_tender_storage_dir(tender_id)
+        if os.path.exists(tdir):
+            parts = []
+            for fname in os.listdir(tdir):
+                if fname.lower().endswith(".pdf"):
+                    fpath = os.path.join(tdir, fname)
+                    info = extract_pdf_info(fpath)
+                    if info.get("text"):
+                        parts.append(f"--- Document: {fname} ---\n{info['text']}")
+            doc_text = "\n\n".join(parts)
+    except Exception as e:
+        logger.warning(f"Could not load PDF text for AI copilot: {e}")
+
+    try:
+        res = bedrock_service.ask_tender_copilot(tender, req.question.strip(), document_text=doc_text)
+        return res
+    except Exception as e:
+        logger.error(f"Error in Bedrock Copilot chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 # Static Assets & Frontend Web Dashboard

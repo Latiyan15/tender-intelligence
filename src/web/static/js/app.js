@@ -1052,8 +1052,9 @@ async function autoFetchCurrentTenderDoc() {
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`✓ Successfully retrieved official GeM PDF (${data.page_count} pages)!`);
+      showToast(`✓ Retrieved official document! AI (AWS Bedrock) is analyzing clauses against Nikom data...`);
       loadPanelDocuments(currentSelectedTenderId);
+      switchPanelTab('eligibility');
       loadPanelEligibility(currentSelectedTenderId);
       // Update local tender workflow_status
       const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
@@ -1131,11 +1132,12 @@ async function uploadTenderFile(file) {
     const data = await res.json();
 
     if (progressBar) progressBar.style.width = '100%';
-    showToast(`✓ Official document "${file.name}" attached successfully!`);
+    showToast(`✓ Document uploaded! AI (AWS Bedrock) is analyzing clauses against Nikom data...`);
 
     setTimeout(() => {
       if (progressWrap) progressWrap.style.display = 'none';
       loadPanelDocuments(currentSelectedTenderId);
+      switchPanelTab('eligibility');
       loadPanelEligibility(currentSelectedTenderId);
       const t = (currentTenders || []).find(x => x.tender_id === currentSelectedTenderId) ||
                 (allLoadedTenders || []).find(x => x.tender_id === currentSelectedTenderId);
@@ -1156,24 +1158,56 @@ async function loadPanelEligibility(tenderId) {
   const container = document.getElementById('panel-eligibility-container');
   if (!container) return;
 
-  container.innerHTML = '<div style="color: var(--text-3); font-size: 12px; padding: 12px 0;">Evaluating against Nikom InfraSolutions profile...</div>';
+  container.innerHTML = `
+    <div style="color: var(--text-2); font-size: 12px; padding: 24px 16px; text-align: center;">
+      <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(168, 85, 247, 0.2); border-top-color: #a855f7; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px;"></div>
+      <div style="font-weight: 600; color: var(--text); font-size: 13px;">Analyzing document & checking eligibility against Nikom data...</div>
+      <div style="font-size: 11.5px; color: var(--text-3); margin-top: 4px;">Auditing turnover, past experience, technical scope, and certifications with AWS Bedrock</div>
+    </div>
+  `;
 
   try {
     const res = await fetch(`${API_BASE}/api/documents/eligibility?tender_id=${encodeURIComponent(tenderId)}`);
     if (!res.ok) throw new Error('Failed to evaluate eligibility');
     const data = await res.json();
 
-    const isQual = data.overall_verdict === 'Qualified';
+    const isQual = data.overall_verdict === 'Qualified' || (data.overall_verdict || '').toUpperCase().includes('GO');
     const cardClass = isQual ? '' : 'review';
     const badgeClass = isQual ? '' : 'review';
 
-    let html = `
-      <div class="eligibility-verdict-card ${cardClass}">
+    let html = '';
+
+    // Document & AI Status Banner
+    if (data.document_analyzed) {
+      html += `
+        <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(147, 51, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: #c084fc;">
+              <span>⚡ Uploaded Document Evaluated: <strong>${escapeHtml(data.document_analyzed)}</strong></span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">
+              AWS Bedrock Claude Sonnet 4.6 • Grounded against Nikom corporate data
+            </div>
+          </div>
+          <button type="button" onclick="loadPanelEligibility('${escapeHtml(tenderId)}')" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 3px 10px; border-radius: 4px; font-size: 10.5px; cursor: pointer; font-weight: 600;">Re-Evaluate</button>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; font-size: 11.5px; color: #38bdf8; line-height: 1.45;">
+          <strong>Preliminary Baseline:</strong> No official document has been attached yet. Open <strong>"Documents & Pack"</strong> tab above to fetch or upload the official tender document / RFP — AWS Bedrock will automatically extract the exact clauses and evaluate them against Nikom's audited data.
+        </div>
+      `;
+    }
+
+    // Top Verdict Card
+    html += `
+      <div class="eligibility-verdict-card ${cardClass}" style="margin-bottom: 12px;">
         <div class="verdict-left">
           <span class="verdict-badge-pill ${badgeClass}">${escapeHtml(data.overall_verdict)}</span>
           <div>
-            <div style="font-size: 13px; font-weight: 700; color: var(--text);">Nikom Corporate Feasibility</div>
-            <div class="verdict-company-sub">Evaluated for: <strong>${escapeHtml(data.company_evaluated)}</strong></div>
+            <div style="font-size: 13px; font-weight: 700; color: var(--text);">Nikom Corporate Qualification</div>
+            <div class="verdict-company-sub">Evaluated for: <strong>${escapeHtml(data.company_evaluated || 'Nikom InfraSolutions Pvt. Ltd.')}</strong></div>
           </div>
         </div>
         <div class="verdict-score-display">
@@ -1183,8 +1217,32 @@ async function loadPanelEligibility(tenderId) {
       </div>
     `;
 
+    // Executive Strategic Summary if available
+    if (data.executive_summary) {
+      html += `
+        <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; letter-spacing: 0.5px;">Executive Strategic Summary</div>
+          <div style="font-size: 12px; color: var(--text-2); line-height: 1.5;">${escapeHtml(data.executive_summary)}</div>
+        </div>
+      `;
+    }
+
+    // Identified Risks / Red Flags if available
+    if (data.red_flags && Array.isArray(data.red_flags) && data.red_flags.length > 0) {
+      html += `
+        <div style="margin-bottom: 12px; padding: 10px 14px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #f87171; margin-bottom: 6px;">Identified RFP Risks & Red Flags</div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 11.5px; color: #fca5a5;">
+            ${data.red_flags.map(r => `<li style="margin-bottom: 4px;">${escapeHtml(r)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    // Criteria Cards
     (data.criteria || []).forEach(c => {
-      const statusClass = c.status === 'Met' ? 'status-badge-met' : (c.status === 'Check' ? 'status-badge-check' : 'status-badge-not-met');
+      const s = (c.status || '').toLowerCase();
+      const statusClass = s === 'met' ? 'status-badge-met' : (s === 'check' ? 'status-badge-check' : 'status-badge-not-met');
       html += `
         <div class="criteria-card-item">
           <div class="criteria-header">
@@ -1193,6 +1251,7 @@ async function loadPanelEligibility(tenderId) {
           </div>
           <div class="criteria-req-text">Requirement: <strong>${escapeHtml(c.requirement)}</strong></div>
           <div class="criteria-profile-match">Nikom Profile: ${escapeHtml(c.nikom_profile)}</div>
+          ${c.notes ? `<div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">${escapeHtml(c.notes)}</div>` : ''}
         </div>
       `;
     });
@@ -1200,7 +1259,306 @@ async function loadPanelEligibility(tenderId) {
     container.innerHTML = html;
 
   } catch (err) {
-    container.innerHTML = `<div style="color: #ef4444; font-size: 12px;">Error evaluating eligibility: ${escapeHtml(err.message)}</div>`;
+    container.innerHTML = `<div style="color: #ef4444; font-size: 12px; padding: 14px 0;">Error evaluating eligibility: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+// ── AWS Bedrock AI Copilot & Feasibility Engine ─────────────────────────────
+const bedrockAnalysisMemoryCache = {};
+const bedrockChatHistory = {};
+
+async function ensureBedrockAnalysisLoaded(tenderId) {
+  if (bedrockAnalysisMemoryCache[tenderId]) {
+    renderBedrockAnalysisView(tenderId, bedrockAnalysisMemoryCache[tenderId]);
+    return;
+  }
+  await loadBedrockAnalysis(tenderId, false);
+}
+
+async function loadBedrockAnalysis(tenderId, forceRefresh = false) {
+  const container = document.getElementById('panel-bedrock-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div style="padding: 24px 16px; text-align: center; color: var(--text-2);">
+      <div style="display: inline-block; width: 28px; height: 28px; border: 3px solid rgba(168, 85, 247, 0.2); border-top-color: #a855f7; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
+      <div style="font-weight: 600; font-size: 13.5px; color: var(--text);">Evaluating with AWS Bedrock (Claude Sonnet 4.6)...</div>
+      <div style="font-size: 11.5px; color: var(--text-3); margin-top: 4px;">Analyzing RFP clauses, BOQ line-items, and Nikom corporate qualifications</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/tenders/${encodeURIComponent(tenderId)}/ai-analysis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ force_refresh: forceRefresh })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || 'Failed to complete Bedrock AI analysis');
+    }
+    const data = await res.json();
+    bedrockAnalysisMemoryCache[tenderId] = data;
+    renderBedrockAnalysisView(tenderId, data);
+  } catch (err) {
+    container.innerHTML = `
+      <div style="padding: 16px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; color: #ef4444; font-size: 12.5px;">
+        <div style="font-weight: 700; margin-bottom: 4px;">AI Analysis Notice</div>
+        <div>${escapeHtml(err.message)}</div>
+        <button onclick="loadBedrockAnalysis('${escapeHtml(tenderId)}', true)" style="margin-top: 10px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11.5px;">Retry Analysis</button>
+      </div>
+    `;
+  }
+}
+
+function renderBedrockAnalysisView(tenderId, data) {
+  const container = document.getElementById('panel-bedrock-container');
+  if (!container) return;
+
+  const verdict = (data.verdict || 'REVIEW').toUpperCase();
+  const score = data.feasibility_score !== undefined ? data.feasibility_score : 50;
+
+  let verdictBg = 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.08) 100%)';
+  let verdictBorder = 'rgba(245, 158, 11, 0.35)';
+  let verdictColor = '#f59e0b';
+
+  if (verdict.includes('GO') && !verdict.includes('NO-GO')) {
+    verdictBg = 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%)';
+    verdictBorder = 'rgba(16, 185, 129, 0.35)';
+    verdictColor = '#10b981';
+  } else if (verdict.includes('NO-GO')) {
+    verdictBg = 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.08) 100%)';
+    verdictBorder = 'rgba(239, 68, 68, 0.35)';
+    verdictColor = '#ef4444';
+  }
+
+  const domainsHtml = (data.matched_domains || []).map(d => `
+    <span style="display: inline-block; padding: 3px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8; font-size: 11px; font-weight: 600; margin: 2px;">
+      ${escapeHtml(d)}
+    </span>
+  `).join('');
+
+  const techRows = (data.technical_alignment || []).map(t => {
+    const s = (t.status || '').toLowerCase();
+    const badgeColor = s === 'high' ? '#10b981' : (s === 'medium' ? '#f59e0b' : '#94a3b8');
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 11.5px;">
+        <td style="padding: 6px 8px; font-weight: 600; color: var(--text);">${escapeHtml(t.area)}</td>
+        <td style="padding: 6px 8px;"><span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: rgba(255,255,255,0.05); color: ${badgeColor}; font-weight: 700; font-size: 10.5px;">${escapeHtml(t.status)}</span></td>
+        <td style="padding: 6px 8px; color: var(--text-2);">${escapeHtml(t.notes || '')}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const risksHtml = (data.red_flags_and_risks || []).map(r => `
+    <li style="margin-bottom: 6px; color: #fca5a5; font-size: 11.5px; line-height: 1.45;">
+      ${escapeHtml(r)}
+    </li>
+  `).join('');
+
+  const checklistHtml = (data.bidding_checklist || []).map(c => `
+    <li style="margin-bottom: 6px; color: var(--text-2); font-size: 11.5px; line-height: 1.45;">
+      ${escapeHtml(c)}
+    </li>
+  `).join('');
+
+  const thread = bedrockChatHistory[tenderId] || [];
+  const chatMessagesHtml = thread.map(msg => `
+    <div style="margin-bottom: 10px; ${msg.role === 'user' ? 'text-align: right;' : 'text-align: left;'}">
+      <div style="display: inline-block; max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.45; ${msg.role === 'user' ? 'background: var(--primary); color: #fff;' : 'background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid rgba(255,255,255,0.1);'}">
+        ${escapeHtml(msg.text)}
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <!-- Top Strategic Verdict Card -->
+    <div style="padding: 16px; border-radius: 8px; background: ${verdictBg}; border: 1px solid ${verdictBorder}; margin-bottom: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div>
+          <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; background: ${verdictColor}; color: #000; font-weight: 800; font-size: 11px; text-transform: uppercase; margin-bottom: 6px;">${escapeHtml(verdict)}</span>
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text);">${escapeHtml(data.headline || 'Tender Feasibility Analysis')}</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 20px; font-weight: 800; color: ${verdictColor};">${score}%</div>
+          <div style="font-size: 10px; color: var(--text-3); text-transform: uppercase; font-weight: 600;">Match Score</div>
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-3); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px;">
+        <span>Model: <strong>${escapeHtml(data.model_used || 'Claude Sonnet 4.6')}</strong></span>
+        <button onclick="loadBedrockAnalysis('${escapeHtml(tenderId)}', true)" style="background: transparent; border: 1px solid rgba(255,255,255,0.15); color: var(--text-2); padding: 2px 8px; border-radius: 4px; font-size: 10.5px; cursor: pointer;">⚡ Re-Analyze</button>
+      </div>
+    </div>
+
+    <!-- Executive Summary -->
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+      <div style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Strategic Executive Summary</div>
+      <div style="font-size: 12px; color: var(--text-2); line-height: 1.55; white-space: pre-wrap;">${escapeHtml(data.executive_summary || '')}</div>
+    </div>
+
+    <!-- Turnover & Eligibility Check -->
+    ${data.turnover_check ? `
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px;">Turnover Requirement Audit</span>
+          <span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: ${data.turnover_check.status === 'Met' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}; color: ${data.turnover_check.status === 'Met' ? '#10b981' : '#f59e0b'};">${escapeHtml(data.turnover_check.status || 'Check')}</span>
+        </div>
+        <div style="font-size: 11.5px; color: var(--text-2); margin-bottom: 4px;"><strong>Requirement:</strong> ${escapeHtml(data.turnover_check.required_turnover || 'N/A')}</div>
+        <div style="font-size: 11.5px; color: var(--text-3);">${escapeHtml(data.turnover_check.explanation || '')}</div>
+      </div>
+    ` : ''}
+
+    <!-- Matched Core Domains -->
+    ${domainsHtml ? `
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; margin-bottom: 6px;">Matched Nikom Core Domains</div>
+        <div>${domainsHtml}</div>
+      </div>
+    ` : ''}
+
+    <!-- Technical Scope Alignment Matrix -->
+    ${techRows ? `
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; text-transform: uppercase;">Technical Scope Alignment</div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 10.5px; color: var(--text-3); text-align: left;">
+              <th style="padding: 4px 8px;">Domain</th>
+              <th style="padding: 4px 8px;">Fit</th>
+              <th style="padding: 4px 8px;">Notes</th>
+            </tr>
+          </thead>
+          <tbody>${techRows}</tbody>
+        </table>
+      </div>
+    ` : ''}
+
+    <!-- Red Flags & Risks -->
+    ${risksHtml ? `
+      <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+        <div style="font-size: 12px; font-weight: 700; color: #f87171; margin-bottom: 8px; text-transform: uppercase;">Identified Commercial & Technical Risks</div>
+        <ul style="margin: 0; padding-left: 18px;">${risksHtml}</ul>
+      </div>
+    ` : ''}
+
+    <!-- Actionable Bidding Checklist -->
+    ${checklistHtml ? `
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 18px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; text-transform: uppercase;">Bidding Submission Action Plan</div>
+        <ul style="margin: 0; padding-left: 18px;">${checklistHtml}</ul>
+      </div>
+    ` : ''}
+
+    <!-- Interactive Tender Copilot (Document Q&A) -->
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7;"></span>
+        <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">Ask Tender Copilot (RFP & BOQ Q&A)</span>
+      </div>
+
+      <!-- Quick prompts -->
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+        <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the exact PAC and UPS cooling/power specifications?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+          PAC & UPS Specs?
+        </button>
+        <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the past work order and financial turnover criteria?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+          Turnover & Work Orders?
+        </button>
+        <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Are there Liquidated Damages (LD) or aggressive penalty clauses?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+          Penalty & LD Clauses?
+        </button>
+        <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is Joint Venture / Consortium or MSME EMD exemption allowed?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+          Consortium / MSME?
+        </button>
+      </div>
+
+      <!-- Chat history thread -->
+      <div id="bedrock-chat-history-${escapeHtml(tenderId)}" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
+        ${chatMessagesHtml}
+      </div>
+
+      <!-- Question input -->
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="bedrock-question-input" placeholder="Ask any question about this RFP, BOQ, or timeline..." onkeydown="if(event.key === 'Enter') submitBedrockQuestion('${escapeHtml(tenderId)}')" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: var(--text); font-size: 12px;" />
+        <button type="button" id="btn-bedrock-send" onclick="submitBedrockQuestion('${escapeHtml(tenderId)}')" style="padding: 8px 14px; background: #9333ea; border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer;">Ask</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitBedrockQuestion(tenderId) {
+  const input = document.getElementById('bedrock-question-input');
+  if (!input) return;
+  const question = input.value.trim();
+  if (!question) return;
+
+  input.value = '';
+  await askBedrockPromptQuick(tenderId, question);
+}
+
+async function askBedrockPromptQuick(tenderId, question) {
+  if (!bedrockChatHistory[tenderId]) bedrockChatHistory[tenderId] = [];
+  bedrockChatHistory[tenderId].push({ role: 'user', text: question });
+
+  const historyEl = document.getElementById(`bedrock-chat-history-${tenderId}`);
+  if (historyEl) {
+    historyEl.innerHTML += `
+      <div style="margin-bottom: 10px; text-align: right;">
+        <div style="display: inline-block; max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.45; background: var(--primary); color: #fff;">
+          ${escapeHtml(question)}
+        </div>
+      </div>
+      <div id="bedrock-typing-indicator" style="margin-bottom: 10px; text-align: left;">
+        <div style="display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 11px; color: var(--text-3); background: rgba(255,255,255,0.05);">
+          Claude is analyzing RFP...
+        </div>
+      </div>
+    `;
+    historyEl.scrollTop = historyEl.scrollHeight;
+  }
+
+  const sendBtn = document.getElementById('btn-bedrock-send');
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/tenders/${encodeURIComponent(tenderId)}/ai-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: question })
+    });
+    const typing = document.getElementById('bedrock-typing-indicator');
+    if (typing) typing.remove();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Bedrock Copilot query failed');
+    }
+    const data = await res.json();
+    const answer = data.answer || 'No response returned';
+    bedrockChatHistory[tenderId].push({ role: 'assistant', text: answer });
+
+    if (historyEl) {
+      historyEl.innerHTML += `
+        <div style="margin-bottom: 10px; text-align: left;">
+          <div style="display: inline-block; max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid rgba(255,255,255,0.1); white-space: pre-wrap;">
+            ${escapeHtml(answer)}
+          </div>
+        </div>
+      `;
+      historyEl.scrollTop = historyEl.scrollHeight;
+    }
+  } catch (err) {
+    const typing = document.getElementById('bedrock-typing-indicator');
+    if (typing) typing.remove();
+    if (historyEl) {
+      historyEl.innerHTML += `
+        <div style="margin-bottom: 10px; text-align: left; color: #ef4444; font-size: 11.5px;">
+          Error: ${escapeHtml(err.message)}
+        </div>
+      `;
+    }
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
   }
 }
 
@@ -1333,6 +1691,10 @@ function switchPanelTab(tabName) {
 
   if (tabBtn) tabBtn.classList.add('active');
   if (content) content.classList.add('active');
+
+  if (tabName === 'ai-copilot' && currentSelectedTenderId) {
+    ensureBedrockAnalysisLoaded(currentSelectedTenderId);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

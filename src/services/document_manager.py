@@ -23,34 +23,7 @@ DOCUMENTS_BASE_DIR = os.path.join(
 os.makedirs(DOCUMENTS_BASE_DIR, exist_ok=True)
 
 
-# Nikom InfraSolutions Corporate Bidding Profile for Eligibility Matching
-NIKOM_PROFILE = {
-    "company_name": "Nikom InfraSolutions Pvt. Ltd.",
-    "annual_turnover_inr": 450000000.0,  # ~45 Cr
-    "average_annual_turnover_inr": 420000000.0,  # ~42 Cr
-    "experience_years": 15,
-    "msme_registered": True,
-    "nsic_registered": True,
-    "certifications": [
-        "ISO 9001:2015",
-        "ISO 27001:2022",
-        "ISO 20000-1:2018",
-        "ISO 14001:2015",
-        "CMMI Level 3"
-    ],
-    "oem_authorizations": [
-        "Cisco", "Fortinet", "Palo Alto", "Schneider Electric",
-        "Vertiv", "HPE", "Dell EMC", "CommScope", "Legrand", "APC"
-    ],
-    "domains": [
-        "Tier 1-4 Data Center Design & Build",
-        "Cyber Security, SOC & SIEM",
-        "Enterprise IT Networking & Structured Cabling",
-        "High Performance Server & Storage Systems",
-        "Precision Cooling (PAC/Chillers) & UPS Systems",
-        "24x7 Facility Management & Comprehensive AMC"
-    ]
-}
+from src.matcher.nikom_profile import NIKOM_PROFILE, NikomProfile
 
 
 def sanitize_filename(filename: str) -> str:
@@ -60,14 +33,15 @@ def sanitize_filename(filename: str) -> str:
 
 
 def extract_pdf_info(file_path: str) -> Dict[str, Any]:
-    """Extracts page count and preliminary text from PDF using pypdf."""
+    """Extracts page count and text from PDF using pypdf for AI tender analysis."""
     info = {"page_count": 0, "text": "", "extracted": False}
     try:
         import pypdf
         reader = pypdf.PdfReader(file_path)
         info["page_count"] = len(reader.pages)
         text_parts = []
-        for i in range(min(15, len(reader.pages))):
+        # Extract up to 40 pages so full eligibility, BOQ, and RFP clauses are available for Bedrock
+        for i in range(min(40, len(reader.pages))):
             page_text = reader.pages[i].extract_text() or ""
             if page_text:
                 text_parts.append(page_text)
@@ -331,12 +305,55 @@ class DocumentManager:
     def evaluate_eligibility(self, tender_id: str) -> Dict[str, Any]:
         """
         Runs the 1-Page Qualify Eligibility Engine against Nikom's Corporate Profile.
-        Checks: Turnover, Similar-Work Experience, Certifications, EMD, and Key Dates.
+        If official documents are uploaded/attached, analyzes the uploaded document with
+        AWS Bedrock (Claude Sonnet 4.6) and compares extracted requirements against Nikom data.
         """
         tender = self.repo.get_tender(tender_id)
         if not tender:
             raise ValueError(f"Tender {tender_id} not found")
 
+        # ── Step 1: Check for user-uploaded / attached documents ───────────────
+        tdir = self.get_tender_storage_dir(tender_id)
+        attached_docs = []
+        if os.path.exists(tdir):
+            for f in os.listdir(tdir):
+                if f.lower().endswith(('.pdf', '.docx', '.txt', '.xlsx')):
+                    attached_docs.append(f)
+
+        # If an official document has been uploaded, analyze it with AWS Bedrock AI
+        if attached_docs:
+            primary_doc = attached_docs[0]
+            for f in attached_docs:
+                if f.lower().endswith('.pdf'):
+                    primary_doc = f
+                    break
+
+            doc_path = os.path.join(tdir, primary_doc)
+            doc_text = ""
+            if primary_doc.lower().endswith('.pdf'):
+                pdf_info = extract_pdf_info(doc_path)
+                doc_text = pdf_info.get("text", "")
+            elif primary_doc.lower().endswith(('.txt', '.docx')):
+                try:
+                    with open(doc_path, "r", encoding="utf-8", errors="ignore") as f:
+                        doc_text = f.read()
+                except Exception:
+                    pass
+
+            if doc_text and len(doc_text.strip()) > 50:
+                try:
+                    from src.services.bedrock_service import BedrockTenderService
+                    bedrock = BedrockTenderService()
+                    if bedrock.is_configured():
+                        logger.info(f"Running Bedrock Claude Sonnet analysis on uploaded document: '{primary_doc}' for {tender_id}")
+                        ai_result = bedrock.evaluate_document_eligibility(tender, primary_doc, doc_text)
+                        ai_result["tender_id"] = tender_id
+                        ai_result["attached_documents"] = attached_docs
+                        return ai_result
+                except Exception as e:
+                    logger.error(f"Bedrock document evaluation exception ({e}), falling back to heuristic profile matching.")
+
+        # ── Step 2: Baseline / Heuristic Evaluation (Prior to Document Upload) ─
         est_cost = tender.get("estimated_cost_inr") or 0.0
         emd_amt = tender.get("emd_inr") or 0.0
         doc_fee = tender.get("doc_fee_inr") or 0.0
@@ -345,58 +362,82 @@ class DocumentManager:
 
         criteria = []
 
-        # 1. Turnover Criteria
+        # 1. Annual Financial Turnover
         # Typical requirement: 30% to 50% of tender value over past 3 financial years
         required_turnover = est_cost * 0.4 if est_cost > 0 else 50000000.0  # default 5 Cr
-        turnover_met = NIKOM_PROFILE["average_annual_turnover_inr"] >= required_turnover
+        turnover_met = NIKOM_PROFILE.audited_3yr_avg_turnover_cr * 10000000 >= required_turnover
         criteria.append({
             "key": "turnover",
             "name": "Annual Financial Turnover",
             "requirement": f"Average turnover of ₹ {required_turnover / 10000000:.2f} Cr over last 3 FYs" if est_cost else "Required average turnover (typically 40% of value)",
-            "nikom_profile": f"₹ {NIKOM_PROFILE['average_annual_turnover_inr'] / 10000000:.1f} Cr (Met: Nikom ₹42+ Cr)",
+            "nikom_profile": f"Audited Avg: ₹ {NIKOM_PROFILE.audited_3yr_avg_turnover_cr:.2f} Cr (Peak: ₹ {NIKOM_PROFILE.peak_turnover_cr:.2f} Cr | Prov 3-Yr Avg: ₹ {NIKOM_PROFILE.current_3yr_avg_turnover_cr:.2f} Cr)",
             "status": "Met" if turnover_met else "Check",
             "badge_color": "green" if turnover_met else "amber",
-            "notes": "Verified against audited balance sheets (FY 2022-23 to 2024-25)."
+            "notes": "Verified against audited balance sheets: FY23 ₹48.50 Cr, FY24 ₹67.18 Cr, FY25 ₹91.21 Cr, FY26 Prov ₹123.07 Cr."
         })
 
-        # 2. Similar Work Experience
-        # Typical criteria: 1 work of 80%, or 2 works of 50%, or 3 works of 40%
+        # 2. Net Worth & Financial Health
+        net_worth_cr = NIKOM_PROFILE.net_worth_fy25_cr
+        criteria.append({
+            "key": "net_worth",
+            "name": "Net Worth & Financial Solvency",
+            "requirement": "Positive Net Worth as of March 31 with profitable operations in last 3 FYs",
+            "nikom_profile": f"Net Worth: ₹ {net_worth_cr:.2f} Cr (FY25 Audited) / ₹ {NIKOM_PROFILE.net_worth_fy26_prov_cr:.2f} Cr (FY26 Prov) | Zero Debt (0.00x)",
+            "status": "Met",
+            "badge_color": "green",
+            "notes": f"100% positive net worth across all years, 3 of 3 profitable years (PAT FY25 ₹8.45 Cr), Current Ratio {NIKOM_PROFILE.current_ratio}x, Working Capital ₹{NIKOM_PROFILE.working_capital_cr:.2f} Cr."
+        })
+
+        # 3. Similar Work Past Experience (The 80% / 50% / 40% Rule)
         single_work_req = est_cost * 0.8 if est_cost > 0 else 0.0
+        exp_met = single_work_req <= 216800000.0 or est_cost == 0.0  # Compared to AAI Hyderabad Rs 21.68 Cr
         criteria.append({
             "key": "experience",
             "name": "Similar Work Past Experience",
-            "requirement": f"Successful SITC completion in {tender.get('primary_category') or 'IT/DC Infra'} ({'Single work of ₹ ' + f'{single_work_req/10000000:.2f} Cr' if single_work_req else 'Relevant credentials'})",
-            "nikom_profile": "15+ Years turnkey Tier 2/3 Data Center & Enterprise Infrastructure execution with Defence, PSUs & Govt.",
-            "status": "Met",
-            "badge_color": "green",
-            "notes": "Nikom possesses direct client completion certificates across GeM, CPPP and state departments."
+            "requirement": f"SITC completion in {tender.get('primary_category') or 'Data Center / IT Infra'} ({'Single work of ₹ ' + f'{single_work_req/10000000:.2f} Cr (80%)' if single_work_req else 'Relevant client completion credentials'})",
+            "nikom_profile": "Verified completed contracts: AAI Hyderabad (₹21.68 Cr), ONGC Vasudhara Bhavan (₹20.40 Cr), AAI 10 Airports (₹25.93 Cr), ONGC Panvel (₹5.14 Cr).",
+            "status": "Met" if exp_met else "Check",
+            "badge_color": "green" if exp_met else "amber",
+            "notes": f"Total completed works in record: ₹162.24 Cr. Active in-hand order book: ₹{NIKOM_PROFILE.order_in_hand_cr:.2f} Cr (NATGRID, C-DAC, Alliance L&T, IOCL)."
         })
 
-        # 3. Certifications
-        # ISO 9001, ISO 27001, CMMI
+        # 4. Bid Capacity
+        bid_cap_req = est_cost if est_cost > 0 else 0.0
+        bid_cap_met = NIKOM_PROFILE.calculated_bid_capacity_inr >= bid_cap_req
+        criteria.append({
+            "key": "bid_capacity",
+            "name": "Calculated Bid Capacity (A x N x 2 - B)",
+            "requirement": f"Available bid capacity >= ₹ {est_cost / 10000000:.2f} Cr" if est_cost else "Bid capacity covering estimated contract value",
+            "nikom_profile": f"₹ {NIKOM_PROFILE.calculated_bid_capacity_cr:.2f} Crores available capacity",
+            "status": "Met" if bid_cap_met else "Check",
+            "badge_color": "green" if bid_cap_met else "amber",
+            "notes": f"Assessed based on peak annual turnover and ₹{NIKOM_PROFILE.order_in_hand_cr:.2f} Cr existing commitments."
+        })
+
+        # 5. Quality & Security Certifications
         req_certs = ["ISO 9001:2015", "ISO 27001:2022"]
         if tier == "A":
-            req_certs.append("CMMI Level 3 / CERT-In Empanelment")
+            req_certs.append("CMMI Level 3")
         criteria.append({
             "key": "certifications",
-            "name": "Quality & Security Certifications",
+            "name": "Quality & Process Certifications",
             "requirement": "Valid " + ", ".join(req_certs),
-            "nikom_profile": "ISO 9001:2015, ISO 27001:2022, ISO 20000-1:2018, CMMI Level 3 (Active)",
+            "nikom_profile": "ISO 9001:2015, ISO 27001:2022, ISO 20000-1:2018, ISO 14001:2015, ISO 45001:2018, CMMI Level 3 (Active)",
             "status": "Met",
             "badge_color": "green",
-            "notes": "All required Quality & Information Security certificates active with international accreditation."
+            "notes": "All required Quality, InfoSec & IT Service management certifications active with international accreditation."
         })
 
-        # 4. EMD & Bid Security
+        # 6. EMD & Bid Security
         if emd_amt > 0:
             criteria.append({
                 "key": "emd",
                 "name": "Earnest Money Deposit (EMD)",
-                "requirement": f"₹ {emd_amt:,.2f} via BG / FDR (or MSME Exemption)",
-                "nikom_profile": "MSME / UDYAM Registered (Eligible for statutory EMD exemption as per DoE guidelines)",
+                "requirement": f"₹ {emd_amt:,.2f} via BG / FDR (or MSME / UDYAM Exemption)",
+                "nikom_profile": f"{NIKOM_PROFILE.enterprise_type} (UDYAM registered; ICICI Bank Guarantee limit available)",
                 "status": "Met",
                 "badge_color": "green",
-                "notes": "Can submit Bid Security Declaration with active UDYAM certificate."
+                "notes": "Eligible for statutory UDYAM exemption; if tender strictly restricts exemption to Micro/Small (MSE), ICICI Bank Guarantee can be provided."
             })
         else:
             criteria.append({
@@ -409,7 +450,7 @@ class DocumentManager:
                 "notes": "No advance cash deposit or Bank Guarantee requested in notice."
             })
 
-        # 5. Key Submission Dates
+        # 7. Key Submission Dates
         is_past = False
         if deadline:
             try:
@@ -440,6 +481,9 @@ class DocumentManager:
             "met_criteria_count": met_count,
             "total_criteria_count": total_count,
             "company_evaluated": NIKOM_PROFILE["company_name"],
+            "document_analyzed": None,
+            "ai_powered": False,
+            "notice": "Preliminary baseline. Upload the official tender document / RFP above to run deep AI qualification against Nikom data.",
             "criteria": criteria,
             "generated_at": datetime.utcnow().isoformat()
         }

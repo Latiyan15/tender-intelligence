@@ -1596,6 +1596,11 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             <span>Qualify & Eligibility</span>
           </button>
+          <button class="panel-tab" data-ptab="ai-copilot" onclick="switchPanelTab('ai-copilot')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>AI Copilot (Bedrock)</span>
+            <span class="tab-badge" style="background: rgba(147, 51, 234, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">Sonnet 4.6</span>
+          </button>
           <button class="panel-tab" data-ptab="keywords" onclick="switchPanelTab('keywords')">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <span>Keywords</span>
@@ -1806,10 +1811,17 @@
 
         </div>
 
-        <!-- Tab 3: Qualify & Eligibility Tab (Phase 1 AI Engine) -->
+        <!-- Tab 3: Qualify & Eligibility Tab (Phase 1 Heuristic Engine) -->
         <div class="tab-content" id="ptab-eligibility">
           <div class="eligibility-container" id="panel-eligibility-container">
             <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Tab 4: AI Copilot & Feasibility (AWS Bedrock Claude Sonnet 4.6) -->
+        <div class="tab-content" id="ptab-ai-copilot">
+          <div class="bedrock-copilot-container" id="panel-bedrock-container">
+            <!-- Injected via loadBedrockAnalysis() -->
           </div>
         </div>
 
