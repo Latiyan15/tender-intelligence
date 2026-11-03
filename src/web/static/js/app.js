@@ -5137,7 +5137,7 @@ async function initPresalesView() {
   if (presalesChatHistory.length === 0) {
     presalesChatHistory.push({
       role: 'assistant',
-      text: "Hello! I am Nikom Assist, Senior Data Centre Design Engineer at Nikom InfraSolutions Pvt. Ltd.\n\nWith over 25 years of engineering heritage (206+ project deliveries, 10,528+ server racks, and 55+ MW commissioned nationwide), I assist pre-sales and sales engineering teams with:\n\n• **Engineering Sizing & Heat Load Calculations** (Precision Cooling TR, 2N UPS kVA, DG margin)\n• **High-Density AI & HPC Data Centres** (Direct-to-Chip Liquid Cooling, CDUs, Chilled Water like our BEL 100 kW project)\n• **Tier III Turnkey Data Centres** (Modular architecture, Li-ion batteries, STQC CCTV, in-row DX like our C-DoT 252 kW facility)\n• **Tender RFP & BOQ Technical Audits** (Identifying technical gaps, unrealistic SLA penalties, or missed balance of plant)\n• **24x7 Facility Operations & AMC Sizing** (Preventive schedules, MTTR/MTBF SLAs, specialized site teams)\n\nHow can I assist your engineering proposal or client discussion today? You can choose a quick scenario above or type your requirements below."
+      text: "Welcome to the Pre-Sales Engineering Studio. I am **Nikom Assist**, Senior Data Centre Design Engineer.\n\nI can calculate precision heat loads and cooling TR, review 2N UPS & CPCB IV+ DG margins, critique Tier III architectures, audit RFP BOQs, or dimension 100 kW+ GPU liquid cooling facilities.\n\nSelect a quick scenario above, enter your parameters into the Section 5.2 Sizing Calculator on the right, or type your project requirements below to begin."
     });
   }
 

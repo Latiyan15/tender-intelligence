@@ -540,6 +540,26 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   background: transparent;
+  scrollbar-width: thin !important;
+  scrollbar-color: #a855f7 rgba(255, 255, 255, 0.05) !important;
+}
+
+.main-viewport::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+.main-viewport::-webkit-scrollbar-track {
+  background: rgba(11, 18, 32, 0.75) !important;
+}
+
+.main-viewport::-webkit-scrollbar-thumb {
+  background: #a855f7 !important;
+  border-radius: 6px !important;
+}
+
+.main-viewport::-webkit-scrollbar-thumb:hover {
+  background: #c084fc !important;
 }
 
 .top-header {
@@ -6667,20 +6687,21 @@ body {
    PRE-SALES STUDIO FULL-VIEWPORT LAYOUT & RESPONSIVE FIT
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Remove outer scroll when inside presales view */
+/* Pre-Sales View Viewport & Layout */
 .page-content:has(#view-presales.active) {
-  padding: 14px 24px 16px !important;
-  gap: 10px !important;
+  padding: 14px 24px 24px !important;
+  gap: 12px !important;
 }
 
 #view-presales.active {
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
-  height: calc(100vh - 100px) !important;
-  max-height: calc(100vh - 100px) !important;
-  min-height: 520px !important;
-  overflow: hidden !important;
+  gap: 12px !important;
+  min-height: calc(100vh - 120px) !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 24px !important;
 }
 
 /* Compact Hero Banner */
@@ -6759,29 +6780,59 @@ body {
 }
 
 .presales-chat-card {
-  height: 100% !important;
-  min-height: 0 !important;
+  height: calc(100vh - 235px) !important;
+  min-height: 520px !important;
+  max-height: 780px !important;
   display: flex !important;
   flex-direction: column !important;
   border-radius: 12px !important;
   overflow: hidden !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .presales-chat-header {
   padding: 10px 16px !important;
   flex-shrink: 0 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 .presales-chat-messages {
-  flex: 1 !important;
-  overflow-y: auto !important;
+  flex: 1 1 auto !important;
+  overflow-y: scroll !important; /* Visible slider */
   padding: 16px 18px !important;
-  min-height: 0 !important;
+  min-height: 180px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #a855f7 rgba(255, 255, 255, 0.06) !important;
+}
+
+.presales-chat-messages::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+.presales-chat-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 6px !important;
+}
+
+.presales-chat-messages::-webkit-scrollbar-thumb {
+  background: #a855f7 !important;
+  border-radius: 6px !important;
+}
+
+.presales-chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #c084fc !important;
 }
 
 .presales-input-container {
   padding: 10px 16px !important;
   flex-shrink: 0 !important;
+  background: rgba(13, 20, 36, 0.95) !important;
+  border-top: 1px solid var(--border) !important;
+  z-index: 5 !important;
 }
 
 .presales-input-wrapper textarea {
@@ -6800,21 +6851,35 @@ body {
 /* Right Column: Tools Container */
 .presales-tools-column {
   min-width: 0 !important;
-  height: 100% !important;
+  height: calc(100vh - 235px) !important;
+  min-height: 520px !important;
+  max-height: 780px !important;
   overflow-y: auto !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
-  padding-right: 4px !important;
+  padding-right: 6px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #a855f7 rgba(255, 255, 255, 0.06) !important;
 }
 
 .presales-tools-column::-webkit-scrollbar {
-  width: 5px !important;
+  width: 8px !important;
+  display: block !important;
+}
+
+.presales-tools-column::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 6px !important;
 }
 
 .presales-tools-column::-webkit-scrollbar-thumb {
-  background: var(--border) !important;
-  border-radius: 999px !important;
+  background: #a855f7 !important;
+  border-radius: 6px !important;
+}
+
+.presales-tools-column::-webkit-scrollbar-thumb:hover {
+  background: #c084fc !important;
 }
 
 .presales-tool-card {
