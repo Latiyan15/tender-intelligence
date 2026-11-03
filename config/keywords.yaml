@@ -65,6 +65,8 @@ tier_a:
     - single sign on
     - zero trust
     - zero trust network access
+    - pam solution
+    - pam software
     data_security_and_compliance:
     - data loss prevention
     - data leakage prevention
@@ -97,10 +99,16 @@ tier_a:
     - operations centre
     - operations center
     reject_context:
-    - society
+    - committee
+    - drainage
+    - housing
+    - residential
+    - soc
+    - soc.
     - soccer
-    - state of charge
+    - society
     - soil organic carbon
+    - state of charge
   - term: SIEM
     group: soc_and_siem
     require_context:
@@ -163,19 +171,32 @@ tier_a:
   - term: MDR
     group: soc_and_siem
     require_context:
-    - managed
-    - detection
-    - response
-    - soc
-    - security
-    - monitoring
-    - threat
+    - antivirus
+    - client
     - cyber
+    - detection
+    - edr
+    - endpoint
+    - license
+    - managed
+    - monitoring
+    - response
+    - security
+    - server
+    - soc
+    - sophos
+    - threat
     reject_context:
-    - multi-drug resistant
-    - minimum daily requirement
+    - border road
+    - district road
+    - highway
+    - km
     - mdr-tb
     - medical device regulation
+    - minimum daily requirement
+    - multi-drug resistant
+    - road
+    - state border
   - term: WAF
     group: firewalls_and_network_security
     require_context:
@@ -1292,33 +1313,38 @@ tier_d:
     - distribution board
     - motor control center
     reject_context:
-    - plain cement concrete
-    - pcc 1:2:4
-    - pcc 1:4:8
-    - pcc 1:3:6
-    - pcc 1:5:10
-    - pcc road
-    - pcc bed
-    - pcc work
-    - pcc flooring
-    - pcc slab
-    - concrete
-    - cement
-    - masonry
-    - road
-    - pavement
-    - drain
-    - culvert
-    - plaster
+    - bituminous
     - brickwork
+    - cement
+    - concrete
+    - culvert
+    - drain
+    - earthwork
+    - embankment
     - excavation
     - leveling course
-    - stone pitching
+    - lines on rail
+    - masonry
+    - pavement
+    - pcc 1:2:4
+    - pcc 1:3:6
+    - pcc 1:4:8
+    - pcc 1:5:10
+    - pcc bed
+    - pcc flooring
+    - pcc poles
+    - pcc road
+    - pcc slab
+    - pcc work
+    - plain cement concrete
+    - plaster
+    - pole
+    - poles
+    - rail/pcc
     - retaining wall
-    - earthwork
+    - road
+    - stone pitching
     - subgrade
-    - bituminous
-    - embankment
   - term: ATS
     group: critical_power
     require_context:
@@ -2100,60 +2126,70 @@ tier_d:
 negatives:
   hard_reject_terms:
     civil_heavy_construction:
-    - road widening
-    - widening strengthening
-    - reconstruction of road
-    - DPR for road
+    - ATS building
     - DPR for highway
+    - DPR for road
     - DPR for widening
-    - road construction
-    - highway construction
-    - expressway
-    - bituminous road
-    - asphalt road
-    - concrete road
-    - cc road
-    - culvert
-    - hume pipe culvert
-    - flyover
-    - bridge construction
+    - PCC 1:2:4
+    - PCC 1:3:6
+    - PCC 1:4:8
+    - PCC bed
+    - PCC road
+    - PCC work
+    - RCC work
+    - air traffic complex
+    - air traffic services
     - approach road
-    - footpath
-    - pavement
-    - boundary wall
+    - asphalt road
     - barbed wire fencing
-    - chain link fencing
-    - earthwork
-    - excavation for pond
-    - dredging
-    - brick masonry
-    - plastering work
-    - whitewash
-    - painting of quarters
-    - residential quarters
-    - staff quarters
-    - hostel building
     - barrack
-    - joinery work
+    - bituminous road
+    - boundary wall
+    - brick masonry
+    - bridge construction
     - carpentry work
-    - horticulture
-    - landscaping
-    - tree plantation
+    - cc road
+    - chain link fencing
+    - concrete road
+    - culvert
+    - district road
+    - drainage line
+    - drainage work
+    - dredging
+    - earthwork
+    - elevator replacement
+    - excavation for pond
+    - expressway
+    - flyover
+    - footpath
     - gardening
     - grass cutting
-    - plain cement concrete
-    - PCC work
-    - PCC road
-    - PCC 1:2:4
-    - PCC 1:4:8
-    - PCC 1:3:6
-    - PCC bed
-    - RCC work
+    - highway construction
+    - horticulture
+    - hostel building
+    - hume pipe culvert
+    - joinery work
+    - landscaping
+    - laying drainage
+    - laying of drainage
+    - lines on rail
+    - painting of quarters
     - passenger lift
-    - elevator replacement
-    - ATS building
-    - air traffic services
-    - air traffic complex
+    - pavement
+    - pcc poles
+    - plain cement concrete
+    - plastering work
+    - reconstruction of road
+    - residential quarters
+    - road construction
+    - road from km
+    - road in km
+    - road widening
+    - staff quarters
+    - state border road
+    - tree plantation
+    - whitewash
+    - widening strengthening
     sanitary_water_sewage:
     - waste water
     - wastewater
@@ -2251,25 +2287,29 @@ negatives:
     - transportation service
     - motor vehicle
     manpower_and_low_end_services:
-    - data entry operator
-    - data entry operators
-    - computer operator
-    - peon
-    - office boy
-    - security guard
-    - security guards
-    - watchman
-    - safai karmachari
-    - sweeper
-    - sweepers
-    - sanitation worker
-    - housekeeping staff
-    - janitorial services
-    - mess service
     - canteen service
     - catering service
+    - computer operator
     - cooked meal
+    - data entry operator
+    - data entry operators
+    - housekeeping staff
+    - janitorial services
+    - labour part
+    - mess service
+    - office boy
+    - outsourcing of labour
     - pantry boy
+    - peon
+    - safai karmachari
+    - sanitation worker
+    - security guard
+    - security guards
+    - semi-skilled labour
+    - sweeper
+    - sweepers
+    - unskilled labour
+    - watchman
     office_supplies_and_commodities:
     - table calendars
     - wall calendars
@@ -2336,13 +2376,21 @@ negatives:
     - auditorium sound
     - choir mic
     domestic_and_kitchen_appliances:
-    - water purifier with storage
-    - desert cooler
     - ceiling fan
-    - water geyser
+    - desert cooler
+    - grinder
+    - hand towel
+    - juicer mixer
     - microwave oven
+    - name plates as per sample
+    - plastic container
+    - poster as per sample
+    - posters as per sample
     - refrigerator
+    - table cloth
     - water dispensing unit
+    - water geyser
+    - water purifier with storage
   soft_reject_terms:
     hardware_only:
       description: Generic office supply without IT or infrastructure scope.

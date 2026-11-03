@@ -150,10 +150,16 @@ class KeywordMatcher:
             tier_letter = tier_key[-1].upper()
             patterns = []
 
+            # Exclude terms that are handled by contextual rules so their require/reject guards are strictly enforced
+            ctx_rules = tier_config.get("contextual_terms", [])
+            ctx_term_set = {r.get("term", "").strip().lower() for r in ctx_rules if isinstance(r, dict)}
+
             groups = tier_config.get("groups", {})
             for group_name, terms in groups.items():
                 if isinstance(terms, list):
                     for term in terms:
+                        if term.strip().lower() in ctx_term_set:
+                            continue  # Handled exclusively by contextual rules with safety guards
                         pat = self._build_word_boundary_pattern(term)
                         patterns.append((pat, term, group_name))
 
