@@ -7068,3 +7068,305 @@ body {
   text-align: center !important;
   box-sizing: border-box !important;
 }
+
+
+/* ==========================================================================
+   FINAL SOLUTION DOCUMENT & BUDGETARY OFFER STYLES
+   ========================================================================== */
+
+.solution-offer-card {
+  margin-top: 14px;
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.08) 0%, rgba(59, 130, 246, 0.06) 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.35);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.solution-offer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.solution-offer-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(168, 85, 247, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.solution-offer-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #c084fc;
+  letter-spacing: -0.2px;
+}
+
+.solution-offer-sub {
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.solution-offer-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.solution-offer-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.offer-kpi {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+}
+
+.offer-kpi-lbl {
+  font-size: 10px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.offer-kpi-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 3px;
+}
+
+.offer-kpi.highlight {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.offer-kpi.highlight .offer-kpi-val {
+  color: #d8b4fe;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.solution-offer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.btn-download-offer-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #9333ea 0%, #6366f1 100%);
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 7px;
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-download-offer-pdf:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.5);
+  color: #ffffff !important;
+}
+
+/* Button in calculator */
+.btn-generate-offer-action {
+  width: 100% !important;
+  margin-top: 7px !important;
+  padding: 7px 10px !important;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 5px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-generate-offer-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+/* Header quick offer pill */
+.btn-header-quick-offer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-header-quick-offer:hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: #a855f7;
+  color: #e9d5ff;
+}
+
+/* Table styling for Markdown tables in Chat */
+.table-responsive-wrapper {
+  overflow-x: auto;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.presales-inline-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.presales-inline-table th {
+  background: var(--surface-raised);
+  color: var(--text-2);
+  font-weight: 700;
+  padding: 6px 9px;
+  border-bottom: 1.5px solid var(--border);
+  font-size: 10.5px;
+}
+
+.presales-inline-table td {
+  padding: 6px 9px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.presales-inline-table tr:last-child td {
+  border-bottom: none;
+}
+
+.presales-inline-table tr.table-total-row {
+  background: rgba(168, 85, 247, 0.08);
+  font-weight: 800;
+}
+
+.presales-inline-table tr.table-total-row td {
+  color: #c084fc;
+  border-top: 1.5px solid rgba(168, 85, 247, 0.3);
+}
+
+.presales-chat-h2 {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #c084fc;
+  margin: 12px 0 6px;
+}
+
+.presales-chat-h3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: #93c5fd;
+  margin: 10px 0 4px;
+}
+
+/* Daylight / Light Theme Overrides */
+[data-theme="light"] .solution-offer-card {
+  background: linear-gradient(145deg, #fbf7ff 0%, #f0f4ff 100%);
+  border-color: #d8b4fe;
+  box-shadow: 0 4px 16px rgba(147, 51, 234, 0.08);
+}
+
+[data-theme="light"] .solution-offer-title {
+  color: #7e22ce;
+}
+
+[data-theme="light"] .solution-offer-icon {
+  background: #f3e8ff;
+}
+
+[data-theme="light"] .offer-kpi {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .offer-kpi.highlight {
+  background: #faf5ff;
+  border-color: #d8b4fe;
+}
+
+[data-theme="light"] .offer-kpi.highlight .offer-kpi-val {
+  color: #7e22ce;
+}
+
+[data-theme="light"] .btn-header-quick-offer {
+  background: #f3e8ff;
+  border-color: #c084fc;
+  color: #7e22ce;
+}
+
+[data-theme="light"] .btn-header-quick-offer:hover {
+  background: #ede9fe;
+  color: #6b21a8;
+}
+
+[data-theme="light"] .presales-inline-table th {
+  background: #f1f5f9;
+  color: #475569;
+  border-bottom-color: #cbd5e1;
+}
+
+[data-theme="light"] .presales-inline-table td {
+  border-bottom-color: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .presales-inline-table tr.table-total-row {
+  background: #f5f3ff;
+}
+
+[data-theme="light"] .presales-inline-table tr.table-total-row td {
+  color: #6b21a8;
+}
+
+[data-theme="light"] .presales-chat-h2 {
+  color: #7e22ce;
+}
+
+[data-theme="light"] .presales-chat-h3 {
+  color: #1d4ed8;
+}

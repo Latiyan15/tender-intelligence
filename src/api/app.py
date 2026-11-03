@@ -1560,6 +1560,67 @@ def get_presales_leads():
         return {"leads": []}
 
 
+class PresalesOfferRequest(BaseModel):
+    it_load_kw: float = 250.0
+    rack_count: int = 25
+    kw_per_rack: Optional[float] = None
+    redundancy_target: str = "Tier III (2N Power, N+1 Cooling)"
+    client_org: str = "Enterprise / Institutional Facility"
+
+
+@app.post("/api/presales/generate-offer")
+def presales_generate_offer(req: PresalesOfferRequest):
+    """Generates a complete, authoritative Final Solution Document & Budgetary Offer."""
+    try:
+        res = presales_service.generate_budgetary_offer(
+            it_load_kw=req.it_load_kw,
+            rack_count=req.rack_count,
+            redundancy_target=req.redundancy_target,
+            client_org=req.client_org
+        )
+        return res
+    except Exception as e:
+        logger.error(f"Error in presales generate offer: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/download-offer")
+def presales_download_offer(
+    it_kw: float = 250.0,
+    racks: int = 25,
+    cooling_tr: Optional[float] = None,
+    ups_kva: Optional[int] = None,
+    dg_kva: Optional[int] = None,
+    client: str = "Enterprise / Institutional Facility"
+):
+    """Builds and streams the official Nikom Solution Document & Budgetary Offer vector PDF."""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from src.services.pdf_service import generate_solution_document_pdf
+        data = {
+            "it_load_kw": it_kw,
+            "rack_count": racks,
+            "cooling_capacity_tr": cooling_tr,
+            "ups_rating_kva": ups_kva,
+            "dg_rating_kva": dg_kva,
+            "client_org": client,
+        }
+        pdf_bytes = generate_solution_document_pdf(data)
+        filename = f"Nikom_Data_Centre_Solution_Document_Budgetary_Offer_{int(it_kw)}kW.pdf"
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating solution offer PDF: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/tenders/{tender_id:path}/bidding-checklist")
 def get_tender_bidding_checklist(tender_id: str):
     """Returns the comprehensive bidding operations checklist and uncommon trap clauses radar."""

@@ -230,15 +230,22 @@ Always label numbers as indicative and say final sizing needs a site survey and 
   * 40+ kW/rack (AI/GPU): Direct-to-chip liquid cooling (DLC) with CDUs plus air for residual heat (e.g. BEL 100 kW racks: 80% liquid via CDUs, 20% air via in-row).
 - Indian tender practice: Estimates inclusive of GST unless stated; approved make lists; stage payments (design, delivery, installation, IST, trial run, PBG retention).
 
-6. What you must NOT do:
-1. No prices, rates, discounts or delivery commitments. Say: "Cost depends heavily on capacity, redundancy, makes and site conditions. Our team can give you a budgetary estimate after a short call within 1 working day." Never give ₹ per kW or ₹ per rack.
-2. No compliance promises without document review.
-3. No invented facts, clients, or certifications.
-4. No confidential client data.
-5. No competitor criticism.
-6. No legal or tax advice.
-7. Stay in scope (data centre infrastructure). For pure servers/software, route to specialized team.
-8. Safety first: If live hazard described, advise emergency shutdown/evacuation immediately.
+6. Solution Documents & Budgetary Offers:
+- When the user asks for a solution document, budgetary offer, price estimate, commercial proposal, or cost breakdown:
+  Provide a formal, authoritative "Indicative Solution Document & Budgetary Offer" grounded on Nikom's Tier III CPWD/PSU engineering benchmarks.
+  Include:
+  1. Executive Capacity & Design Basis (IT Load kW, Racks, Heat Load kW, Cooling TR, 2N UPS kVA, DG kVA, Footprint sq.ft, Design PUE).
+  2. Turnkey Scope of Work (In-Row DX/DLC cooling N+1 with EC fans and Hot-Aisle Containment, 2N Modular UPS with 15-min Li-ion LFP battery cabinets, CPCB IV+ DG backup with AMF panel, Clean Agent FK-5-1-12 gas suppression, VESDA LaserPlus, STQC IP CCTV, DCIM, and Raised Floor).
+  3. Itemized Budgetary Breakdown Table (Package 1: Civil Fit-out & Raised Floor, Package 2: In-Row DX Precision Cooling, Package 3: 2N Modular UPS & Li-ion Batteries, Package 4: CPCB IV+ DG Standby, Package 5: Turnkey BOP Fire FK-5-1-12/VESDA/DCIM/CCTV, Package 6: IST & Commissioning, and Total Capital Value in ₹ Lakhs & Crores).
+  4. Project Implementation Timeline (16 to 20 weeks) & Commercial Terms (60 days validity, standard PSU milestone payments).
+  5. Always include the machine-readable tag at the end of the offer:
+     [SOLUTION_DOCUMENT_OFFER:{"it_load_kw":...,"rack_count":...,"cooling_capacity_tr":...,"ups_rating_kva":...,"dg_rating_kva":...,"total_capital_lakhs":...,"total_capital_cr":...}]
+- Label all pricing as an indicative turnkey budgetary estimate (+18% GST) subject to site survey and formal tender BOQ.
+- What you must NOT do:
+  1. No firm binding contractual commitments without formal agreement.
+  2. No compliance guarantees without document audit.
+  3. No invented clients, certifications, or competitor criticism.
+  4. Safety first: If live hazard described, advise emergency shutdown/evacuation immediately.
 
 8. Style:
 - Short replies: 2–6 sentences, or a short list or table when comparing options.
@@ -355,6 +362,152 @@ Always label numbers as indicative and say final sizing needs a site survey and 
             "indicative_disclaimer": "Indicative engineering estimate. Final sizing subject to site survey, SLD review, and heat-dissipation load logging."
         }
 
+    def generate_budgetary_offer(
+        self,
+        it_load_kw: float = 250.0,
+        rack_count: int = 25,
+        redundancy_target: str = "Tier III (2N Power, N+1 Cooling)",
+        client_org: str = "Enterprise / Institutional Facility"
+    ) -> Dict[str, Any]:
+        """
+        Generates a complete, authoritative Final Solution Document & Budgetary Offer.
+        Computes precision sizing and itemized EPC subsystem costing in INR Lakhs/Crores.
+        """
+        sizing = self.calculate_sizing(
+            it_load_kw=it_load_kw,
+            rack_count=rack_count,
+            redundancy_target=redundancy_target
+        )
+
+        it_kw = sizing["it_load_kw"]
+        racks = sizing["rack_count"]
+        kw_per_rack = sizing["kw_per_rack"]
+        heat_kw = sizing["heat_load_kw"]
+        cooling_tr = sizing["cooling_capacity_tr"]
+        ups_kva = sizing["ups_rating_kva"]
+        dg_kva = sizing["dg_rating_kva"]
+        sqft = sizing["floor_area_sqft"]
+        pue = sizing["estimated_pue"]
+        cool_arch = sizing["cooling_architecture"]
+
+        # EPC Packages Cost Calculation (in ₹ Lakhs)
+        cost_civil = round(sqft * 0.028, 2)
+        cost_cooling = round(cooling_tr * 1.4, 2)
+        cost_ups = round((ups_kva * 2) * 0.24, 2)
+        cost_dg = round(dg_kva * 0.12, 2)
+        cost_bop = round(it_kw * 0.24, 2)
+        cost_ist = round((cost_civil + cost_cooling + cost_ups + cost_dg + cost_bop) * 0.05, 2)
+        total_lakhs = round(cost_civil + cost_cooling + cost_ups + cost_dg + cost_bop + cost_ist, 2)
+        total_cr = round(total_lakhs / 100.0, 2)
+        cost_om = round(max(24.0, it_kw * 0.16), 2)
+
+        offer_meta = {
+            "it_load_kw": it_kw,
+            "rack_count": racks,
+            "cooling_capacity_tr": cooling_tr,
+            "ups_rating_kva": ups_kva,
+            "dg_rating_kva": dg_kva,
+            "total_capital_lakhs": total_lakhs,
+            "total_capital_cr": total_cr,
+            "client_org": client_org,
+            "floor_area_sqft": sqft,
+            "annual_om_lakhs": cost_om
+        }
+
+        tag_str = f"[SOLUTION_DOCUMENT_OFFER:{json.dumps(offer_meta)}]"
+
+        markdown = f"""## Technical Solution Document & Indicative Budgetary Offer
+**Nikom InfraSolutions Pvt. Ltd. | Reference: NIK/BD-2026/SO-{int(it_kw)}**  
+*Standard: ANSI/TIA-942-C Rated-3 / Uptime Tier III Concurrently Maintainable*  
+*Prepared for: {client_org}*
+
+---
+
+### 1. Executive Design Basis & Sizing Matrix
+- **IT Design Capacity**: **{it_kw} kW** across **{racks} Server Racks** ({kw_per_rack} kW/rack)
+- **Total Heat Dissipation**: **{heat_kw} kW** (IT × 1.15 multiplier)
+- **Precision Cooling Architecture**: **{cooling_tr} TR** (N+1 Redundant) {cool_arch}
+- **2N Power Topology**: **2 × {ups_kva} kVA** Modular UPS (A + B dual bus feed) operating at 40–50% nominal load
+- **Battery Autonomy**: **15 Minutes** at full load with Lithium-Ion (LFP) Cabinets (cell-level BMS, 10–15 year lifespan)
+- **Emergency Power**: **{dg_kva} kVA** Prime-Rated CPCB IV+ Compliant DG Set (1.25x safety margin)
+- **Data Hall Footprint**: ~**{sqft} sq. ft** (Raised Access Floor) | **Target PUE**: **{pue}**
+
+---
+
+### 2. Turnkey Scope of Work & Subsystems Architecture
+1. **Precision Cooling & Containment**: Inverter DX In-Row Cooling (N+1) with variable-speed EC fans, hard Hot-Aisle Containment (HAC) with auto-sliding glass doors and smoke purge links.
+2. **2N Electrical Distribution**: Dual-path modular UPS frames, A+B overhead busway tap-off boxes, and dual-feed intelligent rack PDUs (iPDUs).
+3. **CPCB IV+ DG Power Generation**: Prime-rated DG set with AMF synchronising panel, acoustic enclosure (<75 dB(A)), and 1,500 L fuel day tank.
+4. **Clean Agent Gas Flooding**: Total flooding FK-5-1-12 (Novec 1230) gas suppression with cross-zoned smoke detection.
+5. **Early Warning & Safety**: VESDA LaserPlus aspirating smoke detection (0.005% obs/m sensitivity), 2-hour fire-rated doors.
+6. **DCIM, Security & Monitoring**: Comprehensive DCIM tracking real-time PUE and branch circuits; STQC-certified IP CCTV (30-day retention); biometric access control (AACS); addressable rope-type water leak detection along perimeter and CRAC trays; ultrasonic rodent repellent.
+7. **Civil Fit-Out & Raised Floor**: Heavy-duty anti-static raised floor (600×600 mm, 35 kN, 450 mm FFH) with closed-cell elastomeric underfloor insulation.
+
+---
+
+### 3. Indicative Budgetary Breakdown (Bill of Quantities)
+| No. | Subsystem Package Description | Scope & Equipment Basis | Amount (₹ Lakhs) |
+|---|---|---|---|
+| 1 | Civil Fit-out, Raised Flooring & Insulation | 600×600mm 35kN floor, thermal insulation, fire partitions (~{sqft} sq.ft) | ₹ {cost_civil:,.2f} |
+| 2 | Precision In-Row DX Cooling & HAC | {cooling_tr} TR N+1 In-Row units, EC fans, Hot-Aisle Containment, piping | ₹ {cost_cooling:,.2f} |
+| 3 | 2N Modular UPS & Li-ion Battery Cabinets | 2 × {ups_kva} kVA Modular UPS, 15-min LFP Li-ion racks, dual busways | ₹ {cost_ups:,.2f} |
+| 4 | CPCB IV+ DG Standby Power Generation | {dg_kva} kVA Prime DG, AMF synchronising panel, fuel system, chimney | ₹ {cost_dg:,.2f} |
+| 5 | Turnkey Balance of Plant (Fire/VESDA/CCTV/DCIM) | FK-5-1-12 gas suppression, VESDA, STQC CCTV, biometric access, WLD rope | ₹ {cost_bop:,.2f} |
+| 6 | Testing, Commissioning, FAT/SAT & IST | Integrated Systems Testing (IST), load bank testing, black building test | ₹ {cost_ist:,.2f} |
+| **—** | **TOTAL INDICATIVE CAPITAL BUDGETARY OFFER** | **Complete Turnkey EPC Delivery (₹ {total_cr:.2f} Crores)** | **₹ {total_lakhs:,.2f}** |
+| Opt. | Comprehensive 24×7 Facility O&M (Year 1) | 24×7 round-the-clock site engineers, preventive maintenance, SLA guarantees | ₹ {cost_om:,.2f} / yr |
+
+---
+
+### 4. Implementation Timeline & Commercial Terms
+- **Project Execution Duration**: 16 to 20 weeks from site handover to IST commissioning and client sign-off.
+- **Payment Milestones**: 15% Advance (against ABG), 60% upon delivery of plant equipment, 15% upon installation, 10% on successful IST & handover (against PBG).
+- **Commercial Validity**: 60 calendar days. Prices are indicative turnkey budgetary estimates exclusive of applicable GST (18%).
+
+{tag_str}"""
+
+        lead_summary = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "client_org": client_org,
+            "contact_name": "Prospective Proposal Request",
+            "capacity_(kw_/_racks)": f"{it_kw} kW / {racks} Racks",
+            "budgetary_estimate": f"₹ {total_cr} Cr (₹ {total_lakhs} L)",
+            "scope": "Turnkey Tier III Solution Document & Budgetary Offer",
+            "timeline": "16-20 Weeks",
+            "urgency": "High",
+            "source": "Nikom Assist Proposal Generator"
+        }
+
+        # Auto save lead to leads db
+        try:
+            with open(LEADS_DB_PATH, "r", encoding="utf-8") as f:
+                leads = json.load(f)
+            if not any(l.get("client_org") == client_org and l.get("budgetary_estimate") == lead_summary["budgetary_estimate"] for l in leads):
+                leads.insert(0, lead_summary)
+                with open(LEADS_DB_PATH, "w", encoding="utf-8") as f:
+                    json.dump(leads, f, indent=2)
+        except Exception as e:
+            logger.warning(f"Could not persist proposal lead: {e}")
+
+        return {
+            "sizing": sizing,
+            "cost_breakdown": {
+                "civil_lakhs": cost_civil,
+                "cooling_lakhs": cost_cooling,
+                "ups_lakhs": cost_ups,
+                "dg_lakhs": cost_dg,
+                "bop_lakhs": cost_bop,
+                "ist_lakhs": cost_ist,
+                "total_lakhs": total_lakhs,
+                "total_cr": total_cr,
+                "om_annual_lakhs": cost_om
+            },
+            "markdown": markdown,
+            "lead_summary": lead_summary,
+            "offer_metadata": offer_meta
+        }
+
+
     def chat(
         self,
         messages: List[Dict[str, str]],
@@ -412,6 +565,44 @@ Always label numbers as indicative and say final sizing needs a site survey and 
             if res.status_code == 200:
                 data = res.json()
                 reply = data.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+
+                # Ensure offer tag is attached if budgetary offer was provided
+                if any(k in reply.lower() for k in ["budgetary offer", "solution document", "indicative budgetary", "budgetary breakdown"]):
+                    if "[SOLUTION_DOCUMENT_OFFER:" not in reply:
+                        combined = reply + " " + " ".join([m.get("content") or m.get("text") or "" for m in messages])
+                        it_m = re.search(r'(\d+(?:\.\d+)?)\s*kw', combined, re.IGNORECASE)
+                        racks_m = re.search(r'(\d+)\s*rack', combined, re.IGNORECASE)
+                        it_v = float(it_m.group(1)) if it_m else 250.0
+                        racks_v = int(racks_m.group(1)) if racks_m else 25
+                        cooling_tr = round((it_v * 1.15) / 3.517, 1)
+                        ups_kva = round((it_v / 0.9) * 1.25)
+                        dg_kva = round(((it_v + cooling_tr + (it_v * 0.1)) / 0.8) * 1.25)
+                        sqft = int(racks_v * 35 * 1.4)
+                        c_civil = round(sqft * 0.028, 2)
+                        c_cool = round(cooling_tr * 1.4, 2)
+                        c_ups = round((ups_kva * 2) * 0.24, 2)
+                        c_dg = round(dg_kva * 0.12, 2)
+                        c_bop = round(it_v * 0.24, 2)
+                        c_ist = round((c_civil + c_cool + c_ups + c_dg + c_bop) * 0.05, 2)
+                        tot_lakhs = round(c_civil + c_cool + c_ups + c_dg + c_bop + c_ist, 2)
+                        tot_cr = round(tot_lakhs / 100.0, 2)
+                        c_org = "Enterprise / Institutional Facility"
+                        if tender_context:
+                            c_org = tender_context.get("authority") or tender_context.get("title") or c_org
+
+                        meta = {
+                            "it_load_kw": it_v,
+                            "rack_count": racks_v,
+                            "cooling_capacity_tr": cooling_tr,
+                            "ups_rating_kva": ups_kva,
+                            "dg_rating_kva": dg_kva,
+                            "total_capital_lakhs": tot_lakhs,
+                            "total_capital_cr": tot_cr,
+                            "client_org": c_org,
+                            "floor_area_sqft": sqft
+                        }
+                        reply += f"\n\n[SOLUTION_DOCUMENT_OFFER:{json.dumps(meta)}]"
+
                 lead_summary = self.extract_and_save_lead(reply, messages)
                 return {
                     "success": True,
@@ -508,6 +699,33 @@ Always label numbers as indicative and say final sizing needs a site survey and 
         """High-grade engineering fallback when Bedrock credentials are unavailable."""
         raw_msg = messages[-1].get("content") or messages[-1].get("text") or ""
         last_msg = raw_msg.lower() if messages else ""
+
+        # Case 0: Solution Document / Budgetary Offer Request
+        is_budget_request = (
+            any(w in last_msg for w in ["budget", "offer", "quote", "cost", "proposal", "solution document", "commercial", "price", "boq", "pricing", "estimate"])
+            or scenario == "budgetary_offer"
+        )
+        if is_budget_request:
+            it_m = re.search(r'(\d+(?:\.\d+)?)\s*kw', last_msg)
+            racks_m = re.search(r'(\d+)\s*rack', last_msg)
+            it_val = float(it_m.group(1)) if it_m else 250.0
+            racks_val = int(racks_m.group(1)) if racks_m else 25
+            client_org = "Prospective Enterprise / PSU"
+            if tender_context:
+                client_org = tender_context.get("authority") or tender_context.get("title") or client_org
+
+            offer = self.generate_budgetary_offer(
+                it_load_kw=it_val,
+                rack_count=racks_val,
+                client_org=client_org
+            )
+            return {
+                "success": True,
+                "reply": offer["markdown"],
+                "lead_captured": True,
+                "lead_summary": offer["lead_summary"],
+                "model": "nikom-assist-budgetary-engine"
+            }
 
         # Case A: Sizing evaluation & peer review
         if "sizing for review" in last_msg or ("it load" in last_msg and "kw" in last_msg):

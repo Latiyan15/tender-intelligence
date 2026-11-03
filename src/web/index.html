@@ -16,7 +16,7 @@
     rel="stylesheet">
 
   <link rel="icon" type="image/png" href="/static/images/nikom_emblem.png">
-  <link rel="stylesheet" href="/static/css/styles.css?v=20261103_v21_precision_no_crop">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20261103_v22_solution_doc_offer">
 </head>
 
 <body>
@@ -1450,6 +1450,10 @@
           <!-- Quick Scenario Presets Bar -->
           <div class="presales-scenarios-bar">
             <span class="scenario-label">Quick Scenarios:</span>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('budgetary_offer')" style="border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.08);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span style="font-weight: 700; color: #c084fc;">Solution Document & Budgetary Offer</span>
+            </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('gpu_dlc')">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
               <span>High-Density GPU / AI DC (BEL 100 kW DLC)</span>
@@ -1487,8 +1491,14 @@
                     <span style="font-size: 13px; font-weight: 700; color: var(--text);">Nikom Assist Consultation Stream</span>
                     <span id="presales-active-context-tag" class="context-pill" style="display: none;"></span>
                   </div>
-                  <div style="font-size: 11px; color: var(--text-3);">
-                    AWS Bedrock Claude Sonnet 4.6 • Grounded on Nikom Engineering Rules
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-header-quick-offer" onclick="requestBudgetaryOfferInChat()" title="Quickly generate official Solution Document & Budgetary Offer">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <span>Generate Budgetary Offer</span>
+                    </button>
+                    <div style="font-size: 11px; color: var(--text-3);" class="hide-mobile">
+                      AWS Bedrock Claude Sonnet 4.6 • Grounded on Nikom Engineering Rules
+                    </div>
                   </div>
                 </div>
 
@@ -2242,7 +2252,7 @@
   </div>
 
   <!-- Main JavaScript Logic -->
-  <script src="/static/js/app.js?v=20261103_v21_precision_no_crop"></script>
+  <script src="/static/js/app.js?v=20261103_v22_solution_doc_offer"></script>
 </body>
 
 </html>

@@ -5164,15 +5164,16 @@ function renderPresalesChat() {
     const isUser = msg.role === 'user';
     const isAssistant = !isUser;
 
-    let formattedText = escapeHtml(msg.text)
-      .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, '<strong>$1</strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>');
+    let formattedText = isUser ? escapeHtml(msg.text) : formatPresalesBubbleText(msg.text);
 
     let leadCardHtml = '';
     if (isAssistant && msg.text.includes('LEAD SUMMARY')) {
       leadCardHtml = renderLeadSummaryCardInChat(msg.text, idx);
+    }
+
+    let solutionOfferCardHtml = '';
+    if (isAssistant && (msg.text.includes('[SOLUTION_DOCUMENT_OFFER:') || msg.text.includes('BUDGETARY OFFER') || msg.text.includes('Budgetary Breakdown'))) {
+      solutionOfferCardHtml = renderSolutionOfferCardInChat(msg.text, idx);
     }
 
     return `
@@ -5181,14 +5182,160 @@ function renderPresalesChat() {
           ${isUser ? 'ENG' : 'NA'}
         </div>
         <div class="presales-bubble">
-          <div style="white-space: pre-wrap;">${formattedText}</div>
+          <div style="white-space: normal;">${formattedText}</div>
           ${leadCardHtml}
+          ${solutionOfferCardHtml}
         </div>
       </div>
     `;
   }).join('');
 
   container.scrollTop = container.scrollHeight;
+}
+
+function formatPresalesBubbleText(rawText) {
+  let text = (rawText || '').replace(/\[SOLUTION_DOCUMENT_OFFER:\{.*?\}\]/g, '').trim();
+
+  const lines = text.split('\n');
+  let inTable = false;
+  let tableRows = [];
+  let outParts = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|') && line.endsWith('|')) {
+      if (!inTable) {
+        inTable = true;
+        tableRows = [];
+      }
+      tableRows.push(line);
+    } else {
+      if (inTable) {
+        outParts.push(renderPresalesInlineTable(tableRows));
+        inTable = false;
+        tableRows = [];
+      }
+      outParts.push(escapeHtml(lines[i]));
+    }
+  }
+  if (inTable) {
+    outParts.push(renderPresalesInlineTable(tableRows));
+  }
+
+  let formatted = outParts.join('\n');
+
+  formatted = formatted
+    .replace(/^### (.*$)/gim, '<h3 class="presales-chat-h3">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="presales-chat-h2">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="presales-chat-h1">$1</h1>')
+    .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, '<strong>$1</strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  return formatted;
+}
+
+function renderPresalesInlineTable(rows) {
+  if (!rows || rows.length === 0) return '';
+  let html = '<div class="table-responsive-wrapper"><table class="presales-inline-table">';
+  let isHeader = true;
+
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r].trim();
+    if (row.includes('---')) {
+      isHeader = false;
+      continue;
+    }
+    const cells = row.split('|').slice(1, -1);
+    if (isHeader) {
+      html += '<thead><tr>';
+      cells.forEach(c => {
+        html += `<th>${escapeHtml(c.trim())}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+      isHeader = false;
+    } else {
+      const isTotalRow = row.toLowerCase().includes('total');
+      html += `<tr class="${isTotalRow ? 'table-total-row' : ''}">`;
+      cells.forEach((c, idx) => {
+        const alignRight = idx === cells.length - 1 || c.includes('₹') || c.includes('Cr');
+        let cellText = escapeHtml(c.trim()).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html += `<td style="${alignRight ? 'text-align: right; font-variant-numeric: tabular-nums;' : ''}">${cellText}</td>`;
+      });
+      html += '</tr>';
+    }
+  }
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderSolutionOfferCardInChat(text, idx) {
+  let meta = {};
+  const tagMatch = text.match(/\[SOLUTION_DOCUMENT_OFFER:(.*?)\]/);
+  if (tagMatch) {
+    try {
+      meta = JSON.parse(tagMatch[1]);
+    } catch (e) {
+      console.warn('Failed parsing offer meta:', e);
+    }
+  }
+
+  const itLoad = meta.it_load_kw || 250;
+  const racks = meta.rack_count || 25;
+  const coolingTr = meta.cooling_capacity_tr || (itLoad * 1.15 / 3.517).toFixed(1);
+  const upsKva = meta.ups_rating_kva || Math.round((itLoad / 0.9) * 1.25);
+  const dgKva = meta.dg_rating_kva || 557;
+  const totalCr = meta.total_capital_cr || (meta.total_capital_lakhs ? (meta.total_capital_lakhs / 100).toFixed(2) : "4.64");
+  const totalLakhs = meta.total_capital_lakhs || "464.18";
+  const clientOrg = meta.client_org || "Enterprise / Institutional Facility";
+
+  return `
+    <div class="solution-offer-card">
+      <div class="solution-offer-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="solution-offer-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div>
+            <div class="solution-offer-title">Official Technical Solution Document & Budgetary Offer</div>
+            <div class="solution-offer-sub">Ref: NIK/BD-2026/SO-${Math.round(itLoad)} &bull; ANSI/TIA-942-C Tier III Concurrently Maintainable</div>
+          </div>
+        </div>
+        <div class="solution-offer-pill">Official Offer Ready</div>
+      </div>
+
+      <div class="solution-offer-kpis">
+        <div class="offer-kpi">
+          <span class="offer-kpi-lbl">IT Design Load</span>
+          <span class="offer-kpi-val">${itLoad} kW (${racks} Racks)</span>
+        </div>
+        <div class="offer-kpi">
+          <span class="offer-kpi-lbl">Cooling (N+1)</span>
+          <span class="offer-kpi-val">${coolingTr} TR In-Row DX</span>
+        </div>
+        <div class="offer-kpi">
+          <span class="offer-kpi-lbl">2N Modular UPS</span>
+          <span class="offer-kpi-val">2 &times; ${upsKva} kVA (Li-ion)</span>
+        </div>
+        <div class="offer-kpi">
+          <span class="offer-kpi-lbl">Emergency Standby</span>
+          <span class="offer-kpi-val">${dgKva} kVA (CPCB IV+)</span>
+        </div>
+        <div class="offer-kpi highlight">
+          <span class="offer-kpi-lbl">Total Indicative Budgetary Offer</span>
+          <span class="offer-kpi-val">₹ ${totalCr} Cr <span style="font-size: 10.5px; font-weight: normal; opacity: 0.85;">(₹ ${totalLakhs} L)</span></span>
+        </div>
+      </div>
+
+      <div class="solution-offer-actions">
+        <a href="/api/presales/download-offer?it_kw=${itLoad}&racks=${racks}&cooling_tr=${coolingTr}&ups_kva=${upsKva}&dg_kva=${dgKva}&client=${encodeURIComponent(clientOrg)}" class="btn-download-offer-pdf" target="_blank" download="Nikom_Solution_Document_Budgetary_Offer_${Math.round(itLoad)}kW.pdf">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Download Official Solution Document & Budgetary Offer (PDF)</span>
+        </a>
+      </div>
+    </div>
+  `;
 }
 
 function renderLeadSummaryCardInChat(text, idx) {
@@ -5327,6 +5474,7 @@ function selectPresalesScenario(key) {
   if (window.event && window.event.currentTarget) window.event.currentTarget.classList.add('active');
 
   const scenarioPrompts = {
+    budgetary_offer: "Please generate a comprehensive Final Solution Document & Budgetary Offer for a 250 kW Tier III data centre (25 racks @ 10.0 kW/rack) including itemized BOQ costing for civil fit-out, in-row DX cooling, 2N UPS, CPCB IV+ DG set, and turnkey balance of plant.",
     gpu_dlc: "We are designing an AI / High-Density Compute facility with 100 kW per rack GPU clusters (similar to the BEL project). What cooling architecture, CDUs, Chilled Water primary loops, and DG power sizing does Nikom specify?",
     cdot_upgrade: "We need a turnkey Tier III upgrade for an active facility with 252 kW IT load, 2N UPS, In-Row DX cooling, and 24x7 O&M staffing (similar to the C-DoT Bengaluru project). How should we structure the proposal and balance of plant?",
     power_backup: "Please calculate the 2N power distribution, UPS kVA rating, Li-ion vs VRLA battery runtime, and CPCB IV+ DG backup for a Tier III facility with 400 kW IT load.",
@@ -5419,9 +5567,38 @@ async function runPresalesSizing() {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
         <span>Insert Sizing into Nikom Assist Chat →</span>
       </button>
+
+      <button type="button" class="btn-generate-offer-action" onclick="generateOfferFromCalculator()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span>Generate Solution Document & Budgetary Offer →</span>
+      </button>
     `;
   } catch (err) {
     console.error('Sizing error:', err);
+  }
+}
+
+function generateOfferFromCalculator() {
+  const itLoad = parseFloat(document.getElementById('calc-it-load')?.value || 250);
+  const racks = parseInt(document.getElementById('calc-rack-count')?.value || 25, 10);
+  const redundancy = document.getElementById('calc-redundancy')?.value || "Tier III (2N Power, N+1 Cooling)";
+
+  const msg = `Please generate a complete final solution document and budgetary offer for a ${itLoad} kW facility with ${racks} server racks based on ${redundancy} standards. Include turnkey civil fit-out, precision cooling, 2N UPS with Li-ion batteries, CPCB IV+ DG backup, and balance-of-plant fire suppression & DCIM packages.`;
+  const input = document.getElementById('presales-prompt-input');
+  if (input) {
+    input.value = msg;
+    sendPresalesMessage();
+  }
+}
+
+function requestBudgetaryOfferInChat() {
+  const itLoad = parseFloat(document.getElementById('calc-it-load')?.value || 250);
+  const racks = parseInt(document.getElementById('calc-rack-count')?.value || 25, 10);
+  const msg = `Please prepare the official final solution document and budgetary offer for our ${itLoad} kW Tier III data centre (${racks} racks).`;
+  const input = document.getElementById('presales-prompt-input');
+  if (input) {
+    input.value = msg;
+    sendPresalesMessage();
   }
 }
 
