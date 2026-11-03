@@ -358,15 +358,22 @@ Always label numbers as indicative and say final sizing needs a site survey and 
         # Build conversation for Bedrock Converse
         system_prompt = self.build_system_prompt()
         if tender_context:
-            system_prompt += f"\n\nACTIVE TENDER CONTEXT:\n- Tender ID: {tender_context.get('tender_id')}\n- Title: {tender_context.get('title')}\n- Authority: {tender_context.get('authority')}\n- Cost: ₹{tender_context.get('estimated_cost_inr', 0):,}\n- Scope: {tender_context.get('description', '')[:1000]}"
+            cost_val = tender_context.get('estimated_cost_inr') or 0
+            try:
+                cost_str = f"₹{int(cost_val):,}" if cost_val else "Refer BOQ"
+            except Exception:
+                cost_str = str(cost_val)
+            system_prompt += f"\n\nACTIVE TENDER CONTEXT:\n- Tender ID: {tender_context.get('tender_id')}\n- Title: {tender_context.get('title')}\n- Authority: {tender_context.get('authority')}\n- Cost: {cost_str}\n- Scope: {tender_context.get('description', '')[:1000]}"
 
         converse_messages = []
         for msg in messages:
             role = "user" if msg.get("role") in ["user", "human"] else "assistant"
-            converse_messages.append({
-                "role": role,
-                "content": [{"text": msg.get("content", "")}]
-            })
+            txt = msg.get("content") or msg.get("text") or ""
+            if txt.strip():
+                converse_messages.append({
+                    "role": role,
+                    "content": [{"text": txt.strip()}]
+                })
 
         if not converse_messages:
             converse_messages = [{
@@ -430,7 +437,7 @@ Always label numbers as indicative and say final sizing needs a site survey and 
 
         # Contextual lead fallback: if conversation contains contact email/phone and org
         if not parsed:
-            full_text = " ".join([m.get("content", "") for m in history])
+            full_text = " ".join([m.get("content") or m.get("text") or "" for m in history])
             email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', full_text)
             phone_match = re.search(r'(\+?\d[\d\s-]{8,14}\d)', full_text)
             org_match = re.search(r'(?:we are|from|company|client|organization|org[:\s])\s*([A-Za-z0-9\s\.\-]{3,40}?)(?:[\.,\n\(]|$)', full_text, re.IGNORECASE)
@@ -486,7 +493,7 @@ Always label numbers as indicative and say final sizing needs a site survey and 
         tender_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """High-grade engineering fallback when Bedrock credentials are unavailable."""
-        last_msg = messages[-1].get("content", "").lower() if messages else ""
+        last_msg = (messages[-1].get("content") or messages[-1].get("text") or "").lower() if messages else ""
 
         if any(w in last_msg for w in ["sizing", "load", "kw", "rack", "cooling", "tr"]):
             reply = (

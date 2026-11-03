@@ -5236,7 +5236,7 @@ async function sendPresalesMessage() {
   if (!prompt) return;
 
   input.value = '';
-  presalesChatHistory.push({ role: 'user', text: prompt });
+  presalesChatHistory.push({ role: 'user', content: prompt, text: prompt });
   renderPresalesChat();
 
   const sendBtn = document.getElementById('presales-send-btn');
@@ -5265,7 +5265,11 @@ async function sendPresalesMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: presalesChatHistory,
+        messages: presalesChatHistory.map(m => ({
+          role: m.role,
+          content: m.content || m.text,
+          text: m.text || m.content
+        })),
         scenario: presalesCurrentScenario,
         tender_id: presalesActiveTenderContext
       })
