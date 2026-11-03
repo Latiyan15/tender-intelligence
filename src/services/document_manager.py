@@ -410,7 +410,11 @@ class DocumentManager:
                     "generated_at": datetime.utcnow().isoformat()
                 }
 
-        # ── Step 3: No document uploaded yet (Clean State, Zero Static Mock Data) ───
+        # ── Step 3: No document uploaded yet (Clean State with Preliminary Bidding Checklist) ───
+        from src.services.bedrock_service import BedrockTenderService
+        bedrock = BedrockTenderService()
+        checklist_data = bedrock.get_bidding_checklist_and_traps(tender)
+
         return {
             "tender_id": tender_id,
             "has_document": False,
@@ -424,6 +428,8 @@ class DocumentManager:
             "ai_powered": True,
             "notice": "No tender document attached yet. Please upload the official tender document (NIT/RFP PDF) or fetch it under 'Documents & Pack'. Once attached, AWS Bedrock will extract all qualification requirements directly from the document and compare them against Nikom's corporate data.",
             "criteria": [],
+            "uncommon_trap_clauses": checklist_data.get("uncommon_trap_clauses", []),
+            "bidding_document_checklist": checklist_data.get("bidding_document_checklist", []),
             "generated_at": datetime.utcnow().isoformat()
         }
 

@@ -106,6 +106,18 @@
           <span class="nav-label">Watchlist</span>
         </a>
 
+        <!-- Pre-Sales Engineering AI Section -->
+        <div class="sidebar-section-title">ENGINEERING & SALES</div>
+        <a href="#presales" class="nav-item" data-nav="presales" id="sidebar-nav-presales">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Pre-Sales AI</span>
+          <span class="nav-badge" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); font-size: 10px; font-weight: 700; padding: 2px 6px;">Nikom Assist</span>
+        </a>
+
         <!-- Management Section from Image 1 -->
         <div class="sidebar-section-title">MANAGEMENT</div>
         <a href="#runs" class="nav-item" data-nav="runs">
@@ -1529,6 +1541,167 @@
           </div>
         </div>
 
+        <!-- ═══════════════════════════════════════════════════════════════════════
+             VIEW 12: PRE-SALES & SALES ENGINEERING AI STUDIO (NIKOM ASSIST)
+             ═══════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-presales" style="display: none; flex-direction: column; gap: 16px;">
+          <!-- Studio Header Banner -->
+          <div class="presales-hero-banner">
+            <div class="presales-hero-left">
+              <div class="presales-avatar-badge">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <h1 class="page-title" style="margin: 0; font-size: 20px;">Nikom Assist <span class="discovery-gradient">Pre-Sales Studio</span></h1>
+                  <span class="presales-role-pill">Senior Data Centre Design Engineer</span>
+                  <span class="presales-online-badge"><span class="status-dot"></span>Active AI</span>
+                </div>
+                <p class="page-subtitle" style="margin: 4px 0 0; font-size: 12.5px;">
+                  Engineering-first consulting grounded on 25+ years expertise • 206+ PF • 10,528+ Racks • 55+ MW • Tier III Certified
+                </p>
+              </div>
+            </div>
+            <div class="presales-hero-actions">
+              <button type="button" class="btn-secondary" onclick="resetPresalesChat()" style="font-size: 12px; padding: 7px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+                <span>Reset Chat</span>
+              </button>
+              <button type="button" class="btn-primary" onclick="viewCapturedLeadsModal()" style="font-size: 12px; padding: 7px 14px; display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+                <span>Captured Leads (<span id="presales-lead-count-badge">0</span>)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Scenario Presets Bar -->
+          <div class="presales-scenarios-bar">
+            <span class="scenario-label">Quick Scenarios:</span>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('gpu_dlc')">
+              ⚡ High-Density GPU / AI DC (BEL 100 kW DLC)
+            </button>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cdot_upgrade')">
+              🏢 Tier III Turnkey Upgrade (C-DoT 252 kW In-Row)
+            </button>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('power_backup')">
+              🔋 2N Power & DG Sizing (CPCB IV+)
+            </button>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cooling_calc')">
+              ❄️ Precision Cooling & TR Sizing
+            </button>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('boq_audit')">
+              📋 RFP & BOQ Technical Specs Audit
+            </button>
+            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('om_amc')">
+              🛠️ 24x7 O&M & SLA Guarantee
+            </button>
+          </div>
+
+          <!-- Main Studio Two-Column Grid -->
+          <div class="presales-studio-grid">
+            <!-- Left: Chat & Architecture Consultation Area -->
+            <div class="presales-chat-column">
+              <div class="presales-chat-card">
+                <div class="presales-chat-header">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="pulse-indicator" style="background: #a855f7;"></div>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text);">Nikom Assist Consultation Stream</span>
+                    <span id="presales-active-context-tag" class="context-pill" style="display: none;"></span>
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-3);">
+                    AWS Bedrock Claude Sonnet 4.6 • Grounded on Nikom Engineering Rules
+                  </div>
+                </div>
+
+                <!-- Chat History Window -->
+                <div class="presales-chat-messages" id="presales-chat-messages">
+                  <!-- Injected via JS -->
+                </div>
+
+                <!-- Input Box -->
+                <div class="presales-input-container">
+                  <div class="presales-input-wrapper">
+                    <textarea id="presales-prompt-input" rows="2" placeholder="Ask about heat load sizing, Tier III redundancy, 100 kW DLC liquid cooling, DG margin, or client RFP clauses..." onkeydown="handlePresalesKeydown(event)"></textarea>
+                    <button type="button" id="presales-send-btn" class="btn-send-presales" onclick="sendPresalesMessage()">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                      <span>Send</span>
+                    </button>
+                  </div>
+                  <div class="presales-input-footer">
+                    <span>💡 Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line</span>
+                    <span style="color: var(--text-3);">Nikom Assist extracts structured <strong>LEAD SUMMARY</strong> upon receiving client/capacity specs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Sizing Rule Engine & Leads Snapshot Column -->
+            <div class="presales-tools-column">
+              <!-- Sizing Rule Engine (Section 5.2) -->
+              <div class="presales-tool-card">
+                <div class="tool-card-header">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text);">DC Sizing Calculator (Section 5.2)</span>
+                  </div>
+                  <span class="tool-badge">Engineering Engine</span>
+                </div>
+
+                <div class="sizing-inputs-grid">
+                  <div class="sizing-field">
+                    <label>IT Load (kW)</label>
+                    <input type="number" id="calc-it-load" value="250" min="5" max="10000" step="5" oninput="updateDensityEstimate()">
+                  </div>
+                  <div class="sizing-field">
+                    <label>Rack Count</label>
+                    <input type="number" id="calc-rack-count" value="25" min="1" max="500" step="1" oninput="updateDensityEstimate()">
+                  </div>
+                  <div class="sizing-field">
+                    <label>kW / Rack</label>
+                    <input type="number" id="calc-kw-per-rack" value="10.0" min="1" max="150" step="0.5" readonly style="opacity: 0.85;">
+                  </div>
+                  <div class="sizing-field">
+                    <label>Redundancy Tier</label>
+                    <select id="calc-redundancy">
+                      <option value="Tier III (2N Power, N+1 Cooling)">Tier III (2N Power, N+1 Cooling)</option>
+                      <option value="Tier IV (2N+1 Fault Tolerant)">Tier IV (2N+1 Fault Tolerant)</option>
+                      <option value="Tier II (N+1 Redundant)">Tier II (N+1 Redundant)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-calc-action" onclick="runPresalesSizing()">
+                  <span>⚡ Calculate Sizing & Architecture</span>
+                </button>
+
+                <!-- Results Output Display -->
+                <div id="sizing-results-output" class="sizing-results-container" style="display: none;">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <!-- Captured Leads & Action Items Card -->
+              <div class="presales-tool-card" style="margin-top: 16px;">
+                <div class="tool-card-header">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text);">Captured Pre-Sales Leads</span>
+                  </div>
+                  <span class="tool-badge-green" id="leads-counter-pill">0 Leads</span>
+                </div>
+                <div id="presales-leads-list" class="presales-leads-list">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
 
     </div>
@@ -2171,8 +2344,35 @@
   <!-- Notification Toast Container -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- Modal: Captured Pre-Sales Leads & CRM Export -->
+  <div class="modal-backdrop" id="modal-captured-leads" style="display: none; z-index: 10000;">
+    <div class="modal-dialog" style="max-width: 840px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
+        <div class="modal-title-wrap">
+          <span class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 20px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">🎯</span>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Pre-Sales Leads & Consultation Opportunities</h3>
+            <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-captured by Nikom Assist following standard Lead Qualification guidelines</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeCapturedLeadsModal()">&times;</button>
+      </div>
+
+      <div class="modal-body" id="captured-leads-modal-body" style="padding: 20px 24px; overflow-y: auto; flex: 1;">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="modal-footer" style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
+        <div style="font-size: 11.5px; color: var(--text-2);">
+          Saved to <code>data/presales_leads.json</code>
+        </div>
+        <button type="button" class="btn-modal-secondary" onclick="closeCapturedLeadsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Main JavaScript Logic -->
-  <script src="/static/js/app.js?v=20261102_v13_theme_and_drafting_studio_fix"></script>
+  <script src="/static/js/app.js?v=20261103_v14_presales_and_checklist"></script>
 </body>
 
 </html>

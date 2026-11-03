@@ -6,7 +6,7 @@ import os
 import re
 import logging
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File, Form
 from src.services.document_manager import DocumentManager, sanitize_filename, extract_pdf_info
 from src.services.drafting_service import DraftingService
@@ -1489,6 +1489,102 @@ def export_complete_bid_pack_zip(tender_id: str):
         logger.error(f"Error exporting ZIP pack for {tender_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-Sales & Sales Engineering ("Nikom Assist") & Bidding Checklist Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+from src.services.presales_service import PresalesAssistantService
+
+presales_service = PresalesAssistantService()
+
+
+class PresalesChatRequest(BaseModel):
+    messages: List[Dict[str, str]]
+    scenario: Optional[str] = None
+    tender_id: Optional[str] = None
+
+
+class PresalesSizingRequest(BaseModel):
+    it_load_kw: float
+    rack_count: int = 10
+    kw_per_rack: Optional[float] = None
+    redundancy_target: str = "Tier III (2N Power, N+1 Cooling)"
+    ambient_temp_c: float = 36.0
+
+
+@app.post("/api/presales/chat")
+def presales_chat(req: PresalesChatRequest):
+    """Interactive conversational session with Nikom Assist (Pre-Sales Engineering Agent)."""
+    try:
+        tender_ctx = repo.get_tender(req.tender_id) if req.tender_id else None
+        res = presales_service.chat(
+            messages=req.messages,
+            scenario=req.scenario,
+            tender_context=tender_ctx
+        )
+        return res
+    except Exception as e:
+        logger.error(f"Error in presales chat: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/calculate-sizing")
+def presales_calculate_sizing(req: PresalesSizingRequest):
+    """Calculates engineering sizing (Heat load, Cooling TR, UPS kVA, DG kVA, PUE) based on Section 5 rules."""
+    try:
+        res = presales_service.calculate_sizing(
+            it_load_kw=req.it_load_kw,
+            rack_count=req.rack_count,
+            kw_per_rack=req.kw_per_rack,
+            redundancy_target=req.redundancy_target,
+            ambient_temp_c=req.ambient_temp_c
+        )
+        return res
+    except Exception as e:
+        logger.error(f"Error in presales sizing: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/leads")
+def get_presales_leads():
+    """Retrieves all qualified leads captured by Nikom Assist."""
+    try:
+        return {"leads": presales_service.get_captured_leads()}
+    except Exception as e:
+        logger.error(f"Error fetching presales leads: {e}")
+        return {"leads": []}
+
+
+@app.get("/api/tenders/{tender_id:path}/bidding-checklist")
+def get_tender_bidding_checklist(tender_id: str):
+    """Returns the comprehensive bidding operations checklist and uncommon trap clauses radar."""
+    tender = repo.get_tender(tender_id)
+    if not tender:
+        raise HTTPException(status_code=404, detail=f"Tender {tender_id} not found")
+
+    from src.services.bedrock_service import BedrockTenderService
+    bedrock = BedrockTenderService()
+
+    tdir = doc_manager.get_tender_storage_dir(tender_id)
+    doc_text = ""
+    if os.path.exists(tdir):
+        for f in os.listdir(tdir):
+            if f.lower().endswith(".pdf"):
+                try:
+                    from src.services.document_manager import extract_pdf_info
+                    info = extract_pdf_info(os.path.join(tdir, f))
+                    doc_text = info.get("text", "")
+                    break
+                except Exception:
+                    pass
+
+    checklist_data = bedrock.get_bidding_checklist_and_traps(tender, doc_text)
+    return checklist_data
 
 
 # Static Assets & Frontend Web Dashboard

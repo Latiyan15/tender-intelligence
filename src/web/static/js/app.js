@@ -1279,25 +1279,201 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
           <div class="verdict-score-label">${data.met_criteria_count || 0} of ${data.total_criteria_count || (data.criteria ? data.criteria.length : 0)} Met</div>
         </div>
       </div>
+    `;
 
-      <!-- Action Button: Open Bid Drafting Studio -->
-      <button type="button" onclick="openBidDraftingStudio('${escapeHtml(tenderId)}')" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 16px; margin: 0 0 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: all 0.2s ease;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-        <span>Open Bid Drafting Studio (Auto-Generate Declarations & Resolve Missing Docs) →</span>
+    // ── 3. BIDDING COPILOT CHATBOT (PLACED AT THE TOP UNDER VERDICT) ────────
+    const thread = bedrockChatHistory[tenderId] || [];
+    const chatMessagesHtml = thread.map(msg => `
+      <div style="margin-bottom: 10px; ${msg.role === 'user' ? 'text-align: right;' : 'text-align: left;'}">
+        <div style="display: inline-block; max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.45; ${msg.role === 'user' ? 'background: var(--primary); color: #fff;' : 'background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid rgba(255,255,255,0.1); white-space: pre-wrap;'}">
+          ${escapeHtml(msg.text)}
+        </div>
+      </div>
+    `).join('');
+
+    html += `
+      <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; padding: 14px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 8px #a855f7;"></span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text);">Tender Copilot — Bidding Team Assistant</span>
+          </div>
+          <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(168, 85, 247, 0.15); color: #c084fc;">RFP & BOQ Intelligence</span>
+        </div>
+
+        <!-- Quick prompt chips for bidding team -->
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is there any compulsory pre-bid site inspection required with a signed certificate?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+            📍 Compulsory Site Visit?
+          </button>
+          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the specific OEM MAF requirements, warranty period, and ink signature rules?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+            📑 OEM MAF Rules?
+          </button>
+          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is Make in India (MII) local content certificate mandatory with CA UDIN?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+            🇮🇳 MII Local Content & UDIN?
+          </button>
+          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Are there Liquidated Damages (LD) or milestone delay penalty clauses?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+            ⚠️ LD & Penalty Ceilings?
+          </button>
+          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the exact technical specifications for UPS, PAC, and DG sets?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
+            ⚡ UPS & Cooling Specs?
+          </button>
+        </div>
+
+        <!-- Chat history thread -->
+        <div id="bedrock-chat-history-${escapeHtml(tenderId)}" style="max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding: 4px 0;">
+          ${chatMessagesHtml || '<div style="font-size: 11.5px; color: var(--text-3); text-align: center; padding: 12px 0;">Ask any question regarding RFP qualification clauses, statutory affidavits, or BOQ technical nuances.</div>'}
+        </div>
+
+        <!-- Question input -->
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="bedrock-question-input" placeholder="Ask bidding assistant about traps, affidavits, or technical clauses..." onkeydown="if(event.key === 'Enter') submitBedrockQuestion('${escapeHtml(tenderId)}')" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: var(--text); font-size: 12px;" />
+          <button type="button" id="btn-bedrock-send" onclick="submitBedrockQuestion('${escapeHtml(tenderId)}')" style="padding: 8px 14px; background: #9333ea; border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer;">Ask</button>
+        </div>
+      </div>
+    `;
+
+    // ── 4. UNCOMMON & TRAP CLAUSE RADAR ─────────────────────────────────────
+    const traps = data.uncommon_trap_clauses || [];
+    if (traps.length > 0) {
+      html += `
+        <div class="trap-radar-section">
+          <div class="trap-radar-header">
+            <div class="trap-radar-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Uncommon & Trap Clause Radar (${traps.length} Detected)</span>
+            </div>
+            <span style="font-size: 10.5px; color: #fca5a5; font-weight: 600;">Disqualification Traps</span>
+          </div>
+          <div style="font-size: 11.5px; color: var(--text-2); margin-bottom: 10px; line-height: 1.45;">
+            The AI specifically audited this RFP for uncommon terms, execution prerequisites, and technical disqualifiers frequently overlooked by bidding teams:
+          </div>
+          <div class="trap-cards-list">
+            ${traps.map(t => {
+              const sev = (t.severity || 'HIGH').toLowerCase();
+              return `
+                <div class="trap-clause-card ${sev}">
+                  <div class="trap-card-top">
+                    <span class="trap-clause-name">${escapeHtml(t.clause)}</span>
+                    <span class="trap-severity-badge ${sev}">${escapeHtml(t.severity || 'HIGH')}</span>
+                  </div>
+                  <div class="trap-explanation-text">⚠️ <strong>Clause Trap:</strong> ${escapeHtml(t.trap_explanation)}</div>
+                  <div class="trap-mitigation-box">
+                    <span>🛡️ <strong>Nikom Action / Mitigation:</strong> ${escapeHtml(t.mitigation)}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ── 5. MASTER BIDDING OPERATIONS CHECKLIST ─────────────────────────────
+    const checklist = data.bidding_document_checklist || [];
+    if (checklist.length > 0) {
+      // Group checklist by envelope
+      const envelopes = {};
+      checklist.forEach((item, idx) => {
+        const env = item.envelope || 'Envelope 1: Pre-Qualification';
+        if (!envelopes[env]) envelopes[env] = [];
+        envelopes[env].push({ ...item, _idx: idx });
+      });
+
+      const savedChecksKey = `tender_chk_${tenderId}`;
+      let checkedItems = {};
+      try {
+        checkedItems = JSON.parse(localStorage.getItem(savedChecksKey) || '{}');
+      } catch (e) {}
+
+      const totalItems = checklist.length;
+      let readyCount = 0;
+      checklist.forEach((item, idx) => {
+        if (checkedItems[idx] || (item.nikom_status || '').toLowerCase() === 'ready') {
+          readyCount++;
+        }
+      });
+
+      html += `
+        <div class="bidding-checklist-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              <span style="font-size: 13px; font-weight: 700; color: var(--text);">Master Bidding Operations Checklist</span>
+            </div>
+            <span id="chk-counter-badge-${escapeHtml(tenderId)}" style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">
+              ${readyCount} of ${totalItems} Ready
+            </span>
+          </div>
+          <div style="font-size: 11.5px; color: var(--text-2); margin-bottom: 12px; line-height: 1.45;">
+            Actionable envelope breakdown. Items requiring external signature or upload are explicitly flagged:
+          </div>
+
+          <div class="envelope-groups-container">
+            ${Object.keys(envelopes).map(envName => {
+              const items = envelopes[envName];
+              return `
+                <div class="checklist-envelope-group">
+                  <div class="envelope-group-header">
+                    <span>📁 ${escapeHtml(envName)}</span>
+                    <span style="font-size: 10.5px; color: var(--text-3); font-weight: 500;">${items.length} Documents</span>
+                  </div>
+                  <div>
+                    ${items.map(it => {
+                      const isChecked = checkedItems[it._idx] !== undefined ? checkedItems[it._idx] : ((it.nikom_status || '').toLowerCase() === 'ready');
+                      const st = (it.nikom_status || 'Ready').toLowerCase();
+                      const isMissing = st.includes('missing') || st.includes('upload');
+                      const badgeClass = isMissing ? 'missing' : (st.includes('action') ? 'action' : 'ready');
+
+                      return `
+                        <div class="checklist-item-row" id="chk-row-${escapeHtml(tenderId)}-${it._idx}">
+                          <input type="checkbox" class="checklist-item-check" id="chk-input-${escapeHtml(tenderId)}-${it._idx}" ${isChecked ? 'checked' : ''} onchange="toggleChecklistItem('${escapeHtml(tenderId)}', ${it._idx})" />
+                          <div class="checklist-item-info">
+                            <div class="checklist-item-title-row">
+                              <span class="checklist-item-name">${escapeHtml(it.document_name)}</span>
+                              ${it.mandatory ? '<span style="font-size: 9.5px; font-weight: 700; color: #f87171; background: rgba(239, 68, 68, 0.12); padding: 1px 5px; border-radius: 3px;">MANDATORY</span>' : ''}
+                              <span class="checklist-status-badge ${badgeClass}">${escapeHtml(it.nikom_status || 'Ready')}</span>
+                            </div>
+                            <div class="checklist-format-tag">Format: ${escapeHtml(it.format || 'Standard Official')}</div>
+                            <div class="checklist-item-guidance">💡 ${escapeHtml(it.guidance || 'Verify document validity against RFP deadlines.')}</div>
+                            ${isMissing ? `
+                              <button type="button" onclick="switchPanelTab('documents')" class="checklist-missing-upload-btn">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>Upload Required Document / Site Certificate</span>
+                              </button>
+                            ` : ''}
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ── 6. PRE-SALES COLLABORATION BRIDGE ──────────────────────────────────
+    html += `
+      <button type="button" onclick="openInPresalesStudio('${escapeHtml(tenderId)}')" class="btn-open-presales-from-tender">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        <span>⚡ Open in Pre-Sales Sizing Studio (Collaborate with Nikom Assist) →</span>
       </button>
     `;
 
-    // 3. Strategic Executive Summary
+    // ── 7. STRATEGIC EXECUTIVE SUMMARY ─────────────────────────────────────
     if (data.executive_summary) {
       html += `
-        <div style="margin-bottom: 12px; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+        <div style="margin-top: 14px; margin-bottom: 12px; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
           <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; letter-spacing: 0.5px;">Strategic Executive Summary</div>
           <div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">${escapeHtml(data.executive_summary)}</div>
         </div>
       `;
     }
 
-    // 4. Identified RFP Risks & Red Flags
+    // ── 8. IDENTIFIED RFP RISKS & RED FLAGS ────────────────────────────────
     if (data.red_flags && Array.isArray(data.red_flags) && data.red_flags.length > 0) {
       html += `
         <div style="margin-bottom: 12px; padding: 12px 14px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px;">
@@ -1309,7 +1485,7 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
       `;
     }
 
-    // 5. Extracted Requirements vs Nikom Corporate Benchmarks (Criteria Cards)
+    // ── 9. EXTRACTED RFP REQUIREMENTS VS NIKOM PROFILE (CRITERIA CARDS) ───
     if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0) {
       html += `<div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-3); margin: 14px 0 8px; letter-spacing: 0.5px;">Extracted RFP Requirements vs Nikom Profile</div>`;
       data.criteria.forEach(c => {
@@ -1328,52 +1504,6 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
         `;
       });
     }
-
-    // 6. Interactive Tender Copilot (RFP & BOQ Q&A)
-    const thread = bedrockChatHistory[tenderId] || [];
-    const chatMessagesHtml = thread.map(msg => `
-      <div style="margin-bottom: 10px; ${msg.role === 'user' ? 'text-align: right;' : 'text-align: left;'}">
-        <div style="display: inline-block; max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 12px; line-height: 1.45; ${msg.role === 'user' ? 'background: var(--primary); color: #fff;' : 'background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid rgba(255,255,255,0.1); white-space: pre-wrap;'}">
-          ${escapeHtml(msg.text)}
-        </div>
-      </div>
-    `).join('');
-
-    html += `
-      <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 14px; margin-top: 16px;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7;"></span>
-          <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">Ask Tender Copilot (RFP & BOQ Q&A)</span>
-        </div>
-
-        <!-- Quick prompt chips -->
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the exact PAC and UPS cooling/power specifications?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            PAC & UPS Specs?
-          </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the past work order and financial turnover criteria?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            Turnover & Work Orders?
-          </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Are there Liquidated Damages (LD) or aggressive penalty clauses?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            Penalty & LD Clauses?
-          </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is Joint Venture / Consortium or MSME EMD exemption allowed?')" style="font-size: 10.5px; padding: 3px 8px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            Consortium / MSME?
-          </button>
-        </div>
-
-        <!-- Chat history thread -->
-        <div id="bedrock-chat-history-${escapeHtml(tenderId)}" style="max-height: 250px; overflow-y: auto; margin-bottom: 10px;">
-          ${chatMessagesHtml}
-        </div>
-
-        <!-- Question input -->
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="bedrock-question-input" placeholder="Ask any question about this RFP, BOQ, or timeline..." onkeydown="if(event.key === 'Enter') submitBedrockQuestion('${escapeHtml(tenderId)}')" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: var(--text); font-size: 12px;" />
-          <button type="button" id="btn-bedrock-send" onclick="submitBedrockQuestion('${escapeHtml(tenderId)}')" style="padding: 8px 14px; background: #9333ea; border: none; border-radius: 6px; color: #fff; font-weight: 600; font-size: 12px; cursor: pointer;">Ask</button>
-        </div>
-      </div>
-    `;
 
     container.innerHTML = html;
 
@@ -2040,6 +2170,8 @@ function navigateTo(nav) {
     return;
   } else if (nav === 'team') {
     initTeamView();
+  } else if (nav === 'presales') {
+    initPresalesView();
   } else if (nav === 'dashboard') {
     loadMetrics();
     renderTable(currentTenders.length > 0 ? currentTenders : allLoadedTenders);
@@ -4956,3 +5088,450 @@ document.addEventListener('change', (e) => {
     }
   }
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRE-SALES & SALES ENGINEERING AI STUDIO (NIKOM ASSIST)
+// ═══════════════════════════════════════════════════════════════════════════
+
+let presalesChatHistory = [];
+let presalesCurrentScenario = null;
+let presalesActiveTenderContext = null;
+let presalesLeadsList = [];
+
+async function initPresalesView() {
+  if (presalesChatHistory.length === 0) {
+    presalesChatHistory.push({
+      role: 'assistant',
+      text: "Hello! I am Nikom Assist, Senior Data Centre Design Engineer at Nikom InfraSolutions Pvt. Ltd.\n\nWith over 25 years of engineering heritage (206+ project deliveries, 10,528+ server racks, and 55+ MW commissioned nationwide), I assist pre-sales and sales engineering teams with:\n\n• **Engineering Sizing & Heat Load Calculations** (Precision Cooling TR, 2N UPS kVA, DG margin)\n• **High-Density AI & HPC Data Centres** (Direct-to-Chip Liquid Cooling, CDUs, Chilled Water like our BEL 100 kW project)\n• **Tier III Turnkey Data Centres** (Modular architecture, Li-ion batteries, STQC CCTV, in-row DX like our C-DoT 252 kW facility)\n• **Tender RFP & BOQ Technical Audits** (Identifying technical gaps, unrealistic SLA penalties, or missed balance of plant)\n• **24x7 Facility Operations & AMC Sizing** (Preventive schedules, MTTR/MTBF SLAs, specialized site teams)\n\nHow can I assist your engineering proposal or client discussion today? You can choose a quick scenario above or type your requirements below."
+    });
+  }
+
+  renderPresalesChat();
+  await loadPresalesLeads();
+  runPresalesSizing();
+}
+
+function renderPresalesChat() {
+  const container = document.getElementById('presales-chat-messages');
+  if (!container) return;
+
+  const tagEl = document.getElementById('presales-active-context-tag');
+  if (tagEl) {
+    if (presalesActiveTenderContext) {
+      tagEl.style.display = 'inline-block';
+      tagEl.textContent = `Tender: ${presalesActiveTenderContext}`;
+    } else {
+      tagEl.style.display = 'none';
+    }
+  }
+
+  container.innerHTML = presalesChatHistory.map((msg, idx) => {
+    const isUser = msg.role === 'user';
+    const isAssistant = !isUser;
+
+    let formattedText = escapeHtml(msg.text)
+      .replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/g, '<strong>$1</strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    let leadCardHtml = '';
+    if (isAssistant && msg.text.includes('LEAD SUMMARY')) {
+      leadCardHtml = renderLeadSummaryCardInChat(msg.text, idx);
+    }
+
+    return `
+      <div class="presales-msg-row ${isUser ? 'user' : 'assistant'}">
+        <div class="presales-msg-avatar ${isUser ? 'user' : 'assistant'}">
+          ${isUser ? 'ENG' : 'NA'}
+        </div>
+        <div class="presales-bubble">
+          <div style="white-space: pre-wrap;">${formattedText}</div>
+          ${leadCardHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderLeadSummaryCardInChat(text, idx) {
+  const lines = text.split('\n');
+  const details = {};
+  lines.forEach(line => {
+    if (line.includes(':')) {
+      const parts = line.split(':');
+      const key = parts[0].replace(/[-*•]/g, '').trim();
+      const val = parts.slice(1).join(':').trim();
+      if (key && val) details[key] = val;
+    }
+  });
+
+  return `
+    <div class="lead-summary-card">
+      <div class="lead-summary-header">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 14px;">🎯</span>
+          <span style="font-size: 12px; font-weight: 700; color: #10b981;">Captured Pre-Sales Lead Summary</span>
+        </div>
+        <button type="button" onclick="copyLeadSummaryText(${idx})" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; cursor: pointer; font-weight: 600;">
+          📋 Copy Summary
+        </button>
+      </div>
+      <div class="lead-summary-grid">
+        <div class="lead-summary-item"><label>Client / Org:</label><span>${escapeHtml(details['Client Name'] || details['Client'] || details['Organization'] || 'Prospect Client')}</span></div>
+        <div class="lead-summary-item"><label>Contact:</label><span>${escapeHtml(details['Contact Info'] || details['Phone'] || details['Email'] || 'Direct Discussion')}</span></div>
+        <div class="lead-summary-item"><label>Project Type:</label><span>${escapeHtml(details['Project Type'] || details['Scope'] || 'Data Centre Infrastructure')}</span></div>
+        <div class="lead-summary-item"><label>Capacity / Load:</label><span>${escapeHtml(details['Estimated Capacity'] || details['IT Capacity'] || details['Capacity'] || 'Under Review')}</span></div>
+        <div class="lead-summary-item"><label>Timeline:</label><span>${escapeHtml(details['Timeline'] || details['Schedule'] || 'Q1-Q2')}</span></div>
+        <div class="lead-summary-item"><label>Urgency:</label><span style="color: #fbbf24;">${escapeHtml(details['Urgency Level'] || details['Urgency'] || 'High')}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+async function sendPresalesMessage() {
+  const input = document.getElementById('presales-prompt-input');
+  if (!input) return;
+  const prompt = input.value.trim();
+  if (!prompt) return;
+
+  input.value = '';
+  presalesChatHistory.push({ role: 'user', text: prompt });
+  renderPresalesChat();
+
+  const sendBtn = document.getElementById('presales-send-btn');
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = `<span>Analyzing...</span>`;
+  }
+
+  const container = document.getElementById('presales-chat-messages');
+  if (container) {
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'presales-typing-indicator';
+    typingDiv.className = 'presales-msg-row assistant';
+    typingDiv.innerHTML = `
+      <div class="presales-msg-avatar assistant">NA</div>
+      <div class="presales-bubble" style="color: var(--text-3); font-style: italic;">
+        Nikom Assist is computing technical sizing and consulting rules...
+      </div>
+    `;
+    container.appendChild(typingDiv);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/presales/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: presalesChatHistory,
+        scenario: presalesCurrentScenario,
+        tender_id: presalesActiveTenderContext
+      })
+    });
+
+    const typingEl = document.getElementById('presales-typing-indicator');
+    if (typingEl) typingEl.remove();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Pre-sales assistant error');
+    }
+
+    const data = await res.json();
+    const reply = data.reply || 'No response returned from Nikom Assist.';
+    presalesChatHistory.push({ role: 'assistant', text: reply });
+    renderPresalesChat();
+
+    if (data.lead_captured) {
+      await loadPresalesLeads();
+      showToast('🎯 New Pre-Sales Lead Captured & Logged!');
+    }
+  } catch (err) {
+    const typingEl = document.getElementById('presales-typing-indicator');
+    if (typingEl) typingEl.remove();
+    presalesChatHistory.push({
+      role: 'assistant',
+      text: `⚠️ Error consulting Nikom Assist: ${err.message}. Please verify connection or review sizing rules.`
+    });
+    renderPresalesChat();
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span>Send</span>
+      `;
+    }
+  }
+}
+
+function handlePresalesKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendPresalesMessage();
+  }
+}
+
+function selectPresalesScenario(key) {
+  presalesCurrentScenario = key;
+  document.querySelectorAll('.scenario-chip').forEach(c => c.classList.remove('active'));
+  if (window.event && window.event.currentTarget) window.event.currentTarget.classList.add('active');
+
+  const scenarioPrompts = {
+    gpu_dlc: "We are designing an AI / High-Density Compute facility with 100 kW per rack GPU clusters (similar to the BEL project). What cooling architecture, CDUs, Chilled Water primary loops, and DG power sizing does Nikom specify?",
+    cdot_upgrade: "We need a turnkey Tier III upgrade for an active facility with 252 kW IT load, 2N UPS, In-Row DX cooling, and 24x7 O&M staffing (similar to the C-DoT Bengaluru project). How should we structure the proposal and balance of plant?",
+    power_backup: "Please calculate the 2N power distribution, UPS kVA rating, Li-ion vs VRLA battery runtime, and CPCB IV+ DG backup for a Tier III facility with 400 kW IT load.",
+    cooling_calc: "Please calculate the heat load in kW, required cooling capacity in TR (with N+1 redundancy), and recommend the optimal cooling type (PAC vs In-Row DX vs RDHx vs DLC) for 30 racks at 12 kW per rack.",
+    boq_audit: "We have received a client RFP BOQ for a 500 kW data centre. What are the common balance-of-plant omissions, unrealistic SLA penalties, and mandatory Integrated Systems Testing (IST) stages we must review?",
+    om_amc: "What is Nikom's standard 24x7 Operations & Maintenance (O&M) package structure for a Tier III data centre, including shift staffing, SLA uptime response, and preventive maintenance cycles?"
+  };
+
+  const p = scenarioPrompts[key];
+  if (p) {
+    const input = document.getElementById('presales-prompt-input');
+    if (input) {
+      input.value = p;
+      sendPresalesMessage();
+    }
+  }
+}
+
+function resetPresalesChat() {
+  presalesChatHistory = [];
+  presalesCurrentScenario = null;
+  presalesActiveTenderContext = null;
+  initPresalesView();
+  showToast('Pre-Sales Consultation Session Reset');
+}
+
+function updateDensityEstimate() {
+  const itLoad = parseFloat(document.getElementById('calc-it-load')?.value || 250);
+  const racks = parseInt(document.getElementById('calc-rack-count')?.value || 25, 10);
+  const kwPerRackInput = document.getElementById('calc-kw-per-rack');
+  if (kwPerRackInput && racks > 0) {
+    kwPerRackInput.value = (itLoad / racks).toFixed(1);
+  }
+}
+
+async function runPresalesSizing() {
+  const itLoad = parseFloat(document.getElementById('calc-it-load')?.value || 250);
+  const racks = parseInt(document.getElementById('calc-rack-count')?.value || 25, 10);
+  const redundancy = document.getElementById('calc-redundancy')?.value || "Tier III (2N Power, N+1 Cooling)";
+  const kwPerRack = itLoad / (racks || 1);
+
+  const outEl = document.getElementById('sizing-results-output');
+  if (!outEl) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/presales/calculate-sizing`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        it_load_kw: itLoad,
+        rack_count: racks,
+        kw_per_rack: kwPerRack,
+        redundancy_target: redundancy
+      })
+    });
+    if (!res.ok) throw new Error('Sizing calculation failed');
+    const d = await res.json();
+
+    outEl.style.display = 'block';
+    outEl.innerHTML = `
+      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #60a5fa; margin-bottom: 8px;">
+        ⚡ Nikom Section 5.2 Sizing Output
+      </div>
+      <div class="sizing-kpi-grid">
+        <div class="sizing-kpi-box">
+          <div class="sizing-kpi-val">${d.heat_load_kw} kW</div>
+          <div class="sizing-kpi-lbl">Total Heat Load (IT × 1.15)</div>
+        </div>
+        <div class="sizing-kpi-box">
+          <div class="sizing-kpi-val">${d.cooling_capacity_tr} TR</div>
+          <div class="sizing-kpi-lbl">Cooling Req (${d.redundancy.cooling})</div>
+        </div>
+        <div class="sizing-kpi-box">
+          <div class="sizing-kpi-val">${d.ups_rating_kva} kVA</div>
+          <div class="sizing-kpi-lbl">UPS Sizing (${d.redundancy.power})</div>
+        </div>
+        <div class="sizing-kpi-box">
+          <div class="sizing-kpi-val">${d.dg_rating_kva} kVA</div>
+          <div class="sizing-kpi-lbl">DG Set (1.25 margin, CPCB IV+)</div>
+        </div>
+      </div>
+
+      <div style="font-size: 11.5px; color: var(--text-2); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px; margin-bottom: 8px;">
+        <div style="color: #34d399; font-weight: 700; margin-bottom: 3px;">Optimal Cooling: ${escapeHtml(d.cooling_architecture)}</div>
+        <div>Estimated PUE: <strong>${d.estimated_pue}</strong> • Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
+      </div>
+
+      <button type="button" onclick="insertSizingIntoChat(${itLoad}, ${racks}, ${d.cooling_capacity_tr}, ${d.ups_rating_kva}, ${d.dg_rating_kva}, '${escapeHtml(d.cooling_architecture)}')" style="width: 100%; padding: 6px 10px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+        📋 Insert Sizing into Nikom Assist Chat →
+      </button>
+    `;
+  } catch (err) {
+    console.error('Sizing error:', err);
+  }
+}
+
+function insertSizingIntoChat(it, racks, tr, ups, dg, cool) {
+  const msg = `Here is our engineering sizing for review:\n- IT Load: ${it} kW (${racks} racks @ ${(it/racks).toFixed(1)} kW/rack)\n- Cooling Capacity: ${tr} TR (${cool})\n- UPS Sizing: ${ups} kVA (2N Dual Feed)\n- DG Capacity: ${dg} kVA (CPCB IV+ compliant with 1.25 safety factor)\n\nPlease evaluate this architecture against Nikom standards and recommend any necessary auxiliary balance-of-plant systems.`;
+  const input = document.getElementById('presales-prompt-input');
+  if (input) {
+    input.value = msg;
+    sendPresalesMessage();
+  }
+}
+
+async function loadPresalesLeads() {
+  try {
+    const res = await fetch(`${API_BASE}/api/presales/leads`);
+    if (!res.ok) return;
+    const data = await res.json();
+    presalesLeadsList = data.leads || [];
+
+    const badge = document.getElementById('presales-lead-count-badge');
+    if (badge) badge.textContent = presalesLeadsList.length;
+
+    const counterPill = document.getElementById('leads-counter-pill');
+    if (counterPill) counterPill.textContent = `${presalesLeadsList.length} Leads`;
+
+    const listContainer = document.getElementById('presales-leads-list');
+    if (listContainer) {
+      if (presalesLeadsList.length === 0) {
+        listContainer.innerHTML = `
+          <div style="font-size: 11.5px; color: var(--text-3); text-align: center; padding: 18px 10px;">
+            No leads captured yet. Nikom Assist automatically logs leads during client discussions.
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = presalesLeadsList.slice(0, 5).map((l, idx) => `
+          <div class="presales-lead-row">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong style="font-size: 12px; color: var(--text);">${escapeHtml(l.client_name || l.organization || 'Opportunity')}</strong>
+              <span style="font-size: 9.5px; font-weight: 700; color: #fbbf24; background: rgba(245, 158, 11, 0.15); padding: 1px 5px; border-radius: 3px;">${escapeHtml(l.urgency || 'High')}</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-2); margin-bottom: 2px;">
+              Capacity: <strong>${escapeHtml(l.capacity || 'TBD')}</strong> • Timeline: <strong>${escapeHtml(l.timeline || 'Q1')}</strong>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-3);">
+              Contact: ${escapeHtml(l.contact || 'In discussion')}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load presales leads:', err);
+  }
+}
+
+function openInPresalesStudio(tenderId) {
+  presalesActiveTenderContext = tenderId;
+  closeDetailsPanel();
+  navigateTo('presales');
+
+  const input = document.getElementById('presales-prompt-input');
+  if (input) {
+    input.value = `I am evaluating tender ${tenderId}. Please provide a comprehensive pre-sales engineering breakdown of the power, cooling, and SLA requirements from this tender.`;
+    sendPresalesMessage();
+  }
+  showToast(`Opened Tender ${tenderId} in Pre-Sales Studio`);
+}
+
+function viewCapturedLeadsModal() {
+  const modal = document.getElementById('modal-captured-leads');
+  const body = document.getElementById('captured-leads-modal-body');
+  if (!modal || !body) return;
+
+  if (presalesLeadsList.length === 0) {
+    body.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: var(--text-2);">
+        <div style="font-size: 32px; margin-bottom: 10px;">🎯</div>
+        <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">No Pre-Sales Leads Captured Yet</div>
+        <div style="font-size: 12px; color: var(--text-3); max-width: 400px; margin: 0 auto;">
+          When interacting with clients or prospects, Nikom Assist automatically captures requirements and generates a standardized Lead Summary.
+        </div>
+      </div>
+    `;
+  } else {
+    body.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        ${presalesLeadsList.map((l, idx) => `
+          <div style="background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div>
+                <strong style="font-size: 14px; color: var(--text);">${escapeHtml(l.client_name || l.organization || 'Corporate Opportunity')}</strong>
+                <span style="font-size: 11px; color: var(--text-3); margin-left: 8px;">Captured ${escapeHtml(l.captured_at || '')}</span>
+              </div>
+              <span style="font-size: 10px; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 2px 7px; border-radius: 4px;">QUALIFIED</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 11.5px; margin-bottom: 8px;">
+              <div><span style="color: var(--text-3);">Capacity:</span> <strong>${escapeHtml(l.capacity || 'N/A')}</strong></div>
+              <div><span style="color: var(--text-3);">Timeline:</span> <strong>${escapeHtml(l.timeline || 'N/A')}</strong></div>
+              <div><span style="color: var(--text-3);">Contact:</span> <strong>${escapeHtml(l.contact || 'N/A')}</strong></div>
+            </div>
+            ${l.raw_summary ? `
+              <div style="background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 4px; font-size: 11px; color: var(--text-2); font-family: monospace; white-space: pre-wrap; margin-bottom: 8px;">
+                ${escapeHtml(l.raw_summary)}
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="button" onclick="copyLeadSummaryText(${idx})" style="padding: 4px 10px; font-size: 11px; border-radius: 4px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; cursor: pointer; font-weight: 600;">
+                Copy to Clipboard
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeCapturedLeadsModal() {
+  const modal = document.getElementById('modal-captured-leads');
+  if (modal) modal.style.display = 'none';
+}
+
+function copyLeadSummaryText(idx) {
+  const l = presalesLeadsList[idx];
+  if (!l) return;
+  const txt = l.raw_summary || `=== LEAD SUMMARY ===\nClient: ${l.client_name}\nContact: ${l.contact}\nCapacity: ${l.capacity}\nTimeline: ${l.timeline}`;
+  navigator.clipboard.writeText(txt).then(() => {
+    showToast('✓ Lead Summary copied to clipboard!');
+  }).catch(() => {
+    showToast('Failed to copy');
+  });
+}
+
+function toggleChecklistItem(tenderId, itemIdx) {
+  const savedChecksKey = `tender_chk_${tenderId}`;
+  let checkedItems = {};
+  try {
+    checkedItems = JSON.parse(localStorage.getItem(savedChecksKey) || '{}');
+  } catch (e) {}
+
+  const cb = document.getElementById(`chk-input-${tenderId}-${itemIdx}`);
+  if (cb) {
+    checkedItems[itemIdx] = cb.checked;
+    localStorage.setItem(savedChecksKey, JSON.stringify(checkedItems));
+
+    const badge = document.getElementById(`chk-counter-badge-${tenderId}`);
+    if (badge) {
+      const allCbs = document.querySelectorAll(`[id^="chk-input-${tenderId}-"]`);
+      let count = 0;
+      allCbs.forEach(c => { if (c.checked) count++; });
+      badge.textContent = `${count} of ${allCbs.length} Ready`;
+    }
+  }
+}
