@@ -4134,7 +4134,11 @@ function handleScanStatusUpdate(data) {
         banner.className = 'live-scan-banner completed';
         if (bannerTitle) bannerTitle.textContent = 'Discovery Scan Successfully Completed';
         if (bannerSub) {
-          bannerSub.textContent = `Finished at ${finishedTime}. Evaluated ${sCount} tenders, discovered ${dCount} matching Nikom keyword tiers (${qCount} qualified).`;
+          if (data.message) {
+            bannerSub.textContent = data.message;
+          } else {
+            bannerSub.textContent = `Finished at ${finishedTime}. Evaluated ${sCount} tenders across portal pages, discovered ${dCount} matching Nikom keyword tiers (${qCount} qualified).`;
+          }
         }
         if (bannerTag) bannerTag.textContent = 'Status: Complete';
         if (bannerDismiss) bannerDismiss.style.display = 'inline-block';

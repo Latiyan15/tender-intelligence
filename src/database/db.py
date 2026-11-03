@@ -215,10 +215,11 @@ class UnifiedConnection:
 
 def get_sqlite_connection(target_path: str) -> sqlite3.Connection:
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
-    conn = sqlite3.connect(target_path, check_same_thread=False)
+    conn = sqlite3.connect(target_path, timeout=60.0, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA journal_mode = WAL;")
+    conn.execute("PRAGMA busy_timeout = 60000;")
     return conn
 
 
@@ -1459,6 +1460,23 @@ class TenderRepository:
         conn.commit()
         conn.close()
         return run_id
+
+    def cancel_stuck_source_runs(self, older_than_minutes: int = 5):
+        """Mark stale/stuck running source_runs as cancelled."""
+        conn = self._get_conn()
+        try:
+            cursor = conn.cursor()
+            cutoff = (datetime.utcnow() - timedelta(minutes=older_than_minutes)).isoformat() + "Z"
+            cursor.execute("""
+                UPDATE source_runs
+                SET status = 'cancelled',
+                    finished_at = ?,
+                    error_message = 'Cancelled due to scan reset or timeout'
+                WHERE status = 'running' AND started_at <= ?
+            """, (datetime.utcnow().isoformat() + "Z", cutoff))
+            conn.commit()
+        finally:
+            conn.close()
 
     def finish_source_run(self, run_id: int, status: str, scanned: int, discovered: int, qualified: int, error: Optional[str] = None):
         conn = self._get_conn()

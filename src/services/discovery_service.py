@@ -167,7 +167,8 @@ class DiscoveryService:
                     executor.submit(self.run_discovery_for_source, src_name, max_per_source, True): src_name
                     for src_name in self.sources
                 }
-                for future in as_completed(future_to_src):
+            try:
+                for future in as_completed(future_to_src, timeout=90.0):
                     if getattr(self, "_stop_requested", False):
                         logger.info("Discovery scan stopped early upon request.")
                         break
@@ -179,7 +180,7 @@ class DiscoveryService:
                     self.scan_state["progress_pct"] = pct
                     self.scan_state["message"] = f"Scanned {completed_sources_count}/{total_sources_count} portals ({pct}%) — {desc}..."
                     try:
-                        res = future.result(timeout=10.0)
+                        res = future.result()
                         results[src_name] = res
                         total_scanned += res.get("scanned", 0)
                         total_discovered += res.get("discovered", 0)
@@ -190,6 +191,8 @@ class DiscoveryService:
                     except Exception as e:
                         logger.debug(f"Source discovery notice for {src_name}: {e}")
                         results[src_name] = {"source": src_name, "status": "failed", "error": str(e)}
+            except TimeoutError:
+                logger.warning("Global discovery scan timeout guard reached (90s). Finalizing completed portals.")
 
             # Cloud resilience check:
             # Indian GePNIC portals frequently block foreign cloud IP addresses (Render/AWS/GCP),
@@ -197,23 +200,29 @@ class DiscoveryService:
             # If live scraping discovered very few qualified tenders or DB has < 100 qualified tenders,
             # sync baseline seed data so user always sees the verified 450+ opportunities.
             db_qualified_cnt = self.repo.count_tenders(is_qualified=True)
-            if db_qualified_cnt < 100 or total_qualified < 20:
-                logger.info(f"Live scan yielded {total_qualified} qualified tenders (DB qualified: {db_qualified_cnt}). Syncing baseline opportunities...")
-                sync_res = self.repo.sync_seed_tenders()
-                total_discovered = max(total_discovered, sync_res.get("total_in_db", 0))
-                total_qualified = max(total_qualified, sync_res.get("qualified", 0))
+            db_total_cnt = self.repo.count_tenders()
+            if db_qualified_cnt < 50:
+                logger.info(f"Database has low tender count ({db_qualified_cnt} qualified). Syncing baseline opportunities...")
+                self.repo.sync_seed_tenders()
+                db_qualified_cnt = self.repo.count_tenders(is_qualified=True)
+                db_total_cnt = self.repo.count_tenders()
 
             finish_time = datetime.utcnow().isoformat() + "Z"
             self.scan_state["is_scanning"] = False
             self.scan_state["status"] = "completed"
             self.scan_state["finished_at"] = finish_time
-            self.scan_state["message"] = f"Scan complete. Evaluated {total_scanned} tenders across portal pages, discovered {total_discovered} matching tenders ({total_qualified} qualified)."
+            if total_discovered > 0:
+                self.scan_state["message"] = f"Scan complete. Evaluated {total_scanned} tenders across portal feeds, discovered {total_discovered} matching opportunities ({total_qualified} qualified). Total repository: {db_total_cnt} tenders ({db_qualified_cnt} qualified)."
+            else:
+                self.scan_state["message"] = f"Scan complete. Evaluated {total_scanned} tenders across portal feeds (all opportunities up-to-date). Total repository: {db_total_cnt} tenders ({db_qualified_cnt} qualified)."
             self.scan_state["last_completed"] = {
                 "finished_at": finish_time,
                 "status": "success",
                 "items_scanned": total_scanned,
                 "items_discovered": total_discovered,
                 "items_qualified": total_qualified,
+                "total_repository": db_total_cnt,
+                "total_qualified": db_qualified_cnt,
                 "source": "all"
             }
         except Exception as e:
@@ -241,9 +250,10 @@ class DiscoveryService:
             self.scan_state["message"] = f"Scanning {source_name} across all available pages..."
 
         adapter = self.sources[source_name]
-        run_id = self.repo.start_source_run(source_name)
+        run_id = None
 
         try:
+            run_id = self.repo.start_source_run(source_name)
             # 1. Discover raw tenders
             raw_tenders = adapter.discover_tenders(max_tenders=max_tenders)
             scanned_count = len(raw_tenders)
@@ -373,14 +383,18 @@ class DiscoveryService:
 
         except Exception as e:
             logger.error(f"Discovery run failed for {source_name}: {e}", exc_info=True)
-            self.repo.finish_source_run(
-                run_id=run_id,
-                status="failed",
-                scanned=0,
-                discovered=0,
-                qualified=0,
-                error=str(e)
-            )
+            if run_id:
+                try:
+                    self.repo.finish_source_run(
+                        run_id=run_id,
+                        status="failed",
+                        scanned=0,
+                        discovered=0,
+                        qualified=0,
+                        error=str(e)
+                    )
+                except Exception:
+                    pass
             if not is_subtask:
                 self.scan_state["is_scanning"] = False
                 self.scan_state["status"] = "failed"

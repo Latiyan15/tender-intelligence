@@ -811,6 +811,10 @@ def reset_scan_state():
     discovery_service.scan_state["active_source"] = None
     discovery_service.scan_state["finished_at"] = datetime.utcnow().isoformat() + "Z"
     discovery_service.scan_state["message"] = "Scanner ready."
+    try:
+        repo.cancel_stuck_source_runs(older_than_minutes=0)
+    except Exception as e:
+        logger.warning(f"Could not cancel running jobs in DB: {e}")
     return {"status": "reset", "message": "Scanner reset to ready."}
 
 
