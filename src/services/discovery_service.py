@@ -162,13 +162,13 @@ class DiscoveryService:
             total_sources_count = len(self.sources)
             completed_sources_count = 0
 
-            with ThreadPoolExecutor(max_workers=16) as executor:
+            executor = ThreadPoolExecutor(max_workers=16)
+            try:
                 future_to_src = {
                     executor.submit(self.run_discovery_for_source, src_name, max_per_source, True): src_name
                     for src_name in self.sources
                 }
-            try:
-                for future in as_completed(future_to_src, timeout=90.0):
+                for future in as_completed(future_to_src, timeout=45.0):
                     if getattr(self, "_stop_requested", False):
                         logger.info("Discovery scan stopped early upon request.")
                         break
@@ -192,7 +192,12 @@ class DiscoveryService:
                         logger.debug(f"Source discovery notice for {src_name}: {e}")
                         results[src_name] = {"source": src_name, "status": "failed", "error": str(e)}
             except TimeoutError:
-                logger.warning("Global discovery scan timeout guard reached (90s). Finalizing completed portals.")
+                logger.warning("Global discovery scan timeout guard reached (45s). Finalizing completed portals.")
+            finally:
+                try:
+                    executor.shutdown(wait=False, cancel_futures=True)
+                except Exception:
+                    pass
 
             # Cloud resilience check:
             # Indian GePNIC portals frequently block foreign cloud IP addresses (Render/AWS/GCP),
