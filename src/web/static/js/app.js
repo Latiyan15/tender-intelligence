@@ -5394,7 +5394,7 @@ async function runPresalesSizing() {
       <div class="sizing-kpi-grid">
         <div class="sizing-kpi-box">
           <div class="sizing-kpi-val">${d.heat_load_kw} kW</div>
-          <div class="sizing-kpi-lbl">Total Heat Load (IT × 1.15)</div>
+          <div class="sizing-kpi-lbl">Total Heat Load (IT &times; 1.15)</div>
         </div>
         <div class="sizing-kpi-box">
           <div class="sizing-kpi-val">${d.cooling_capacity_tr} TR</div>
@@ -5412,7 +5412,7 @@ async function runPresalesSizing() {
 
       <div class="sizing-arch-summary-box">
         <div class="sizing-arch-title">Optimal Cooling: ${escapeHtml(d.cooling_architecture)}</div>
-        <div class="sizing-arch-sub">Estimated PUE: <strong>${d.estimated_pue}</strong> • Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
+        <div class="sizing-arch-sub">Estimated PUE: <strong>${d.estimated_pue}</strong> &bull; Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
       </div>
 
       <button type="button" class="btn-insert-sizing-chat" onclick="insertSizingIntoChat(${itLoad}, ${racks}, ${d.cooling_capacity_tr}, ${d.ups_rating_kva}, ${d.dg_rating_kva}, '${escapeHtml(d.cooling_architecture)}')">
