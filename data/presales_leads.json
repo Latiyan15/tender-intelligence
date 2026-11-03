@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "timestamp": "2026-11-03T16:18:21.391411Z",
+    "client_org": "DRDO Advanced Computing Lab",
+    "contact_name": "Prospective Client Lead",
+    "email": "dr.sharma@drdo.gov.in",
+    "phone": "+91-9811223344",
+    "capacity_(kw_/_racks)": "200 kW",
+    "scope": "Data Centre Turnkey / Infrastructure Design",
+    "timeline": "Immediate / Discussed in Session",
+    "urgency": "High",
+    "source": "Nikom Assist Consultation Stream"
+  }
+]

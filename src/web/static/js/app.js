@@ -2069,6 +2069,8 @@ function switchPanelTab(tabName) {
 
   if (tabBtn) tabBtn.classList.add('active');
   if (content) content.classList.add('active');
+  const panelBody = document.querySelector('.panel-body');
+  if (panelBody) panelBody.scrollTop = 0;
 
   if (tabName === 'eligibility' && currentSelectedTenderId) {
     loadPanelEligibility(currentSelectedTenderId);

@@ -411,36 +411,64 @@ Always label numbers as indicative and say final sizing needs a site survey and 
     def extract_and_save_lead(self, reply: str, history: List[Dict[str, str]]) -> Optional[Dict[str, Any]]:
         """
         Detects if a LEAD SUMMARY block is generated, parses it, and records it to storage.
+        Also automatically extracts qualified prospect details if email/phone and organization are detected.
         """
-        if "LEAD SUMMARY" not in reply:
-            return None
+        parsed = None
+        if "LEAD SUMMARY" in reply:
+            lead_pattern = re.search(r'LEAD SUMMARY\s*\n(.*?)(?:```|$)', reply, re.DOTALL)
+            if lead_pattern:
+                raw_block = lead_pattern.group(1).strip()
+                parsed = {
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "raw_block": raw_block
+                }
+                for line in raw_block.split("\n"):
+                    line = line.strip()
+                    if ":" in line:
+                        key, val = line.split(":", 1)
+                        parsed[key.strip().lower().replace(" ", "_")] = val.strip()
 
-        lead_pattern = re.search(r'LEAD SUMMARY\s*\n(.*?)(?:```|$)', reply, re.DOTALL)
-        if not lead_pattern:
-            return None
+        # Contextual lead fallback: if conversation contains contact email/phone and org
+        if not parsed:
+            full_text = " ".join([m.get("content", "") for m in history])
+            email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', full_text)
+            phone_match = re.search(r'(\+?\d[\d\s-]{8,14}\d)', full_text)
+            org_match = re.search(r'(?:we are|from|company|client|organization|org[:\s])\s*([A-Za-z0-9\s\.\-]{3,40}?)(?:[\.,\n\(]|$)', full_text, re.IGNORECASE)
+            kw_match = re.search(r'(\d+)\s*(?:kw|mw|rack|racks)', full_text, re.IGNORECASE)
 
-        raw_block = lead_pattern.group(1).strip()
-        parsed = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "raw_block": raw_block
-        }
+            if (email_match or phone_match) and (org_match or kw_match):
+                org_name = org_match.group(1).strip() if org_match else "Inquiring Enterprise / PSU"
+                contact_email = email_match.group(0).strip() if email_match else "N/A"
+                contact_phone = phone_match.group(0).strip() if phone_match else "N/A"
+                cap = kw_match.group(0).strip() if kw_match else "Custom DC Sizing"
 
-        for line in raw_block.split("\n"):
-            line = line.strip()
-            if ":" in line:
-                key, val = line.split(":", 1)
-                parsed[key.strip().lower().replace(" ", "_")] = val.strip()
+                parsed = {
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "client_org": org_name,
+                    "contact_name": "Prospective Client Lead",
+                    "email": contact_email,
+                    "phone": contact_phone,
+                    "capacity_(kw_/_racks)": cap,
+                    "scope": "Data Centre Turnkey / Infrastructure Design",
+                    "timeline": "Immediate / Discussed in Session",
+                    "urgency": "High",
+                    "source": "Nikom Assist Consultation Stream"
+                }
 
-        # Save to file
-        try:
-            with open(LEADS_DB_PATH, "r", encoding="utf-8") as f:
-                leads = json.load(f)
-            leads.insert(0, parsed)
-            with open(LEADS_DB_PATH, "w", encoding="utf-8") as f:
-                json.dump(leads, f, indent=2)
-            logger.info("Successfully recorded new pre-sales lead from Nikom Assist.")
-        except Exception as e:
-            logger.warning(f"Could not persist lead: {e}")
+        if parsed:
+            # Save to file
+            try:
+                with open(LEADS_DB_PATH, "r", encoding="utf-8") as f:
+                    leads = json.load(f)
+                email = parsed.get("email", "")
+                phone = parsed.get("phone", "")
+                if not any(email and l.get("email") == email and phone and l.get("phone") == phone for l in leads):
+                    leads.insert(0, parsed)
+                    with open(LEADS_DB_PATH, "w", encoding="utf-8") as f:
+                        json.dump(leads, f, indent=2)
+                    logger.info("Successfully recorded pre-sales lead from Nikom Assist.")
+            except Exception as e:
+                logger.warning(f"Could not persist lead: {e}")
 
         return parsed
 

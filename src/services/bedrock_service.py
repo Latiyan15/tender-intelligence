@@ -304,13 +304,24 @@ Respond strictly in valid JSON format with the following keys:
         authority = tender.get("issuing_authority") or tender.get("organization") or "N/A"
         scope = tender.get("scope_of_work") or tender.get("description") or ""
 
+        est_cost = tender.get("estimated_cost_inr")
+        emd_val = tender.get("emd_inr")
+        try:
+            est_cost_str = f"₹{int(est_cost):,}" if est_cost else "Refer BOQ / Commercial Schedule"
+        except Exception:
+            est_cost_str = str(est_cost or "Refer BOQ")
+        try:
+            emd_str = f"₹{int(emd_val):,}" if emd_val else "Exempted / Refer NIT"
+        except Exception:
+            emd_str = str(emd_val or "Exempted")
+
         context_text = f"""TENDER CONTEXT:
 Tender ID: {tender.get('tender_id', 'N/A')}
 Title: {title}
 Issuing Authority: {authority}
 Category: {tender.get('category', 'N/A')}
-Estimated Cost: ₹{tender.get('estimated_cost_inr', 0):,}
-EMD: ₹{tender.get('emd_inr', 0):,}
+Estimated Cost: {est_cost_str}
+EMD: {emd_str}
 Submission Deadline: {tender.get('submission_deadline', 'N/A')}
 
 Scope / Technical Summary:
