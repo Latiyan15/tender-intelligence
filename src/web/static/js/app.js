@@ -2148,6 +2148,8 @@ function setupEventListeners() {
 // MULTI-VIEW NAVIGATION & WORKSPACES
 // ═══════════════════════════════════════════════════════════════════════════
 function navigateTo(nav) {
+  const mainVp = document.querySelector('.main-viewport');
+  if (mainVp) mainVp.scrollTop = 0;
   if (nav === 'tenders') {
     nav = 'dashboard';
   }
@@ -5128,6 +5130,8 @@ let presalesActiveTenderContext = null;
 let presalesLeadsList = [];
 
 async function initPresalesView() {
+  const mainVp = document.querySelector('.main-viewport');
+  if (mainVp) mainVp.scrollTop = 0;
   if (presalesChatHistory.length === 0) {
     presalesChatHistory.push({
       role: 'assistant',
@@ -5388,21 +5392,21 @@ async function runPresalesSizing() {
         </div>
         <div class="sizing-kpi-box">
           <div class="sizing-kpi-val">${d.cooling_capacity_tr} TR</div>
-          <div class="sizing-kpi-lbl">Cooling Req (${d.redundancy.cooling})</div>
+          <div class="sizing-kpi-lbl">Cooling Req (N+1 Redundant)</div>
         </div>
         <div class="sizing-kpi-box">
           <div class="sizing-kpi-val">${d.ups_rating_kva} kVA</div>
-          <div class="sizing-kpi-lbl">UPS Sizing (${d.redundancy.power})</div>
+          <div class="sizing-kpi-lbl">UPS Sizing (2N Dual Feed)</div>
         </div>
         <div class="sizing-kpi-box">
           <div class="sizing-kpi-val">${d.dg_rating_kva} kVA</div>
-          <div class="sizing-kpi-lbl">DG Set (1.25 margin, CPCB IV+)</div>
+          <div class="sizing-kpi-lbl">DG Backup (1.25 CPCB IV+)</div>
         </div>
       </div>
 
-      <div style="font-size: 11.5px; color: var(--text-2); background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: 6px; margin-bottom: 8px;">
-        <div style="color: #34d399; font-weight: 700; margin-bottom: 3px;">Optimal Cooling: ${escapeHtml(d.cooling_architecture)}</div>
-        <div>Estimated PUE: <strong>${d.estimated_pue}</strong> • Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
+      <div class="sizing-arch-summary-box">
+        <div class="sizing-arch-title">Optimal Cooling: ${escapeHtml(d.cooling_architecture)}</div>
+        <div class="sizing-arch-sub">Estimated PUE: <strong>${d.estimated_pue}</strong> • Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
       </div>
 
       <button type="button" class="btn-insert-sizing-chat" onclick="insertSizingIntoChat(${itLoad}, ${racks}, ${d.cooling_capacity_tr}, ${d.ups_rating_kva}, ${d.dg_rating_kva}, '${escapeHtml(d.cooling_architecture)}')">

@@ -6661,3 +6661,279 @@ body {
 [data-theme="light"] .tender-buyer {
   color: #334155 !important;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRE-SALES STUDIO FULL-VIEWPORT LAYOUT & RESPONSIVE FIT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Remove outer scroll when inside presales view */
+.page-content:has(#view-presales.active) {
+  padding: 14px 24px 16px !important;
+  gap: 10px !important;
+}
+
+#view-presales.active {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  height: calc(100vh - 100px) !important;
+  max-height: calc(100vh - 100px) !important;
+  min-height: 520px !important;
+  overflow: hidden !important;
+}
+
+/* Compact Hero Banner */
+.presales-hero-banner {
+  padding: 10px 16px !important;
+  border-radius: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+.presales-avatar-badge {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+}
+
+/* Scenarios Bar: Clean horizontal strip without scrollbars */
+.presales-scenarios-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  padding: 2px 0 4px !important;
+  flex-shrink: 0 !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.presales-scenarios-bar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.scenario-chip {
+  padding: 5px 12px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  flex-shrink: 0 !important;
+  gap: 5px !important;
+}
+
+/* Main Studio Two-Column Grid */
+.presales-studio-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 460px !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+@media (max-width: 1366px) {
+  .presales-studio-grid {
+    grid-template-columns: 1fr 430px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .presales-studio-grid {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+  #view-presales.active {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Left Column: Chat Container */
+.presales-chat-column {
+  min-width: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.presales-chat-card {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.presales-chat-header {
+  padding: 10px 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.presales-chat-messages {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 16px 18px !important;
+  min-height: 0 !important;
+}
+
+.presales-input-container {
+  padding: 10px 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.presales-input-wrapper textarea {
+  padding: 9px 12px !important;
+  font-size: 12.5px !important;
+  min-height: 42px !important;
+}
+
+.presales-input-footer {
+  margin-top: 5px !important;
+  font-size: 10.5px !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+/* Right Column: Tools Container */
+.presales-tools-column {
+  min-width: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding-right: 4px !important;
+}
+
+.presales-tools-column::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.presales-tools-column::-webkit-scrollbar-thumb {
+  background: var(--border) !important;
+  border-radius: 999px !important;
+}
+
+.presales-tool-card {
+  padding: 14px 16px !important;
+  border-radius: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.tool-card-header {
+  margin-bottom: 10px !important;
+  padding-bottom: 7px !important;
+  gap: 8px !important;
+}
+
+.tool-badge,
+.tool-badge-green {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Sizing Inputs 3-Column + Full Width Redundancy */
+.sizing-inputs-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+
+.sizing-field.full-width {
+  grid-column: span 3 !important;
+}
+
+.sizing-field label {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  margin-bottom: 3px !important;
+}
+
+.sizing-field input,
+.sizing-field select {
+  padding: 6px 8px !important;
+  font-size: 11.5px !important;
+  border-radius: 6px !important;
+}
+
+/* Sizing KPI Output Grid */
+.sizing-results-container {
+  margin-top: 10px !important;
+  padding: 10px 12px !important;
+}
+
+.sizing-kpi-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 7px !important;
+  margin-bottom: 8px !important;
+}
+
+.sizing-kpi-box {
+  padding: 7px 9px !important;
+  border-radius: 6px !important;
+  min-width: 0 !important;
+}
+
+.sizing-kpi-val {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.sizing-kpi-lbl {
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  margin-top: 2px !important;
+}
+
+/* Optimal Cooling Summary Box */
+.sizing-arch-summary-box {
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  margin-bottom: 8px !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-2) !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.sizing-arch-title {
+  color: #34d399 !important;
+  font-weight: 700 !important;
+  margin-bottom: 2px !important;
+}
+
+[data-theme="light"] .sizing-arch-summary-box {
+  background: #F0FDF4 !important;
+  border: 1px solid #BBF7D0 !important;
+  color: #166534 !important;
+}
+
+[data-theme="light"] .sizing-arch-title {
+  color: #15803D !important;
+}
+
+.btn-insert-sizing-chat {
+  width: 100% !important;
+  padding: 7px 10px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  white-space: normal !important;
+  text-align: center !important;
+}
