@@ -70,19 +70,19 @@
 
 [data-theme="light"] {
   --theme: light;
-  --bg: #F4F7FB;
+  --bg: #F8FAFC;
   --surface: #FFFFFF;
   --surface-raised: #F1F5F9;
-  --border: #E2E8F0;
+  --border: #CBD5E1;
   --track: #E2E8F0;
 
-  --primary: #2563EB;
-  --primary-light: #3B82F6;
-  --accent: #7C3AED;
-  --accent-light: #8B5CF6;
+  --primary: #1D4ED8;
+  --primary-light: #2563EB;
+  --accent: #6D28D9;
+  --accent-light: #7C3AED;
 
   --text: #0F172A;
-  --text-2: #475569;
+  --text-2: #334155;
   --text-3: #64748B;
 
   /* Consistent Tier Colors */
@@ -6008,4 +6008,656 @@ body {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
   border-color: #c084fc;
   color: #fff;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM EXECUTIVE DAYLIGHT THEME ARCHITECTURE (HIGH CONTRAST & WCAG AAA)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Sidebar in Daylight Mode */
+[data-theme="light"] .sidebar {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .sidebar-section-title {
+  color: #64748B !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+}
+
+[data-theme="light"] .nav-item {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .nav-item:hover {
+  background: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .nav-item.active {
+  background: #EFF6FF !important;
+  color: #1D4ED8 !important;
+  font-weight: 700 !important;
+  border: 1px solid #BFDBFE !important;
+}
+
+[data-theme="light"] .nav-item.active .nav-icon svg {
+  stroke: #1D4ED8 !important;
+}
+
+[data-theme="light"] .nav-badge-presales {
+  background: #EDE9FE !important;
+  color: #6D28D9 !important;
+  border: 1px solid #C4B5FD !important;
+  font-weight: 700 !important;
+}
+
+/* 2. Pre-Sales Studio Hero & Quick Scenarios in Daylight Mode */
+[data-theme="light"] .presales-hero-banner {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .presales-hero-left h1 {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .presales-role-pill {
+  background: #EDE9FE !important;
+  color: #5B21B6 !important;
+  border: 1px solid #C4B5FD !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .presales-online-badge {
+  background: #DCFCE7 !important;
+  color: #166534 !important;
+  border: 1px solid #86EFAC !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .presales-hero-sub {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .presales-scenarios-bar .scenario-label {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .scenario-chip {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .scenario-chip svg {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .scenario-chip:hover {
+  background: #EFF6FF !important;
+  border-color: #3B82F6 !important;
+  color: #1D4ED8 !important;
+}
+
+[data-theme="light"] .scenario-chip:hover svg {
+  color: #1D4ED8 !important;
+}
+
+[data-theme="light"] .scenario-chip.active {
+  background: #1D4ED8 !important;
+  border-color: #1E40AF !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="light"] .scenario-chip.active svg {
+  color: #FFFFFF !important;
+}
+
+/* 3. Pre-Sales Chat Card & Messages in Daylight Mode */
+[data-theme="light"] .presales-chat-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .presales-chat-header {
+  background: #F8FAFC !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .presales-chat-header .context-pill {
+  background: #DBEAFE !important;
+  color: #1E40AF !important;
+  border: 1px solid #93C5FD !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .presales-chat-messages {
+  background: #F8FAFC !important;
+}
+
+[data-theme="light"] .presales-msg-row.assistant .presales-bubble {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .presales-msg-row.assistant .presales-bubble strong {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .presales-msg-row.assistant .presales-bubble p,
+[data-theme="light"] .presales-msg-row.assistant .presales-bubble li {
+  color: #1E293B !important;
+  line-height: 1.6 !important;
+}
+
+[data-theme="light"] .presales-msg-row.user .presales-bubble {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25) !important;
+}
+
+[data-theme="light"] .presales-bubble pre {
+  background: #0F172A !important;
+  color: #F8FAFC !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="light"] .presales-bubble code {
+  background: #E2E8F0 !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .presales-input-container {
+  background: #FFFFFF !important;
+  border-top: 1px solid #E2E8F0 !important;
+}
+
+[data-theme="light"] .presales-input-wrapper textarea {
+  background: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+[data-theme="light"] .presales-input-wrapper textarea:focus {
+  background: #FFFFFF !important;
+  border-color: #4338CA !important;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15) !important;
+}
+
+[data-theme="light"] .presales-input-footer {
+  color: #64748B !important;
+}
+
+[data-theme="light"] .presales-input-footer kbd {
+  background: #E2E8F0 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+/* 4. Structured Lead Summary Card in Daylight Mode */
+[data-theme="light"] .lead-summary-card {
+  background: #F0FDF4 !important;
+  border: 1px solid #86EFAC !important;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08) !important;
+}
+
+[data-theme="light"] .lead-summary-header {
+  border-bottom: 1px solid #BBF7D0 !important;
+}
+
+[data-theme="light"] .lead-summary-title {
+  color: #15803D !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .btn-copy-lead-summary {
+  background: #DCFCE7 !important;
+  border: 1px solid #86EFAC !important;
+  color: #166534 !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+}
+
+[data-theme="light"] .lead-summary-item label {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-summary-item span {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+/* 5. Pre-Sales Sizing Calculator in Daylight Mode */
+[data-theme="light"] .presales-tool-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .tool-card-header {
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+[data-theme="light"] .tool-card-header span {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .tool-badge {
+  background: #DBEAFE !important;
+  color: #1E40AF !important;
+  border: 1px solid #93C5FD !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .tool-badge-green {
+  background: #DCFCE7 !important;
+  color: #15803D !important;
+  border: 1px solid #86EFAC !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .sizing-field label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .sizing-field input,
+[data-theme="light"] .sizing-field select {
+  background: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .btn-calc-action {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+}
+
+[data-theme="light"] .sizing-results-container {
+  background: #F0F7FF !important;
+  border: 1px solid #BFDBFE !important;
+  border-radius: 8px !important;
+}
+
+[data-theme="light"] .sizing-section-header {
+  color: #1D4ED8 !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  margin-bottom: 8px !important;
+}
+
+[data-theme="light"] .sizing-kpi-box {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .sizing-kpi-val {
+  color: #1D4ED8 !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+}
+
+[data-theme="light"] .sizing-kpi-lbl {
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .btn-insert-sizing-chat {
+  background: #EDE9FE !important;
+  border: 1px solid #C4B5FD !important;
+  color: #5B21B6 !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  border-radius: 6px !important;
+  padding: 8px 12px !important;
+  width: 100% !important;
+}
+
+[data-theme="light"] .btn-insert-sizing-chat:hover {
+  background: #DDD6FE !important;
+  color: #4C1D95 !important;
+}
+
+[data-theme="light"] .presales-lead-row {
+  background: #F8FAFC !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+[data-theme="light"] .presales-lead-row:hover {
+  background: #FFFFFF !important;
+  border-color: #6D28D9 !important;
+}
+
+/* 6. Bidding Copilot in Tender Drawer */
+[data-theme="light"] .copilot-prompt-chip {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #581C87 !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  padding: 4px 9px !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme="light"] .copilot-prompt-chip:hover {
+  background: #EDE9FE !important;
+  border-color: #A855F7 !important;
+  color: #4A044E !important;
+}
+
+/* 7. Trap Radar in Tender Drawer */
+[data-theme="light"] .trap-radar-section {
+  background: #FEF2F2 !important;
+  border: 1px solid #FECACA !important;
+}
+
+[data-theme="light"] .trap-radar-title {
+  color: #B91C1C !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .trap-radar-title svg {
+  stroke: #B91C1C !important;
+}
+
+[data-theme="light"] .trap-clause-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .trap-clause-card.critical {
+  border-left: 4px solid #DC2626 !important;
+  background: #FFFFFF !important;
+}
+
+[data-theme="light"] .trap-clause-card.high {
+  border-left: 4px solid #EA580C !important;
+  background: #FFFFFF !important;
+}
+
+[data-theme="light"] .trap-clause-card.medium {
+  border-left: 4px solid #D97706 !important;
+  background: #FFFFFF !important;
+}
+
+[data-theme="light"] .trap-clause-name {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+  font-size: 12.5px !important;
+}
+
+[data-theme="light"] .trap-explanation-text {
+  color: #1E293B !important;
+  font-size: 11.5px !important;
+  line-height: 1.5 !important;
+}
+
+[data-theme="light"] .trap-mitigation-box {
+  background: #F0FDF4 !important;
+  border: 1px solid #BBF7D0 !important;
+  border-left: 3px solid #16A34A !important;
+  color: #14532D !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+}
+
+.trap-radar-badge.trap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  margin-right: 4px;
+}
+
+[data-theme="light"] .trap-radar-badge.trap {
+  background: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #FCA5A5 !important;
+}
+
+.trap-radar-badge.mitigation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  margin-bottom: 2px;
+}
+
+[data-theme="light"] .trap-radar-badge.mitigation {
+  background: #DCFCE7 !important;
+  color: #166534 !important;
+  border: 1px solid #86EFAC !important;
+}
+
+/* 8. Master Bidding Checklist in Tender Drawer */
+[data-theme="light"] .bidding-checklist-container {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .checklist-envelope-group {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+[data-theme="light"] .envelope-group-header {
+  background: #F8FAFC !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .checklist-item-row {
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+[data-theme="light"] .checklist-item-row:hover {
+  background: #F8FAFC !important;
+}
+
+[data-theme="light"] .checklist-item-name {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .checklist-format-tag {
+  color: #64748B !important;
+  font-style: italic !important;
+}
+
+[data-theme="light"] .checklist-item-guidance {
+  color: #334155 !important;
+  line-height: 1.45 !important;
+}
+
+[data-theme="light"] .checklist-status-badge.ready {
+  background: #DCFCE7 !important;
+  color: #15803D !important;
+  border: 1px solid #86EFAC !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .checklist-status-badge.missing {
+  background: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #FCA5A5 !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .checklist-status-badge.action {
+  background: #FEF3C7 !important;
+  color: #92400E !important;
+  border: 1px solid #FCD34D !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .checklist-missing-upload-btn {
+  background: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #FCA5A5 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .btn-open-presales-from-tender {
+  background: #EFF6FF !important;
+  color: #1D4ED8 !important;
+  border: 1px solid #BFDBFE !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .btn-open-presales-from-tender:hover {
+  background: #DBEAFE !important;
+  color: #1E40AF !important;
+  border-color: #93C5FD !important;
+}
+
+/* 9. Criteria Cards in Tender Drawer */
+[data-theme="light"] .criteria-card-item {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+[data-theme="light"] .criteria-title {
+  color: #0F172A !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .criteria-req-text {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .criteria-req-text strong {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .criteria-profile-match {
+  background: #F8FAFC !important;
+  border-left: 3px solid #1D4ED8 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .status-badge-met {
+  background: #DCFCE7 !important;
+  color: #15803D !important;
+  border: 1px solid #86EFAC !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .status-badge-check {
+  background: #FEF3C7 !important;
+  color: #92400E !important;
+  border: 1px solid #FCD34D !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .status-badge-not-met {
+  background: #FEE2E2 !important;
+  color: #991B1B !important;
+  border: 1px solid #FCA5A5 !important;
+  font-weight: 800 !important;
+}
+
+/* 10. Tender Table & Filter Bar in Daylight Mode */
+[data-theme="light"] .filter-chip {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1E293B !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .filter-chip:hover {
+  background: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
+}
+
+[data-theme="light"] .filter-chip.active {
+  background: #1D4ED8 !important;
+  color: #FFFFFF !important;
+  border-color: #1E40AF !important;
+}
+
+[data-theme="light"] .tenders-table thead th {
+  background: #F1F5F9 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid #CBD5E1 !important;
+}
+
+[data-theme="light"] .tenders-table tbody tr {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+[data-theme="light"] .tenders-table tbody tr:hover {
+  background: #F8FAFC !important;
+}
+
+[data-theme="light"] .tenders-table tbody tr.row-selected {
+  background: #EFF6FF !important;
+}
+
+[data-theme="light"] .tender-title-link {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .tender-ref-num {
+  color: #1D4ED8 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .tender-buyer {
+  color: #334155 !important;
 }

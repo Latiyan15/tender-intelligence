@@ -41,6 +41,7 @@
 
       <!-- Navigation Links -->
       <nav class="sidebar-nav">
+        <!-- 1. Dashboard -->
         <a href="#dashboard" class="nav-item active" data-nav="dashboard">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -51,26 +52,43 @@
           <span class="nav-label">Dashboard</span>
           <span class="nav-badge" id="nav-tender-count">0</span>
         </a>
+
+        <!-- 2. Watchlist -->
+        <a href="#watchlist" class="nav-item" data-nav="watchlist">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </span>
+          <span class="nav-label">Watchlist</span>
+        </a>
+
+        <!-- 3. Pre-Sales AI (Nikom Assist) -->
+        <a href="#presales" class="nav-item" data-nav="presales" id="sidebar-nav-presales">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Pre-Sales AI</span>
+          <span class="nav-badge nav-badge-presales">Nikom Assist</span>
+        </a>
+
+        <!-- Portals & Repositories -->
+        <div class="sidebar-section-title">PORTALS & REPOSITORY</div>
+        <!-- 4. Sources -->
         <a href="#sources" class="nav-item" data-nav="sources">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-              </path>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
             </svg>
           </span>
           <span class="nav-label">Sources</span>
         </a>
-        <a href="#keywords" class="nav-item" data-nav="keywords">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-          </span>
-          <span class="nav-label">Keywords</span>
-        </a>
+
+        <!-- 5. Documents -->
         <a href="#documents" class="nav-item" data-nav="documents">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -83,42 +101,20 @@
           </span>
           <span class="nav-label">Documents</span>
         </a>
+
+        <!-- 6. Reports -->
         <a href="#reports" class="nav-item" data-nav="reports">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path
-                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
-              </path>
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
               <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
           </span>
           <span class="nav-label">Reports</span>
         </a>
-        <a href="#watchlist" class="nav-item" data-nav="watchlist">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon
-                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-              </polygon>
-            </svg>
-          </span>
-          <span class="nav-label">Watchlist</span>
-        </a>
 
-        <!-- Pre-Sales Engineering AI Section -->
-        <div class="sidebar-section-title">ENGINEERING & SALES</div>
-        <a href="#presales" class="nav-item" data-nav="presales" id="sidebar-nav-presales">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-          </span>
-          <span class="nav-label">Pre-Sales AI</span>
-          <span class="nav-badge" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); font-size: 10px; font-weight: 700; padding: 2px 6px;">Nikom Assist</span>
-        </a>
-
-        <!-- Management Section from Image 1 -->
+        <!-- Management Section -->
         <div class="sidebar-section-title">MANAGEMENT</div>
         <a href="#runs" class="nav-item" data-nav="runs">
           <span class="nav-icon">
@@ -182,7 +178,7 @@
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
           <input type="text" id="global-search"
-            placeholder="Search tenders, organisations, locations, keywords, tender ID..." autocomplete="off">
+            placeholder="Search tenders, organisations, locations, tender ID..." autocomplete="off">
           <span class="kbd-badge">⌘ K</span>
         </div>
 
@@ -825,7 +821,7 @@
             </div>
             <div class="page-controls">
               <button class="btn-panel-primary" style="flex: none; padding: 8px 16px;" onclick="triggerDiscoveryScan()">
-                <span>🔄 Scan All Portals Now</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> <span>Scan All Portals Now</span>
               </button>
             </div>
           </div>
@@ -856,7 +852,7 @@
 
           <!-- Quick Search Bar for 42 Portals -->
           <div class="sources-search-wrap" style="margin-bottom: 16px;">
-            <input type="text" id="sources-search-input" class="sources-search-input" placeholder="🔍 Search portals by name, code, state, or authority (e.g. GeM, MahaTenders, IOCL, AIIMS)..." oninput="filterSourcesBySearch(this.value)">
+            <input type="text" id="sources-search-input" class="sources-search-input" placeholder="Search portals by name, code, state, or authority (e.g. GeM, MahaTenders, IOCL, AIIMS)..." oninput="filterSourcesBySearch(this.value)">
           </div>
 
           <!-- Category Filter Chips Bar -->
@@ -872,132 +868,7 @@
 
         </div>
 
-        <!-- ════════════════════════════════════════════════════════════════════
-             VIEW 4: KEYWORDS (KEYWORD INTELLIGENCE & RULE TESTER)
-             ════════════════════════════════════════════════════════════════════ -->
-        <div class="view-page" id="view-keywords" style="display: none;">
-          <div class="page-header-row">
-            <div>
-              <h1 class="page-title">Keyword Intelligence Workbench</h1>
-              <p class="page-subtitle">Rule definitions, tier weighting, context verification, and interactive matching
-                tester</p>
-            </div>
-          </div>
-
-          <!-- Interactive Rule Tester Card -->
-          <div class="tenders-section" style="height: auto; max-height: none; margin-bottom: 24px;">
-            <h3 class="analytics-title" style="margin-bottom: 6px;">🧪 Live Keyword Match Tester</h3>
-            <p style="font-size: 12.5px; color: var(--text-2); margin-bottom: 14px;">
-              Paste any tender title or RFP specification below to test against Tier A (Cyber Security), Tier B (IT Infrastructure), Tier C (Cloud), and Tier D (Non-IT Infrastructure & Services) rules in real-time.
-            </p>
-            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-              <textarea id="kw-test-input" rows="3"
-                style="flex: 1; padding: 12px 16px; background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); border-radius: 16px; font-family: inherit; font-size: 13px; outline: none; transition: border-color 0.2s;"
-                placeholder="Example: Supply, installation and commissioning of Next-Generation Firewall (NGFW), SOC SIEM integration, 42U Server Racks, Enterprise SAN Storage, Cloud Migration, and 3-Year Comprehensive Annual Maintenance (CAMC)..."></textarea>
-            </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-              <button class="btn-secondary" onclick="loadSampleText()">Load Sample</button>
-              <button class="btn-panel-primary" style="flex: none; padding: 8px 18px;" onclick="runKeywordTest()">
-                Run Test Match
-              </button>
-            </div>
-
-            <!-- Test Result Box -->
-            <div id="kw-test-result"
-              style="display: none; margin-top: 16px; padding: 16px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 16px; color: var(--text);">
-              <!-- Result injected via JS -->
-            </div>
-          </div>
-
-          <!-- Tier Dictionaries Grid -->
-          <div class="tier-dictionaries-grid">
-            <div class="dict-card tier-a-dict">
-              <div class="dict-header">
-                <span class="dict-title">Tier A: Cyber Security</span>
-                <span class="panel-tier-badge tier-badge-a">Zero Trust / SOC / Firewall</span>
-              </div>
-              <div class="dict-tags">
-                <span class="dict-tag">firewall</span>
-                <span class="dict-tag">NGFW</span>
-                <span class="dict-tag">UTM</span>
-                <span class="dict-tag">SOC</span>
-                <span class="dict-tag">SIEM</span>
-                <span class="dict-tag">EDR / XDR</span>
-                <span class="dict-tag">zero trust</span>
-                <span class="dict-tag">IAM / PAM</span>
-                <span class="dict-tag">DLP</span>
-                <span class="dict-tag">VAPT</span>
-                <span class="dict-tag">CERT-In</span>
-                <span class="dict-tag">encryption</span>
-              </div>
-            </div>
-
-            <div class="dict-card tier-b-dict">
-              <div class="dict-header">
-                <span class="dict-title">Tier B: IT Infrastructure</span>
-                <span class="panel-tier-badge tier-badge-b">Compute / Storage / Network</span>
-              </div>
-              <div class="dict-tags">
-                <span class="dict-tag">rack server</span>
-                <span class="dict-tag">blade server</span>
-                <span class="dict-tag">SAN storage</span>
-                <span class="dict-tag">NAS storage</span>
-                <span class="dict-tag">core switch</span>
-                <span class="dict-tag">managed switch</span>
-                <span class="dict-tag">core router</span>
-                <span class="dict-tag">structured cabling</span>
-                <span class="dict-tag">fiber optic</span>
-                <span class="dict-tag">server rack</span>
-                <span class="dict-tag">KVM switch</span>
-                <span class="dict-tag">wireless AP</span>
-              </div>
-            </div>
-
-            <div class="dict-card tier-c-dict">
-              <div class="dict-header">
-                <span class="dict-title">Tier C: Cloud</span>
-                <span class="panel-tier-badge tier-badge-c">Cloud & Virtualization</span>
-              </div>
-              <div class="dict-tags">
-                <span class="dict-tag">cloud computing</span>
-                <span class="dict-tag">cloud hosting</span>
-                <span class="dict-tag">AWS / Azure / GCP</span>
-                <span class="dict-tag">private cloud</span>
-                <span class="dict-tag">virtual machine</span>
-                <span class="dict-tag">VMware</span>
-                <span class="dict-tag">Nutanix HCI</span>
-                <span class="dict-tag">Kubernetes</span>
-                <span class="dict-tag">Docker</span>
-                <span class="dict-tag">cloud migration</span>
-                <span class="dict-tag">DRaaS</span>
-                <span class="dict-tag">IaaS / PaaS / SaaS</span>
-              </div>
-            </div>
-
-            <div class="dict-card tier-d-dict">
-              <div class="dict-header">
-                <span class="dict-title">Tier D: Non-IT Infrastructure & Services</span>
-                <span class="panel-tier-badge tier-badge-d">Power / Cooling / AMC & FMS</span>
-              </div>
-              <div class="dict-tags">
-                <span class="dict-tag">online UPS</span>
-                <span class="dict-tag">modular UPS</span>
-                <span class="dict-tag">precision air (PAC)</span>
-                <span class="dict-tag">CRAC / CRAH</span>
-                <span class="dict-tag">DG set</span>
-                <span class="dict-tag">FM-200 / Novec</span>
-                <span class="dict-tag">VESDA</span>
-                <span class="dict-tag">raised floor</span>
-                <span class="dict-tag">IBMS / DCIM</span>
-                <span class="dict-tag">CAMC / AMC</span>
-                <span class="dict-tag">FMS</span>
-                <span class="dict-tag">O&M / Managed Services</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ════════════════════════════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════════════════════════
              VIEW 5: DOCUMENTS (EXTRACTED EVIDENCE REPOSITORY)
              ════════════════════════════════════════════════════════════════════ -->
         <div class="view-page" id="view-documents" style="display: none;">
@@ -1021,7 +892,7 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-blue">📄</span>
+                  <span class="kpi-icon kpi-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-total">0</div>
                     <div class="kpi-label">Total Documents Synced</div>
@@ -1032,7 +903,7 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-red">🛡️</span>
+                  <span class="kpi-icon kpi-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-cyber">0</div>
                     <div class="kpi-label">Cyber Security NITs</div>
@@ -1043,7 +914,7 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-blue">⚙️</span>
+                  <span class="kpi-icon kpi-indigo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-infra">0</div>
                     <div class="kpi-label">IT Infrastructure Docs</div>
@@ -1054,7 +925,7 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-green">☁️</span>
+                  <span class="kpi-icon kpi-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-cloud">0</div>
                     <div class="kpi-label">Cloud & Services Docs</div>
@@ -1580,22 +1451,28 @@
           <div class="presales-scenarios-bar">
             <span class="scenario-label">Quick Scenarios:</span>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('gpu_dlc')">
-              ⚡ High-Density GPU / AI DC (BEL 100 kW DLC)
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+              <span>High-Density GPU / AI DC (BEL 100 kW DLC)</span>
             </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cdot_upgrade')">
-              🏢 Tier III Turnkey Upgrade (C-DoT 252 kW In-Row)
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              <span>Tier III Turnkey Upgrade (C-DoT 252 kW In-Row)</span>
             </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('power_backup')">
-              🔋 2N Power & DG Sizing (CPCB IV+)
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>2N Power & DG Sizing (CPCB IV+)</span>
             </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cooling_calc')">
-              ❄️ Precision Cooling & TR Sizing
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+              <span>Precision Cooling & TR Sizing</span>
             </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('boq_audit')">
-              📋 RFP & BOQ Technical Specs Audit
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>
+              <span>RFP & BOQ Technical Specs Audit</span>
             </button>
             <button type="button" class="scenario-chip" onclick="selectPresalesScenario('om_amc')">
-              🛠️ 24x7 O&M & SLA Guarantee
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              <span>24x7 O&M & SLA Guarantee</span>
             </button>
           </div>
 
@@ -1633,8 +1510,8 @@
                     </button>
                   </div>
                   <div class="presales-input-footer">
-                    <span>💡 Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line</span>
-                    <span style="color: var(--text-3);">Nikom Assist extracts structured <strong>LEAD SUMMARY</strong> upon receiving client/capacity specs</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line</span>
+                    <span style="color: var(--text-3);">Structured <strong>LEAD SUMMARY</strong> generated automatically upon capacity specifications</span>
                   </div>
                 </div>
               </div>
@@ -1676,7 +1553,8 @@
                 </div>
 
                 <button type="button" class="btn-calc-action" onclick="runPresalesSizing()">
-                  <span>⚡ Calculate Sizing & Architecture</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                  <span>Calculate Sizing & Architecture</span>
                 </button>
 
                 <!-- Results Output Display -->
@@ -1770,10 +1648,7 @@
             <span>Qualify & Eligibility</span>
             <span class="tab-badge" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">AI</span>
           </button>
-          <button class="panel-tab" data-ptab="keywords" onclick="switchPanelTab('keywords')">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span>Keywords</span>
-          </button>
+
         </div>
       </div>
 
@@ -1940,7 +1815,8 @@
               </div>
             </div>
             <button type="button" class="btn-autofetch-trigger" id="btn-autofetch-trigger" onclick="autoFetchCurrentTenderDoc()">
-              <span>⚡ Fetch & Attach Official GeM PDF</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Fetch & Attach Official GeM PDF</span>
             </button>
           </div>
 
@@ -1987,13 +1863,6 @@
           </div>
         </div>
 
-        <!-- Tab 4: Keywords & Evidence Tab -->
-        <div class="tab-content" id="ptab-keywords">
-          <div class="evidence-matches-list" id="panel-matches-list">
-            <!-- Injected via JS -->
-          </div>
-        </div>
-
       </div>
 
       <!-- Panel Sticky Bottom Action Buttons -->
@@ -2029,7 +1898,7 @@
     <div class="modal-dialog" style="max-width: 580px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 20px;">📧</span>
+          <span class="modal-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span>
           <div>
             <h3 class="modal-title">Bidding Team Email Digest</h3>
             <p class="modal-subtitle">Dispatch verified new tender alerts from the past 24 hours</p>
@@ -2086,7 +1955,7 @@
     <div class="modal-dialog" style="max-width: 540px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
       <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; font-size: 22px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">⚠️</span>
+          <span class="modal-icon" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
           <div>
             <h3 class="modal-title" style="color: #ef4444; font-size: 16px; margin: 0;">Warning: Disqualified Tender Override</h3>
             <p class="modal-subtitle" style="margin-top: 2px;">Confirming movement of an out-of-scope / disqualified tender</p>
@@ -2137,7 +2006,7 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon">🌐</span>
+          <span class="modal-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
           <div>
             <h3 class="modal-title">Register Monitored Portal</h3>
             <p class="modal-subtitle">Configure an automated tender intake endpoint</p>
@@ -2188,7 +2057,7 @@
             </select>
           </div>
           <div class="modal-alert-box">
-            <span>ℹ️</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             <div>New sources will be registered in <strong>Adapter Standby</strong> mode until connection diagnostics
               and CAPTCHA handling parameters are verified.</div>
           </div>
@@ -2206,7 +2075,7 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon" id="src-det-icon">📡</span>
+          <span class="modal-icon" id="src-det-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg></span>
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <h3 class="modal-title" id="src-det-name">Portal Details</h3>
@@ -2300,7 +2169,8 @@
       <div class="bulk-separator"></div>
 
       <button class="bulk-btn-close" onclick="clearTenderSelection()" title="Clear selection">
-        ✕ Clear
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span>Clear</span>
       </button>
     </div>
   </div>
@@ -2310,7 +2180,7 @@
     <div class="modal-dialog" style="max-width: 860px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary); font-size: 20px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">📝</span>
+          <span class="modal-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary); width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Bid Preparation & Statutory Drafting Studio</h3>
@@ -2328,7 +2198,7 @@
 
       <div class="modal-footer" style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
         <div style="font-size: 11.5px; color: var(--text-2); display: flex; align-items: center; gap: 6px;">
-          <span style="color: var(--primary);">⚡</span> All undertakings formatted on official Nikom InfraSolutions Pvt. Ltd. letterhead
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary); vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> All undertakings formatted on official Nikom InfraSolutions Pvt. Ltd. letterhead
         </div>
         <div style="display: flex; gap: 10px;">
           <button type="button" class="btn-modal-secondary" onclick="closeBidDraftingModal()">Close</button>
@@ -2349,7 +2219,7 @@
     <div class="modal-dialog" style="max-width: 840px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-size: 20px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;">🎯</span>
+          <span class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
           <div>
             <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Pre-Sales Leads & Consultation Opportunities</h3>
             <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-captured by Nikom Assist following standard Lead Qualification guidelines</p>
@@ -2372,7 +2242,7 @@
   </div>
 
   <!-- Main JavaScript Logic -->
-  <script src="/static/js/app.js?v=20261103_v14_presales_and_checklist"></script>
+  <script src="/static/js/app.js?v=20261103_v16_premium_ui_daylight"></script>
 </body>
 
 </html>

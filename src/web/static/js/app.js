@@ -483,7 +483,7 @@ function renderTable(tenders) {
     tbody.innerHTML = `
       <tr>
         <td colspan="12" style="text-align: center; padding: 64px 20px;">
-          <div style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+          <div style="display: flex; justify-content: center; margin-bottom: 8px; color: var(--text-3);"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
           <div style="font-size: 15px; font-weight: 600; color: var(--text);">No matching tenders found</div>
           <div style="font-size: 12.5px; color: var(--text-3); margin-top: 4px;">Try resetting filters or adjusting search keywords.</div>
         </td>
@@ -842,17 +842,17 @@ function updatePanelVerificationState(t) {
 
   if (st === 'verified') {
     dot.className = 'verification-dot verified';
-    label.textContent = '✓ Human Verified: Approved for Bidding';
+    label.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Human Verified: Approved for Bidding</span>';
     sub.textContent = 'Feasibility confirmed by Bidding Engineer';
     if (approveBtn) approveBtn.style.display = 'none';
   } else if (st === 'doc_attached') {
     dot.className = 'verification-dot verified';
-    label.textContent = '✓ Official NIT Attached';
+    label.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Official NIT Attached</span>';
     sub.textContent = 'Document submitted & verified in Qualification';
     if (approveBtn) approveBtn.style.display = 'none';
   } else if (st === 'rejected' || st === 'disqualified') {
     dot.className = 'verification-dot rejected';
-    label.textContent = '⚠️ Flagged as Out-of-Scope / Disqualified';
+    label.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Flagged as Out-of-Scope / Disqualified</span>';
     sub.textContent = t.qualification_reason || 'Marked disqualified by engineer';
     if (approveBtn) {
       approveBtn.style.display = 'inline-flex';
@@ -1071,7 +1071,7 @@ async function autoFetchCurrentTenderDoc() {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.innerHTML = `<span>⚡ Fetch & Attach Official GeM PDF</span>`;
+      btn.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Fetch & Attach Official GeM PDF</span>`;
     }
   }
 }
@@ -1177,7 +1177,7 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
     if (!data.has_document) {
       container.innerHTML = `
         <div style="padding: 32px 20px; text-align: center; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.12); border-radius: 12px; margin-top: 10px;">
-          <div style="font-size: 36px; margin-bottom: 12px;">📄</div>
+          <div style="display: flex; justify-content: center; margin-bottom: 12px; color: var(--text-3);"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
           <div style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px;">No Tender Document Attached Yet</div>
           <div style="font-size: 12.5px; color: var(--text-2); max-width: 480px; margin: 0 auto 20px; line-height: 1.55;">
             ${escapeHtml(data.notice || 'Upload or auto-fetch the official RFP, NIT, or BOQ PDF under "Documents & Pack". AWS Bedrock AI will extract all qualification requirements directly from the document and compare them against Nikom\'s corporate benchmarks.')}
@@ -1259,7 +1259,7 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
           </div>
         </div>
         <button type="button" onclick="loadPanelEligibility('${escapeHtml(tenderId)}', true)" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-          <span>⚡ Re-Evaluate</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> Re-Evaluate</span>
         </button>
       </div>
     `;
@@ -1302,21 +1302,26 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
         </div>
 
         <!-- Quick prompt chips for bidding team -->
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is there any compulsory pre-bid site inspection required with a signed certificate?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            📍 Compulsory Site Visit?
+        <div class="copilot-chips-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+          <button type="button" class="copilot-prompt-chip" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is there any compulsory pre-bid site inspection required with a signed certificate?')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>Compulsory Site Visit?</span>
           </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the specific OEM MAF requirements, warranty period, and ink signature rules?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            📑 OEM MAF Rules?
+          <button type="button" class="copilot-prompt-chip" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the specific OEM MAF requirements, warranty period, and ink signature rules?')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>OEM MAF Rules?</span>
           </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is Make in India (MII) local content certificate mandatory with CA UDIN?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            🇮🇳 MII Local Content & UDIN?
+          <button type="button" class="copilot-prompt-chip" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Is Make in India (MII) local content certificate mandatory with CA UDIN?')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>MII Local Content & UDIN?</span>
           </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Are there Liquidated Damages (LD) or milestone delay penalty clauses?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            ⚠️ LD & Penalty Ceilings?
+          <button type="button" class="copilot-prompt-chip" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'Are there Liquidated Damages (LD) or milestone delay penalty clauses?')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span>LD & Penalty Ceilings?</span>
           </button>
-          <button type="button" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the exact technical specifications for UPS, PAC, and DG sets?')" style="font-size: 10.5px; padding: 4px 9px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); color: #c084fc; cursor: pointer;">
-            ⚡ UPS & Cooling Specs?
+          <button type="button" class="copilot-prompt-chip" onclick="askBedrockPromptQuick('${escapeHtml(tenderId)}', 'What are the exact technical specifications for UPS, PAC, and DG sets?')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>UPS & Cooling Specs?</span>
           </button>
         </div>
 
@@ -1357,9 +1362,19 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
                     <span class="trap-clause-name">${escapeHtml(t.clause)}</span>
                     <span class="trap-severity-badge ${sev}">${escapeHtml(t.severity || 'HIGH')}</span>
                   </div>
-                  <div class="trap-explanation-text">⚠️ <strong>Clause Trap:</strong> ${escapeHtml(t.trap_explanation)}</div>
+                  <div class="trap-explanation-text">
+                    <span class="trap-radar-badge trap">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                      Clause Trap
+                    </span>
+                    <span>${escapeHtml(t.trap_explanation)}</span>
+                  </div>
                   <div class="trap-mitigation-box">
-                    <span>🛡️ <strong>Nikom Action / Mitigation:</strong> ${escapeHtml(t.mitigation)}</span>
+                    <div class="trap-radar-badge mitigation">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                      Nikom Action / Mitigation
+                    </div>
+                    <div>${escapeHtml(t.mitigation)}</div>
                   </div>
                 </div>
               `;
@@ -1415,7 +1430,10 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
               return `
                 <div class="checklist-envelope-group">
                   <div class="envelope-group-header">
-                    <span>📁 ${escapeHtml(envName)}</span>
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                      <span>${escapeHtml(envName)}</span>
+                    </span>
                     <span style="font-size: 10.5px; color: var(--text-3); font-weight: 500;">${items.length} Documents</span>
                   </div>
                   <div>
@@ -1435,7 +1453,10 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
                               <span class="checklist-status-badge ${badgeClass}">${escapeHtml(it.nikom_status || 'Ready')}</span>
                             </div>
                             <div class="checklist-format-tag">Format: ${escapeHtml(it.format || 'Standard Official')}</div>
-                            <div class="checklist-item-guidance">💡 ${escapeHtml(it.guidance || 'Verify document validity against RFP deadlines.')}</div>
+                            <div class="checklist-item-guidance">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                              <span>${escapeHtml(it.guidance || 'Verify document validity against RFP deadlines.')}</span>
+                            </div>
                             ${isMissing ? `
                               <button type="button" onclick="switchPanelTab('documents')" class="checklist-missing-upload-btn">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -1459,7 +1480,7 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
     html += `
       <button type="button" onclick="openInPresalesStudio('${escapeHtml(tenderId)}')" class="btn-open-presales-from-tender">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-        <span>⚡ Open in Pre-Sales Sizing Studio (Collaborate with Nikom Assist) →</span>
+        <span>Open in Pre-Sales Sizing Studio (Collaborate with Nikom Assist) →</span>
       </button>
     `;
 
@@ -1497,9 +1518,15 @@ async function loadPanelEligibility(tenderId, forceRefresh = false) {
               <span class="criteria-title">${escapeHtml(c.name)}</span>
               <span class="${statusClass}">${escapeHtml(c.status)}</span>
             </div>
-            <div class="criteria-req-text">📋 RFP Requirement: <strong>${escapeHtml(c.requirement)}</strong></div>
-            <div class="criteria-profile-match">🏢 Nikom Match: <span>${escapeHtml(c.nikom_profile)}</span></div>
-            ${c.notes ? `<div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">💡 Note: ${escapeHtml(c.notes)}</div>` : ''}
+            <div class="criteria-req-text">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <span>RFP Requirement: <strong>${escapeHtml(c.requirement)}</strong></span>
+            </div>
+            <div class="criteria-profile-match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span>Nikom Qualification: <strong>${escapeHtml(c.nikom_profile)}</strong></span>
+            </div>
+            ${c.notes ? `<div style="font-size: 11px; color: var(--text-3); margin-top: 4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Note: ${escapeHtml(c.notes)}</div>` : ''}
           </div>
         `;
       });
@@ -1661,7 +1688,7 @@ function renderDraftingStudio(data) {
         </div>
         <div style="text-align: right;">
           <span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; background: ${missingCount > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)'}; color: ${missingCount > 0 ? 'var(--error)' : 'var(--ok)'}; border: 1px solid ${missingCount > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'};">
-            ${missingCount > 0 ? `⚠️ ${missingCount} Action${missingCount > 1 ? 's' : ''} Required` : '✓ All Items Attached'}
+            ${missingCount > 0 ? `${missingCount} Action${missingCount > 1 ? 's' : ''} Required` : 'All Items Attached'}
           </span>
           <div style="font-size: 11px; color: var(--text-3); margin-top: 3px;">${data.ready_items_count} of ${data.total_items_count} Items Ready</div>
         </div>
@@ -1680,7 +1707,7 @@ function renderDraftingStudio(data) {
       <div style="margin-bottom: 20px; border: 1px solid ${missingCount > 0 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}; background: ${missingCount > 0 ? 'rgba(239, 68, 68, 0.04)' : 'rgba(16, 185, 129, 0.04)'}; border-radius: 10px; padding: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 16px;">${missingCount > 0 ? '🚨' : '✓'}</span>
+            <span style="font-size: 16px;">${missingCount > 0 ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>'}</span>
             <span style="font-size: 13.5px; font-weight: 700; color: ${missingCount > 0 ? 'var(--error)' : 'var(--ok)'};">
               ${missingCount > 0 ? 'Missing Mandatory RFP Documents (AI Detected)' : 'All Specific RFP Documents Attached'}
             </span>
@@ -1700,14 +1727,14 @@ function renderDraftingStudio(data) {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                   <div>
                     <span style="font-size: 13px; font-weight: 700; color: var(--text);">${escapeHtml(m.title)}</span>
-                    <div style="font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;">📋 ${escapeHtml(m.clause_reference)}</div>
+                    <div style="font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> ${escapeHtml(m.clause_reference)}</div>
                   </div>
                   <span style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: ${isMissing ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)'}; color: ${isMissing ? 'var(--error)' : 'var(--ok)'}; border: 1px solid ${isMissing ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'};">
-                    ${isMissing ? 'Missing: Upload Needed' : '✓ Attached & Verified'}
+                    ${isMissing ? 'Missing: Upload Needed' : 'Attached & Verified'}
                   </span>
                 </div>
                 <div style="font-size: 11.5px; color: var(--text-2); line-height: 1.45; margin-bottom: 10px;">
-                  💡 <strong>AI Guidance:</strong> ${escapeHtml(m.ai_guidance)}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <strong>AI Guidance:</strong> ${escapeHtml(m.ai_guidance)}
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px;">
@@ -1716,7 +1743,7 @@ function renderDraftingStudio(data) {
                     <div>
                       <input type="file" id="input-missing-${m.key}" accept=".pdf,.docx,.png,.jpg,.jpeg" onchange="uploadMissingDraftDocument('${escapeHtml(tenderId)}', '${m.key}', this)" style="display: none;" />
                       <button type="button" onclick="document.getElementById('input-missing-${m.key}').click()" style="padding: 6px 14px; background: var(--surface-raised); border: 1px solid rgba(239, 68, 68, 0.4); color: var(--error); border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;">
-                        <span>📎 Browse & Upload ${escapeHtml(m.title)}</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>Browse & Upload ${escapeHtml(m.title)}</span>
                       </button>
                     </div>
                   ` : `
@@ -1761,7 +1788,7 @@ function renderDraftingStudio(data) {
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">${escapeHtml(d.title)}</span>
                   <span style="font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: ${isGen ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.1)'}; color: ${isGen ? 'var(--ok)' : 'var(--primary)'}; border: 1px solid ${isGen ? 'rgba(16,185,129,0.25)' : 'rgba(37,99,235,0.2)'};">
-                    ${isGen ? '✓ Generated' : 'Ready to Draft'}
+                    ${isGen ? 'Generated' : 'Ready to Draft'}
                   </span>
                 </div>
                 <div style="font-size: 11px; color: var(--text-3); margin-top: 3px;">
@@ -1770,7 +1797,7 @@ function renderDraftingStudio(data) {
               </div>
               <div style="display: flex; gap: 6px; align-items: center;">
                 <button type="button" onclick="generateLetterheadDraft('${escapeHtml(tenderId)}', '${d.key}')" style="padding: 6px 13px; background: ${isGen ? 'var(--surface-raised)' : 'var(--primary)'}; border: 1px solid ${isGen ? 'var(--border)' : 'var(--primary)'}; color: ${isGen ? 'var(--text-2)' : '#ffffff'}; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s;">
-                  ${isGen ? '↻ Re-Generate' : '⚡ Generate PDF'}
+                  ${isGen ? 'Re-Generate PDF' : 'Generate PDF'}
                 </button>
                 ${isGen ? `
                   <a href="/api/drafting/${encodeURIComponent(tenderId)}/download-doc?doc_key=${d.key}" target="_blank" style="padding: 6px 12px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--ok); border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;">
@@ -2158,7 +2185,8 @@ function navigateTo(nav) {
   } else if (nav === 'documents') {
     loadDocumentsView();
   } else if (nav === 'keywords') {
-    initKeywordsView();
+    navigateTo('dashboard');
+    return;
   } else if (nav === 'reports') {
     initReportsView();
   } else if (nav === 'watchlist') {
@@ -2873,7 +2901,7 @@ async function initRunsView() {
         const qualified = r.items_qualified || 0;
         const isOk = r.status === 'success';
         const statusBadge = isOk 
-          ? `<span class="source-card-badge badge-live">✓ Completed</span>` 
+          ? `<span class="source-card-badge badge-live"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Completed</span>` 
           : (r.status === 'running' 
               ? `<span class="source-card-badge" style="background:rgba(59,130,246,0.15); color:var(--primary); border:1px solid rgba(59,130,246,0.3);">⚡ In Progress</span>`
               : `<span class="source-card-badge badge-standby">Failed</span>`);
@@ -3018,8 +3046,8 @@ function renderSourceCard(s) {
       </div>
       <div class="source-card-actions">
         ${isLive 
-          ? `<button class="btn-card-sync" onclick="triggerDiscoveryScan('${escapeHtml(s.id)}')">🔄 Sync Scraper Now</button>`
-          : `<button class="btn-card-inspect" onclick="openSourceDetailsModal('${escapeHtml(s.id)}')">⚙️ Inspect Adapter</button>`
+          ? `<button class="btn-card-sync" onclick="triggerDiscoveryScan('${escapeHtml(s.id)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> <span>Sync Scraper Now</span></button>`
+          : `<button class="btn-card-inspect" onclick="openSourceDetailsModal('${escapeHtml(s.id)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>Inspect Adapter</span></button>`
         }
       </div>
     </div>
@@ -3073,7 +3101,7 @@ async function loadSourcesView() {
           const isActive = activeSourcesCategoryFilter === cat.id;
           return `
             <button class="sources-filter-chip ${isActive ? 'active' : ''}" data-cat="${cat.id}" onclick="filterSourcesCategory('${cat.id}')">
-              ${cat.iconEmoji} ${cat.shortTitle} <span class="chip-count">${count}</span>
+              <span class="chip-cat-icon" style="color: ${cat.color};">${cat.icon.replace('width="20" height="20"', 'width="13" height="13"')}</span> <span>${cat.shortTitle}</span> <span class="chip-count">${count}</span>
             </button>
           `;
         }).join('')}
@@ -4208,7 +4236,7 @@ function handleScanStatusUpdate(data) {
     // 1. Header status pill (Pulsing glowing blue)
     if (pill) {
       pill.className = 'scan-status-pill scanning';
-      if (pillLabel) pillLabel.textContent = `⚡ ${activeSrc}${scannedText}...`;
+      if (pillLabel) pillLabel.textContent = `${activeSrc}${scannedText}...`;
     }
 
     // 2. Global notification banner (Animated blue/indigo progress)
@@ -4250,7 +4278,7 @@ function handleScanStatusUpdate(data) {
       // 1. Header pill completed (Emerald green)
       if (pill) {
         pill.className = 'scan-status-pill completed';
-        if (pillLabel) pillLabel.textContent = `✅ Scan Complete • ${qCount} qualified`;
+        if (pillLabel) pillLabel.textContent = `Scan Complete • ${qCount} qualified`;
         if (revertPillTimer) clearTimeout(revertPillTimer);
         revertPillTimer = setTimeout(() => {
           if (!wasScanning) {
@@ -4282,7 +4310,7 @@ function handleScanStatusUpdate(data) {
       }
 
       // 3. Toast notification
-      showToast(`✅ Discovery scan complete! Found ${qCount} qualified tenders.`);
+      showToast(`Discovery scan complete! Found ${qCount} qualified tenders.`);
 
       // 4. Automatically reload tenders and metrics to populate new feed
       loadMetrics();
@@ -5041,7 +5069,7 @@ async function sendBiddingEmailAlert() {
         statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
         statusEl.style.color = '#10b981';
         statusEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-        statusEl.innerHTML = `<strong>✓ Live Email Delivered to Inbox!</strong><br>Successfully transmitted to <strong>${escapeHtml(recipient)}</strong> via SMTP (${data.total_tenders} opportunities included).`;
+        statusEl.innerHTML = `<strong>Live Email Delivered to Inbox!</strong><br>Successfully transmitted to <strong>${escapeHtml(recipient)}</strong> via SMTP (${data.total_tenders} opportunities included).`;
         showToast(`✓ Email delivered to ${recipient}!`);
       } else if (data.mode === 'preview_recorded') {
         statusEl.style.background = 'rgba(245, 158, 11, 0.12)';
@@ -5055,7 +5083,7 @@ async function sendBiddingEmailAlert() {
         statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
         statusEl.style.color = '#ef4444';
         statusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-        statusEl.innerHTML = `<strong>⚠️ SMTP Delivery Issue:</strong> ${escapeHtml(data.error || data.message)}`;
+        statusEl.innerHTML = `<strong>SMTP Delivery Notice:</strong> ${escapeHtml(data.error || data.message)}`;
         showToast(`SMTP Error`);
       }
     }
@@ -5173,11 +5201,14 @@ function renderLeadSummaryCardInChat(text, idx) {
     <div class="lead-summary-card">
       <div class="lead-summary-header">
         <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="font-size: 14px;">🎯</span>
-          <span style="font-size: 12px; font-weight: 700; color: #10b981;">Captured Pre-Sales Lead Summary</span>
+          <span class="lead-summary-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          </span>
+          <span class="lead-summary-title">Captured Pre-Sales Lead Summary</span>
         </div>
-        <button type="button" onclick="copyLeadSummaryText(${idx})" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; cursor: pointer; font-weight: 600;">
-          📋 Copy Summary
+        <button type="button" class="btn-copy-lead-summary" onclick="copyLeadSummaryText(${idx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+          <span>Copy Summary</span>
         </button>
       </div>
       <div class="lead-summary-grid">
@@ -5249,14 +5280,14 @@ async function sendPresalesMessage() {
 
     if (data.lead_captured) {
       await loadPresalesLeads();
-      showToast('🎯 New Pre-Sales Lead Captured & Logged!');
+      showToast('New Pre-Sales Lead Captured & Logged!');
     }
   } catch (err) {
     const typingEl = document.getElementById('presales-typing-indicator');
     if (typingEl) typingEl.remove();
     presalesChatHistory.push({
       role: 'assistant',
-      text: `⚠️ Error consulting Nikom Assist: ${err.message}. Please verify connection or review sizing rules.`
+      text: `Error consulting Nikom Assist: ${err.message}. Please verify connection or review sizing rules.`
     });
     renderPresalesChat();
   } finally {
@@ -5346,8 +5377,9 @@ async function runPresalesSizing() {
 
     outEl.style.display = 'block';
     outEl.innerHTML = `
-      <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #60a5fa; margin-bottom: 8px;">
-        ⚡ Nikom Section 5.2 Sizing Output
+      <div class="sizing-section-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span>Nikom Section 5.2 Sizing Output</span>
       </div>
       <div class="sizing-kpi-grid">
         <div class="sizing-kpi-box">
@@ -5373,8 +5405,9 @@ async function runPresalesSizing() {
         <div>Estimated PUE: <strong>${d.estimated_pue}</strong> • Floor Footprint: <strong>${d.floor_area_sqft} sq. ft</strong></div>
       </div>
 
-      <button type="button" onclick="insertSizingIntoChat(${itLoad}, ${racks}, ${d.cooling_capacity_tr}, ${d.ups_rating_kva}, ${d.dg_rating_kva}, '${escapeHtml(d.cooling_architecture)}')" style="width: 100%; padding: 6px 10px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c084fc; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
-        📋 Insert Sizing into Nikom Assist Chat →
+      <button type="button" class="btn-insert-sizing-chat" onclick="insertSizingIntoChat(${itLoad}, ${racks}, ${d.cooling_capacity_tr}, ${d.ups_rating_kva}, ${d.dg_rating_kva}, '${escapeHtml(d.cooling_architecture)}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        <span>Insert Sizing into Nikom Assist Chat →</span>
       </button>
     `;
   } catch (err) {
@@ -5455,7 +5488,7 @@ function viewCapturedLeadsModal() {
   if (presalesLeadsList.length === 0) {
     body.innerHTML = `
       <div style="text-align: center; padding: 40px 20px; color: var(--text-2);">
-        <div style="font-size: 32px; margin-bottom: 10px;">🎯</div>
+        <div style="display: flex; justify-content: center; margin-bottom: 10px; color: #10b981;"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></div>
         <div style="font-weight: 700; font-size: 14px; margin-bottom: 6px;">No Pre-Sales Leads Captured Yet</div>
         <div style="font-size: 12px; color: var(--text-3); max-width: 400px; margin: 0 auto;">
           When interacting with clients or prospects, Nikom Assist automatically captures requirements and generates a standardized Lead Summary.
