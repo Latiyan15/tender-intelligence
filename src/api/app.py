@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from src.services.document_manager import DocumentManager, sanitize_filename, extract_pdf_info
 from src.services.drafting_service import DraftingService
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,7 +32,7 @@ init_db()
 repo = TenderRepository()
 try:
     logger.info("Ensuring full opportunity repository is synchronized with latest seed dataset...")
-    repo.sync_seed_tenders(force=True)
+    repo.sync_seed_tenders(force=False)
 except Exception as e:
     logger.warning(f"Seed synchronization warning on startup: {e}")
 
@@ -104,11 +105,20 @@ class BulkActionRequest(BaseModel):
 
 @app.get("/api/health")
 def health_check():
-    db_engine = "postgresql_managed" if get_database_url() else "sqlite_wal_active"
+    db_url = get_database_url()
+    if db_url and "neon.tech" in db_url:
+        db_engine = "neon_postgres"
+    elif db_url:
+        db_engine = "postgresql_managed"
+    else:
+        db_engine = "sqlite_wal_active"
+
+    from src.database.db import get_neon_branch
     return {
         "status": "healthy",
         "service": "Nikom Tender Intelligence Discovery",
         "database": db_engine,
+        "neon_branch": get_neon_branch(),
         "version": "2.0.0"
     }
 
@@ -117,7 +127,7 @@ def health_check():
 def sync_seed_opportunities():
     """Force manual synchronization of all seed and benchmark tenders into the active database."""
     try:
-        result = repo.sync_seed_tenders(force=True)
+        result = repo.sync_seed_tenders(force=False)
         return {"status": "success", "result": result}
     except Exception as e:
         logger.error(f"Error syncing seed tenders: {e}")
@@ -1507,6 +1517,9 @@ class PresalesChatRequest(BaseModel):
     messages: List[Dict[str, str]]
     scenario: Optional[str] = None
     tender_id: Optional[str] = None
+    document_context: Optional[Dict[str, Any]] = None
+    documents: Optional[List[Dict[str, Any]]] = None
+    project_id: Optional[str] = None
 
 
 class PresalesSizingRequest(BaseModel):
@@ -1517,6 +1530,161 @@ class PresalesSizingRequest(BaseModel):
     ambient_temp_c: float = 36.0
 
 
+class CreateProjectRequest(BaseModel):
+    title: str = "Technical Infrastructure Proposal"
+    client_org: str = "Prospective Client Organization"
+    tender_id: Optional[str] = None
+
+
+class ClarificationAnswerRequest(BaseModel):
+    question_id: str
+    answer: str
+
+
+@app.post("/api/presales/projects")
+def create_presales_project(req: CreateProjectRequest):
+    """Creates a new isolated presales project workspace."""
+    try:
+        p = presales_service.create_project(
+            title=req.title,
+            client_org=req.client_org,
+            tender_id=req.tender_id
+        )
+        return p.to_dict()
+    except Exception as e:
+        logger.error(f"Error creating project: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/projects")
+def list_presales_projects(limit: int = 50):
+    """Lists recent presales projects."""
+    try:
+        return {"projects": presales_service.list_projects(limit=limit)}
+    except Exception as e:
+        logger.error(f"Error listing projects: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/projects/{project_id}")
+def get_presales_project(project_id: str):
+    """Retrieves full project workspace state."""
+    p = presales_service.get_project(project_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return p.to_dict()
+
+
+@app.post("/api/presales/projects/{project_id}/upload")
+async def upload_project_document(project_id: str, file: UploadFile = File(...)):
+    """Uploads and ingests document into project with page/sheet provenance."""
+    try:
+        content = await file.read()
+        doc = presales_service.upload_project_document(project_id, file.filename, content)
+        return {"success": True, "document": doc}
+    except Exception as e:
+        logger.error(f"Error uploading project document: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/presales/projects/{project_id}/documents/{doc_id}")
+def delete_project_document(project_id: str, doc_id: str):
+    """Removes a document from the project."""
+    success = presales_service.remove_project_document(project_id, doc_id)
+    return {"success": success}
+
+
+@app.post("/api/presales/projects/{project_id}/analyze")
+def analyze_project(project_id: str):
+    """Runs requirement extraction, project classification, gap analysis, sizing, and compliance."""
+    try:
+        res = presales_service.analyze_project(project_id)
+        return res
+    except Exception as e:
+        logger.error(f"Error analyzing project: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/projects/{project_id}/clarify")
+def clarify_project(project_id: str, req: ClarificationAnswerRequest):
+    """Submits answer to clarification question."""
+    try:
+        res = presales_service.submit_clarification_answer(project_id, req.question_id, req.answer)
+        return res
+    except Exception as e:
+        logger.error(f"Error answering clarification: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/projects/{project_id}/generate-proposal")
+def generate_project_proposal_endpoint(project_id: str):
+    """Generates modular proposal and executes independent quality control validation."""
+    try:
+        res = presales_service.generate_project_proposal(project_id)
+        return res
+    except Exception as e:
+        logger.error(f"Error generating proposal: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/projects/{project_id}/download-docx")
+def download_project_docx(project_id: str):
+    """Downloads editable DOCX for the project proposal."""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        docx_bytes = presales_service.build_project_docx(project_id)
+        p = presales_service.get_project(project_id)
+        safe_title = re.sub(r'[^A-Za-z0-9_]', '_', p.title if p else "Proposal")[:40]
+        filename = f"Nikom_{safe_title}.docx"
+        return StreamingResponse(
+            io.BytesIO(docx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating proposal docx: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/projects/{project_id}/download-compliance-docx")
+def download_project_compliance_docx(project_id: str):
+    """Downloads standalone Technical Compliance Matrix in Word format (.docx)."""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        docx_bytes = presales_service.build_project_compliance_docx(project_id)
+        p = presales_service.get_project(project_id)
+        safe_title = re.sub(r'[^A-Za-z0-9_]', '_', p.title if p else "Project")[:40]
+        filename = f"Nikom_Compliance_Matrix_{safe_title}.docx"
+        return StreamingResponse(
+            io.BytesIO(docx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating compliance docx: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/upload-document")
+async def presales_upload_document(file: UploadFile = File(...)):
+    """Uploads and analyzes client RFP, Schedule of Requirements (SOR), or Technical Specs."""
+    try:
+        content = await file.read()
+        res = presales_service.process_uploaded_document(file.filename, content)
+        return res
+    except Exception as e:
+        logger.error(f"Error processing presales document upload: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/presales/chat")
 def presales_chat(req: PresalesChatRequest):
     """Interactive conversational session with Nikom Assist (Pre-Sales Engineering Agent)."""
@@ -1525,11 +1693,33 @@ def presales_chat(req: PresalesChatRequest):
         res = presales_service.chat(
             messages=req.messages,
             scenario=req.scenario,
-            tender_context=tender_ctx
+            tender_context=tender_ctx,
+            document_context=req.document_context,
+            documents=req.documents,
+            project_id=req.project_id
         )
         return res
     except Exception as e:
         logger.error(f"Error in presales chat: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/chat-stream")
+def presales_chat_stream(req: PresalesChatRequest):
+    """Streaming conversational session with Nikom Assist (Pre-Sales Engineering Agent) via SSE."""
+    try:
+        tender_ctx = repo.get_tender(req.tender_id) if req.tender_id else None
+        generator = presales_service.chat_stream(
+            messages=req.messages,
+            scenario=req.scenario,
+            tender_context=tender_ctx,
+            document_context=req.document_context,
+            documents=req.documents,
+            project_id=req.project_id
+        )
+        return StreamingResponse(generator, media_type="text/event-stream")
+    except Exception as e:
+        logger.error(f"Error in presales chat stream: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -1584,6 +1774,167 @@ def presales_generate_offer(req: PresalesOfferRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class DynamicPdfRequest(BaseModel):
+    markdown: str
+    filename: Optional[str] = None
+    title: Optional[str] = None
+    doc_type: Optional[str] = "proposal"
+
+
+@app.post("/api/presales/render-dynamic-docx")
+def presales_render_dynamic_docx(req: DynamicPdfRequest):
+    """
+    Renders dynamic Claude-generated markdown into an executive Microsoft Word (.docx) document.
+    """
+    try:
+        import io
+        import re
+        from fastapi.responses import StreamingResponse
+        from src.services.dynamic_docx_engine import dynamic_docx_engine
+
+        docx_bytes = dynamic_docx_engine.build_docx(req.markdown, project_meta={"title": req.title})
+        title_clean = re.sub(r'[^a-zA-Z0-9_\-]', '_', req.title or "Nikom_Technical_Solution")[:35]
+        filename = req.filename or f"Nikom_Technical_Proposal_{title_clean}.docx"
+
+        return StreamingResponse(
+            io.BytesIO(docx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error rendering dynamic DOCX: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/presales/render-dynamic-pdf")
+def presales_render_dynamic_pdf(req: DynamicPdfRequest):
+    """
+    Renders pure dynamic Claude-generated markdown into a publication-grade vector PDF.
+    No hardcoded templates or fallbacks. 100% of the content comes from Claude's dynamic response.
+    """
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from src.services.dynamic_pdf_engine import dynamic_pdf_engine
+
+        pdf_bytes = dynamic_pdf_engine.convert_markdown_to_pdf(req.markdown)
+        
+        # Derive clean filename
+        if req.filename:
+            filename = req.filename
+        else:
+            title_clean = re.sub(r'[^a-zA-Z0-9_\-]', '_', req.title or "Nikom_Technical_Solution")[:35]
+            if req.doc_type == "summary":
+                filename = f"Nikom_Executive_Summary_{title_clean}.pdf"
+            else:
+                filename = f"Nikom_Technical_Proposal_{title_clean}.pdf"
+
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error rendering dynamic PDF: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+class DynamicPresentationRequest(BaseModel):
+    markdown: str
+    filename: Optional[str] = None
+    title: Optional[str] = None
+    client_org: Optional[str] = None
+
+
+@app.get("/api/presales/download-proposal/{filename}")
+def download_generated_proposal_file(filename: str):
+    """Downloads a Claude-generated proposal document (PDF or DOCX)."""
+    import os
+    save_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "proposals"
+    )
+    file_path_local = os.path.join(save_dir, filename)
+    if not os.path.exists(file_path_local):
+        raise HTTPException(status_code=404, detail="Proposal file not found")
+
+    media_type = "application/pdf" if filename.endswith(".pdf") else (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" if filename.endswith(".docx") else "application/octet-stream"
+    )
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path=file_path_local,
+        media_type=media_type,
+        filename=filename,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@app.get("/api/presales/download-presentation/{filename}")
+def download_generated_presentation(filename: str):
+    """Downloads a Claude-generated presentation deck."""
+    import os
+    save_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "presentations"
+    )
+    file_path_local = os.path.join(save_dir, filename)
+    if not os.path.exists(file_path_local):
+        raise HTTPException(status_code=404, detail="Presentation not found")
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path=file_path_local,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        filename=filename,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@app.post("/api/presales/render-presentation")
+@app.post("/api/solutioning/render-presentation")
+def presales_render_presentation(req: DynamicPresentationRequest):
+    """
+    Renders pure dynamic Claude-generated markdown into a publication-grade 16:9 widescreen
+    Microsoft PowerPoint (.pptx) presentation for the Solutioning Team Head to present
+    technical solutions and requirements to clients.
+    """
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from src.services.presentation_deck_engine import presentation_deck_engine
+
+        project_meta = {}
+        if req.title:
+            project_meta["title"] = req.title
+        if req.client_org:
+            project_meta["client_org"] = req.client_org
+
+        pptx_bytes = presentation_deck_engine.build_presentation(req.markdown, project_meta=project_meta)
+
+        if req.filename:
+            filename = req.filename
+        else:
+            title_clean = re.sub(r'[^a-zA-Z0-9_\-]', '_', req.title or "Nikom_Client_Presentation")[:35]
+            filename = f"Nikom_Client_Presentation_{title_clean}.pptx"
+
+        return StreamingResponse(
+            io.BytesIO(pptx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error rendering presentation deck: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/presales/download-offer")
 def presales_download_offer(
     it_kw: float = 250.0,
@@ -1591,9 +1942,126 @@ def presales_download_offer(
     cooling_tr: Optional[float] = None,
     ups_kva: Optional[int] = None,
     dg_kva: Optional[int] = None,
-    client: str = "Enterprise / Institutional Facility"
+    client: str = "Enterprise / Institutional Facility",
+    doc_type: str = "formal",
+    total_cr: Optional[float] = None,
+    total_lakhs: Optional[float] = None,
+    tco_cr: Optional[float] = None,
+    project_title: Optional[str] = None,
+    category: Optional[str] = None
 ):
-    """Builds and streams the official Nikom Solution Document & Budgetary Offer vector PDF."""
+    """Builds and streams either the Submission-Ready Formal Proposal (doc_type='formal') or Executive Summary Offer (doc_type='summary')."""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from src.services.pdf_service import generate_solution_document_pdf, generate_formal_proposal_pdf
+        data = {
+            "it_load_kw": it_kw,
+            "rack_count": racks,
+            "cooling_capacity_tr": cooling_tr,
+            "ups_rating_kva": ups_kva,
+            "dg_rating_kva": dg_kva,
+            "client_org": client,
+            "total_capital_cr": total_cr,
+            "total_capital_lakhs": total_lakhs,
+            "total_5yr_tco_cr": tco_cr,
+            "project_name": project_title,
+            "category": category,
+        }
+        is_equipment = (
+            (category or '').lower().strip() in ['equipment_supply', 'it_infrastructure', 'hardware_supply', 'lab_setup'] or
+            'computer' in (project_title or '').lower() or 'lab' in (project_title or '').lower() or
+            'gorkha' in (client or '').lower() or 'shillong' in (client or '').lower() or
+            (it_kw < 15.0 and (category or '') != 'datacentre_turnkey')
+        )
+        if doc_type.lower() in ["summary", "brief", "indicative"]:
+            pdf_bytes = generate_solution_document_pdf(data)
+            filename = "Nikom_Executive_Summary_Offer_58GTC_Computer_Lab.pdf" if is_equipment else f"Nikom_Executive_Summary_Offer_{int(it_kw)}kW.pdf"
+        else:
+            pdf_bytes = generate_formal_proposal_pdf(data)
+            filename = "Nikom_Technical_Proposal_58GTC_Computer_Lab.pdf" if is_equipment else f"Nikom_Formal_Technical_Proposal_{int(it_kw)}kW.pdf"
+
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating offer PDF: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/download-proposal")
+def presales_download_proposal(
+    it_kw: float = 250.0,
+    racks: int = 25,
+    cooling_tr: Optional[float] = None,
+    ups_kva: Optional[int] = None,
+    dg_kva: Optional[int] = None,
+    client: str = "Enterprise / Institutional Facility",
+    total_cr: Optional[float] = None,
+    total_lakhs: Optional[float] = None,
+    tco_cr: Optional[float] = None,
+    project_title: Optional[str] = None,
+    category: Optional[str] = None
+):
+    """Builds and streams the publication-grade 17-page submission-ready technical proposal PDF."""
+    try:
+        import io
+        from fastapi.responses import StreamingResponse
+        from src.services.pdf_service import generate_formal_proposal_pdf
+        data = {
+            "it_load_kw": it_kw,
+            "rack_count": racks,
+            "cooling_capacity_tr": cooling_tr,
+            "ups_rating_kva": ups_kva,
+            "dg_rating_kva": dg_kva,
+            "client_org": client,
+            "total_capital_cr": total_cr,
+            "total_capital_lakhs": total_lakhs,
+            "total_5yr_tco_cr": tco_cr,
+            "project_name": project_title,
+            "category": category,
+        }
+        pdf_bytes = generate_formal_proposal_pdf(data)
+        is_equipment = (
+            (category or '').lower().strip() in ['equipment_supply', 'it_infrastructure', 'hardware_supply', 'lab_setup'] or
+            'computer' in (project_title or '').lower() or 'lab' in (project_title or '').lower() or
+            'gorkha' in (client or '').lower() or 'shillong' in (client or '').lower() or
+            (it_kw < 15.0 and (category or '') != 'datacentre_turnkey')
+        )
+        filename = "Nikom_Technical_Proposal_58GTC_Computer_Lab.pdf" if is_equipment else f"Nikom_Formal_Technical_Proposal_{int(it_kw)}kW.pdf"
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Cache-Control": "no-cache"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error generating formal proposal PDF: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/presales/download-summary")
+def presales_download_summary(
+    it_kw: float = 250.0,
+    racks: int = 25,
+    cooling_tr: Optional[float] = None,
+    ups_kva: Optional[int] = None,
+    dg_kva: Optional[int] = None,
+    client: str = "Enterprise / Institutional Facility",
+    total_cr: Optional[float] = None,
+    total_lakhs: Optional[float] = None,
+    tco_cr: Optional[float] = None,
+    project_title: Optional[str] = None,
+    category: Optional[str] = None
+):
+    """Builds and streams the 2-page Executive Summary & Indicative Offer vector PDF."""
     try:
         import io
         from fastapi.responses import StreamingResponse
@@ -1605,9 +2073,20 @@ def presales_download_offer(
             "ups_rating_kva": ups_kva,
             "dg_rating_kva": dg_kva,
             "client_org": client,
+            "total_capital_cr": total_cr,
+            "total_capital_lakhs": total_lakhs,
+            "total_5yr_tco_cr": tco_cr,
+            "project_name": project_title,
+            "category": category,
         }
         pdf_bytes = generate_solution_document_pdf(data)
-        filename = f"Nikom_Data_Centre_Solution_Document_Budgetary_Offer_{int(it_kw)}kW.pdf"
+        is_equipment = (
+            (category or '').lower().strip() in ['equipment_supply', 'it_infrastructure', 'hardware_supply', 'lab_setup'] or
+            'computer' in (project_title or '').lower() or 'lab' in (project_title or '').lower() or
+            'gorkha' in (client or '').lower() or 'shillong' in (client or '').lower() or
+            (it_kw < 15.0 and (category or '') != 'datacentre_turnkey')
+        )
+        filename = "Nikom_Executive_Summary_Offer_58GTC_Computer_Lab.pdf" if is_equipment else f"Nikom_Executive_Summary_Offer_{int(it_kw)}kW.pdf"
         return StreamingResponse(
             io.BytesIO(pdf_bytes),
             media_type="application/pdf",
@@ -1617,7 +2096,7 @@ def presales_download_offer(
             }
         )
     except Exception as e:
-        logger.error(f"Error generating solution offer PDF: {e}", exc_info=True)
+        logger.error(f"Error generating summary offer PDF: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

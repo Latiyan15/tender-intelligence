@@ -62,8 +62,25 @@ class BedrockTenderService:
         # Base URL for the Bedrock Runtime Converse endpoint
         self.runtime_url = f"https://bedrock-runtime.{self.region}.amazonaws.com"
 
+    def _get_boto_client(self):
+        """Initializes a boto3 Bedrock Runtime client using the active AWS CLI profile / credentials."""
+        try:
+            import boto3
+            profile = os.getenv("AWS_PROFILE", "tender")
+            try:
+                session = boto3.Session(profile_name=profile, region_name=self.region)
+                return session.client("bedrock-runtime")
+            except Exception:
+                session = boto3.Session(region_name=self.region)
+                return session.client("bedrock-runtime")
+        except Exception as e:
+            logger.debug(f"boto3 bedrock-runtime client initialization: {e}")
+            return None
+
     def is_configured(self) -> bool:
-        """Checks if AWS Bedrock credentials are provided."""
+        """Checks if AWS Bedrock credentials (boto3 session, AWS CLI profile, or API key) are provided."""
+        if self._get_boto_client() is not None:
+            return True
         return bool(self.api_key or os.getenv("AWS_ACCESS_KEY_ID"))
 
     def _get_headers(self) -> Dict[str, str]:
@@ -77,10 +94,32 @@ class BedrockTenderService:
 
     def test_connection(self) -> Dict[str, Any]:
         """Tests live connectivity to AWS Bedrock Claude Sonnet model."""
+        boto_client = self._get_boto_client()
+        if boto_client:
+            try:
+                start_time = datetime.now()
+                res = boto_client.converse(
+                    modelId=self.model_id,
+                    messages=[{"role": "user", "content": [{"text": "Ping: Verify active connection for Nikom Tender Intelligence."}]}],
+                    inferenceConfig={"maxTokens": 50, "temperature": 0.0}
+                )
+                latency_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+                reply = res.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+                return {
+                    "success": True,
+                    "model_id": self.model_id,
+                    "region": self.region,
+                    "latency_ms": latency_ms,
+                    "auth_method": "aws-cli / boto3",
+                    "response": reply.strip()
+                }
+            except Exception as e:
+                logger.warning(f"boto3 converse failed in test_connection: {e}")
+
         if not self.api_key:
             return {
                 "success": False,
-                "error": "BEDROCK_API_KEY is not configured in .env",
+                "error": "Neither AWS CLI profile nor BEDROCK_API_KEY is configured",
                 "region": self.region,
                 "model_id": self.model_id
             }
@@ -208,13 +247,13 @@ TENDER METADATA:
 - EMD Amount: {emd_str}
 - Submission Deadline: {deadline}
 - Published Scope / Work Details:
-{scope[:2500]}
+{scope[:30000]}
 """
 
         if document_text and len(document_text.strip()) > 50:
             prompt_text += f"""
 EXTRACTED RFP / NIT DOCUMENT CLAUSES:
-{document_text[:6000]}
+{document_text[:90000]}
 """
 
         prompt_text += """
@@ -242,25 +281,43 @@ Respond strictly in valid JSON format with the following keys:
 }
 """
 
-        url = f"{self.runtime_url}/model/{self.model_id}/converse"
-        payload = {
-            "system": [{"text": self._build_system_prompt()}],
-            "messages": [
-                {"role": "user", "content": [{"text": prompt_text}]}
-            ],
-            "inferenceConfig": {
-                "maxTokens": 2048,
-                "temperature": 0.1
+        raw_reply = ""
+        boto_client = self._get_boto_client()
+        if boto_client:
+            try:
+                res = boto_client.converse(
+                    modelId=self.model_id,
+                    system=[{"text": self._build_system_prompt()}],
+                    messages=[{"role": "user", "content": [{"text": prompt_text}]}],
+                    inferenceConfig={
+                        "maxTokens": 4096,
+                        "temperature": 0.1
+                    }
+                )
+                raw_reply = res.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+            except Exception as e:
+                logger.warning(f"boto3 converse failed in analyze_tender_feasibility, falling back to HTTP: {e}")
+
+        if not raw_reply:
+            url = f"{self.runtime_url}/model/{self.model_id}/converse"
+            payload = {
+                "system": [{"text": self._build_system_prompt()}],
+                "messages": [
+                    {"role": "user", "content": [{"text": prompt_text}]}
+                ],
+                "inferenceConfig": {
+                    "maxTokens": 4096,
+                    "temperature": 0.1
+                }
             }
-        }
 
-        res = requests.post(url, headers=self._get_headers(), json=payload, timeout=60)
-        if res.status_code != 200:
-            logger.error(f"Bedrock evaluation error: {res.status_code} - {res.text}")
-            raise RuntimeError(f"Bedrock invocation failed ({res.status_code}): {res.text}")
+            res = requests.post(url, headers=self._get_headers(), json=payload, timeout=90)
+            if res.status_code != 200:
+                logger.error(f"Bedrock evaluation error: {res.status_code} - {res.text}")
+                raise RuntimeError(f"Bedrock invocation failed ({res.status_code}): {res.text}")
 
-        res_data = res.json()
-        raw_reply = res_data.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+            res_data = res.json()
+            raw_reply = res_data.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
 
         # Parse JSON from response
         clean_json_str = raw_reply.strip()
@@ -333,10 +390,30 @@ RFP / NIT DOCUMENT EXTRACT:
 {document_text[:6000]}
 """
 
-        system_instruction = f"""You are the Nikom Tender Intelligence Copilot.
-You assist Nikom's senior bidding engineers in dissecting government RFP and NIT clauses.
-Provide accurate, factual, and crisp answers grounded directly in the provided tender data.
-Highlight specific thresholds, OEM authorization mandates (MAF), penalty/LD clauses, or compliance requirements."""
+        system_instruction = f"""You are the Senior Bidding Strategist & Tender Intelligence Copilot at Nikom InfraSolutions Pvt. Ltd. (25+ years in turnkey data centres, IT lab infrastructure, and critical power).
+You assist Nikom's senior bidding engineers and directors in analyzing government RFP, NIT, and GeM procurement documents.
+
+RESPONSE STRUCTURE & FORMATTING MANDATE:
+Format every response with immaculate visual polish, professional spacing, and clear executive hierarchy:
+
+1. DIRECT BOTTOM LINE / VERDICT (Always start with a high-contrast takeaway callout):
+   > **Bottom Line / Recommendation:** [One or two crisp sentences giving the definitive answer: Yes/No, mandatory/exempted, penalty ceiling, or essential pre-requisite.]
+
+2. STRUCTURED CLAUSE ANALYSIS TABLE:
+   Whenever evaluating steps, clauses, requirements, or multi-item checks, ALWAYS present them in a complete Markdown table with explicit headers:
+   | Verification Item / Clause | Tender Requirement / Finding | Bidding Action / Risk |
+   | :--- | :--- | :---: |
+   | [Item name] | [Exact RFP rule or finding] | **HIGH** / **MEDIUM** / **LOW** |
+
+3. KEY DISQUALIFIERS & COMMON TRAPS:
+   - Highlight hidden conditions (e.g. ink signature on OEM MAF vs digital signature, CA UDIN mandate on turnover, site visit certificate signed by Executive Engineer before bid submission).
+
+4. NIKOM COMPLIANCE ROADMAP:
+   - Direct, bulleted tactical steps for Nikom's bidding desk to ensure 100% technical qualification.
+
+CRITICAL RULES:
+- Never output bare pipe lines without a table header row! Always include `| Action / Clause | Finding / Rule | Priority |` and separator line `| :--- | :--- | :---: |`.
+- Ground every claim strictly in the provided tender notice, GeM ATC, or standard Indian public procurement rules (GFR 2017, GeM GTC)."""
 
         user_content = f"""{context_text}
 

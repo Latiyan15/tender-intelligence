@@ -72,7 +72,25 @@ class PsuStatePortalAdapter(BaseAdapter):
 
     def discover_tenders(self, max_tenders: int = 50, **kwargs) -> List[TenderRecord]:
         tenders = []
-        html = self._fetch_html(self.base_url)
+        # Try base_url first; if it's a homepage, also probe standard tender paths
+        candidate_urls = [self.base_url]
+        clean_base = self.base_url.rstrip('/')
+        if not any(sub in clean_base.lower() for sub in ['tender', 'procure', 'bid']):
+            candidate_urls.extend([
+                f"{clean_base}/tenders/",
+                f"{clean_base}/tenders",
+                f"{clean_base}/tender.php",
+                f"{clean_base}/tender.aspx"
+            ])
+
+        html = None
+        target_url = self.base_url
+        for u in candidate_urls:
+            html = self._fetch_html(u)
+            if html and len(html) > 500:
+                target_url = u
+                break
+
         if not html:
             return tenders
 

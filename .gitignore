@@ -116,3 +116,9 @@ desktop.ini
 data/tender_documents/
 reports/emails/
 *.bak
+.neon
+node_modules/
+
+data/presales_uploads/
+data/proposals/
+data/presentations/

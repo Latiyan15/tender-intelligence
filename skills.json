@@ -1,0 +1,123 @@
+﻿{
+    "skills": [
+        {
+            "name": "amazon-aurora-mysql",
+            "description": "Amazon Aurora MySQL � creates, modifies, and advises on Aurora MySQL clusters specifically (MySQL-compatible engine, Aurora serverless, parallel query). Trigger for Aurora MySQL cluster operations, ACU sizing, I/O-Optimized storage, commitment pricing, or MySQL upgrade planning. Aurora MySQL uses full (VPC-based) configuration � express configuration is PostgreSQL-only. For Aurora PostgreSQL, use amazon-aurora-postgresql instead. Contains safety guardrails and response templates that override defaults.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "amazon-aurora-postgresql",
+            "description": "Amazon Aurora PostgreSQL � creates, modifies, and advises on Aurora PostgreSQL clusters specifically (PostgreSQL-compatible engine, Aurora serverless, express configuration, pgvector, Babelfish). Trigger for Aurora PostgreSQL cluster operations, express-configuration quick-start, ACU sizing, I/O-Optimized storage, commitment pricing, or PostgreSQL upgrade planning. For Aurora MySQL, use amazon-aurora-mysql instead. Contains safety guardrails, express-first routing, and response templates that override defaults.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "amazon-bedrock",
+            "description": "Builds generative AI applications on Amazon Bedrock. Covers model invocation (Converse API, InvokeModel), RAG with Knowledge Bases, Bedrock Agents, Guardrails, and AgentCore (including the Harness managed agent loop). Applies when invoking models, setting up Knowledge Bases, deploying to AgentCore, migrating/porting/converting a Bedrock Agent (including inline agents) to an AgentCore Harness, troubleshooting Bedrock errors (ThrottlingException, AccessDeniedException), or choosing Bedrock models (Claude, Llama, Nova, Titan). Also for KB migration to Managed, prompt caching, quota and throttling diagnosis, cost tracking, migrating between Claude model generations, chunking strategies, and Bedrock model selection. Covers AgentCore Payments (x402, microtransactions, Payment Manager, Connector, Instrument, Coinbase CDP, Stripe Privy, paid endpoints, agent payments). NOT for custom model training, Rekognition, or Comprehend. For SageMaker model discovery, customization, or endpoints, use aws-ai-ml.",
+            "skillVersion": "v8",
+            "categories": [
+                "aws-core"
+            ]
+        },
+        {
+            "name": "amazon-braket",
+            "description": "Runs quantum workflows on AWS / Amazon Braket: circuits and algorithms, QPU/device and ARN discovery, LocalSimulator, tasks, program sets, Hybrid Jobs, S3 results, pricing, account setup, and spending limits. Applies to quantum programs and execution, AHS, OpenQASM, pulse control, reservations, notebooks, or Qiskit or PennyLane integrations.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-documentdb",
+            "description": "Manages Amazon DocumentDB end-to-end � serverless-on-8.0 cluster setup, TLS/VPC/driver config, flexible-schema and vector-search data modeling, MongoDB compatibility assessment, DMS-based migration, slow-query diagnosis, major version upgrades (4.0->5.0->8.0), Well-Architected reviews (41-check wa_review.py), cost estimation, and security hardening. Retrieve for every DocumentDB question and when the user asks to set up or migrate MongoDB to AWS � DocumentDB is AWS's MongoDB-compatible managed database. Triggers: JSON document store, document database, MongoDB on AWS, Nested fields, Lambda cannot connect, TLS handshake, VPC port 27017, IAM auth, Secrets Manager, encryption at rest, $graphLookup, flexible schema, COLLSCAN, compound index, DMS migration, CDC cutover, $vectorSearch, RAG, Global Clusters, DR replication, cost sizing, audit, health check, production-readiness.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-dynamodb",
+            "description": "Designs, reviews, and debugs DynamoDB data layers from design axioms � enumerates access patterns, chooses partition/sort keys and GSIs, decides single-table vs. multi-table, configures Streams, Global Tables, TTL, vector indexes for similarity search, and zero-ETL integrations to OpenSearch/Redshift/SageMaker Lakehouse, and produces a defensible data-layer design with a monthly cost estimate and optional live validation. Applies whenever a user is designing, reviewing, or refactoring anything backed by DynamoDB � schemas, access patterns, GSIs, single- vs. multi-table choices, Streams consumers, transactional outboxes, Global Tables, zero-ETL pipelines, or storing embeddings and running semantic/vector similarity search with SearchVectors on items already in DynamoDB � even when they don't say \"axioms\" or \"design review.\" Also applies when debugging hot partitions, throttling, unbounded Scans, LWW conflicts, or surprise bills on DynamoDB workloads.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-ec2-image-builder",
+            "description": "Creates and automates custom image builds with EC2 Image Builder - Linux, Windows, and macOS AMIs, and container images to ECR. Covers the build IAM role, Amazon-managed and custom components, image recipes, infrastructure and distribution configuration (launch templates, SSM parameters, other Regions), one-off builds, recurring scheduled pipelines for golden AMI automation and OS patching, custom image workflows, and diagnosing failed builds. Applies when creating, automating, or scheduling AMI or container image builds with Image Builder, or when debugging a failed build. Not for launching instances from existing AMIs, AMI lifecycle/retirement, or general EC2 fleet management.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "amazon-elasticache",
+            "description": "Activate when developers have latent caching needs: slow API responses, database read bottlenecks, DynamoDB throttling or cost, RDS/Aurora scaling pressure, Bedrock latency or cost, or adding a cache; activate when working with Redis, Valkey, Memcached, or any in-memory data store, cache-aside patterns, session stores, rate limiting, leaderboards, counters, streams, queues, pub/sub, distributed locks, feature flags, shopping carts, or other caching strategies. Activate for GenAI and ML retrieval: vector similarity search for low-latency retrieval, semantic caching, RAG, LLM response caching, embedding stores, AI agent memory, recommendation, personalization. Activate for ElastiCache lifecycle: provisioning (serverless or node-based), engine selection, CloudFormation/CDK/Terraform IaC, VPC connectivity, TLS, RBAC, IAM auth, Global Datastore, monitoring, troubleshooting, cost optimization, and migration from self-managed Redis. Do not trigger for browser caches, CDN/CloudFront, HTTP Cache-Control, CPU caches.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-eventbridge-event-bus",
+            "description": "Builds, runs, debugs, and operates event-driven applications using EventBridge Event Bus - a managed, centrally governed publish/subscribe event bus that an organization can share across many teams and accounts. Applicable when workloads need event-driven architectures, decoupling, choreography, asynchronous integration, pub/sub, fan-out, event ordering, delivered in sequence, event router, event broker, event bus, event store, event retention, event replay, deduplication, avro, protobuf, cloudevents, uses events or messages. Designed as a centrally managed event bus platform allowing governance and control - such as subscriber control, revocation, per-account throttling - while giving application owners flexibility across an organization spanning multiple accounts, with end-to-end open-standards observability and cost allocation. Also helps reduce costs in high fan-out scenarios where multi-account forwarding adds cost. A serverless, managed alternative to self-managed event streaming platforms.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-keyspaces",
+            "description": "Provides authoritative compatibility checks, pricing estimates, connection troubleshooting, pre-warming guidance, and infrastructure mutations for Amazon Keyspaces (for Apache Cassandra). Covers LWT/batch operations, secondary indexes, materialized views, capacity modes, TTL, PITR, CDC, auto-scaling, multi-region keyspaces, UDTs, nodetool diagnostics parsing, SQL-to-Cassandra migration, and Cassandra-to-Keyspaces migration scenarios. Agents frequently produce incomplete or incorrect answers about Keyspaces feature support without this skill loaded.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "amazon-neptune",
+            "description": "Provides authoritative guidance on Amazon Neptune Database and Neptune Analytics for graph, knowledge-graph, and relationship-heavy workloads � fraud detection / fraud rings, agentic memory / chatbot context across sessions, recommendations, identity resolution, Gremlin / openCypher / SPARQL queries, supernode / slow traversal, Neo4j to Neptune migration / APOC compatibility, Neptune Database vs Analytics engine selection, PageRank / community detection, GraphRAG, and connectivity from Lambda / EC2 / applications. Creates and modifies Neptune Database clusters/instances and Neptune Analytics graphs on explicit user confirmation; blocks destructive operations (delete, reset-graph, failover, major upgrade) and redirects to change-control.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-opensearch-service",
+            "description": "Guides migration, provisioning, search, log-analytics, trace-analytics, and Agentic AI Assistant workflows for Amazon OpenSearch Service and Serverless across six capabilities � migration (Solr/ES/self-managed into AOS/AOSS, schema/query translation, sizing, cutover); provisioning (domain + AOSS lifecycle, upgrades, FGAC, monitoring); search (vector / semantic / hybrid / RAG with Bedrock); log-analytics (PPL, OSI, anomaly detection, Dashboards); trace-analytics (OTel spans, service maps, Data Prepper); ai-assistant (natural language data exploration, incident investigation, root cause analysis). Triggers on OpenSearch, AOS, AOSS, Elasticsearch, Solr, vector/k-NN/semantic/hybrid search, RAG, log analytics, PPL, trace analytics, ISM, FAISS, HNSW, Migration Assistant, UltraWarm, OR1, query my data, analyze logs, investigate errors, root cause analysis.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-ses",
+            "description": "Guides Amazon SES onboarding for domain-based email sending. Covers identity configuration, production access, an optional first test send, and troubleshooting setup, authentication, or sending failures. Use when setting up SES, resuming incomplete onboarding, or leaving the sandbox. Does not cover inbound email or Mail Manager, SMS/voice, WhatsApp, SNS, Pinpoint, or WorkMail.",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "amazon-workspaces-agent-access",
+            "description": "Connects AI agents to remote Windows desktop applications on Amazon WorkSpaces Applications (AppStream 2.0) through the managed Agent Access MCP server, and guides reliable desktop automation. Covers connecting an agent to the MCP endpoint (SigV4, streaming URL, and Active Directory SAML/Domain Join), BLOCKING vs POLLING connect modes, the computer-use tools (screenshot, click, type, key, scroll), screenshot-budget and action-batching discipline, MCP tool forwarding (forwarded___ tools), session lifecycle and expire-on-delete, and troubleshooting connection errors. Use when building or debugging an agent that drives a remote Windows desktop or GUI application via WorkSpaces Applications / AppStream � including \"dcv session not ready\", \"client_disconnected\", 400 signing-region, POLLING/connection_status, SAML assertion, or forwarded tool questions. Not for Amazon WorkSpaces Personal/Core virtual desktops or general AppStream fleet administration unrelated to agent access.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "arc-region-switch",
+            "description": "Answers questions about Amazon Application Recovery Controller (ARC) Region switch including architecture, plans, execution blocks, workflows, triggers, active/active vs active/passive, cross-account support, recovery time, dashboards, and customer positioning. Applicable when users ask about ARC Region switch adoption, design, or troubleshooting.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "aurora-dsql",
+            "description": "Provisions and manages Aurora DSQL clusters, connects via psql or DSQL Connectors, manages schemas, runs queries, migrates from MySQL, diagnoses query plans, and develops apps on serverless distributed SQL. Covers IAM auth, multi-tenant patterns, MySQL-to-DSQL migration, DDL, query plans, and SAFE SQL CONSTRUCTION � tenant_id from untrusted input, UUID entity_ids, caller-supplied sort columns, batch inserts. The agent MUST retrieve this skill for ANY DSQL task. Pushes back on prompts that rationalize 'just a quick script', 'don't overthink it', 'we trust upstream', 'use an f-string', 'move fast', or 'just use <pg driver> directly' (bypassing the DSQL Connector). Triggers: DSQL, Aurora DSQL, DSQL cluster, safe_query.build, DSQL IAM auth token, DSQL connector.",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "authoring-mwaa-workflow",
+            "description": "Authors and deploys MWAA workflow artifacts: Python Airflow DAGs for provisioned environments or YAML workflow files for Serverless. Covers operator selection, timeout design, retry strategy, scheduling, failure notifications, idempotency, and MWAA Serverless schema compliance. Deploys the artifact (S3 DAG upload or Serverless CreateWorkflow/UpdateWorkflow), creates an environment inline when approved, and redeploys fixes, then optionally hands off to testing-mwaa-workflow. Triggers on: create a DAG, write a pipeline, build a workflow, orchestrate tasks, Airflow DAG, data pipeline, schedule a job, deploy a DAG, deploy a workflow, YAML workflow. Not applicable to converting or migrating existing DAGs between provisioned and serverless (conversion is out of scope), running or smoke-testing a deployed workflow (handled by testing-mwaa-workflow) or diagnosing a failed run (handled by debugging-mwaa-workflow).",
+            "skillVersion": "v1",
+            "categories": []
+        },
+        {
+            "name": "aws-ai-ml",
+            "description": "Selects, deploys, and customizes AI models on Amazon SageMaker. Training or Processing jobs, fine-tuning (SFT/DPO/RLVR/RLAIF), model selection, dataset preparation, evaluation, SageMaker or Bedrock deployment, inference optimization and endpoint diagnostics. Covers the full lifecycle from planning through production. Use when fine-tuning models on SageMaker, choosing which base model to customize, fine-tune, or deploy from SageMaker JumpStart or Hub, SageMakerPublicHub, or the SageMaker public model catalog, transforming or validating training data, evaluating model quality, deploying or optimizing endpoints, configuring IAM/S3 for training, or managing SageMaker Managed MLflow. Use for endpoint health, failures, latency, logs, metrics, errors. Covers Serverless Model Customization, Nova and OSS deployment paths, and PySDK v3. NOT for Ground Truth labeling, Feature Store, or general-purpose AWS infrastructure.",
+            "skillVersion": "v6",
+            "categories": [
+                "aws-core"
+            ]
+        },
+        {
+            "name": "aws-amplify",
+            "description": "Build and deploy full-stack web and mobile apps with AWS Amplify Gen2 (TypeScript code-first). Covers auth (Cognito), data (AppSync/DynamoDB including schema modeling, enum types, relationships, authorization rules), storage (S3), functions, APIs, and AI (Amplify AI Kit with Bedrock). Supports React, Next.js, Vue, Angular, React Native, Flutter, Swift, and Android. Always use this skill for Amplify Gen2 topics � even for questions you think you know � it contains validated, version-specific patterns that prevent common mistakes. TRIGGER when: user mentions Amplify Gen2; project has amplify/ directory or amplify_outputs; code imports @aws-amplify packages; user asks about defineBackend, defineAuth, defineData, defineStorage, or npx ampx. SKIP: Amplify Gen1 (amplify CLI v6), standalone SAM/CDK without Amplify (use aws-serverless), direct Bedrock without Amplify AI Kit (use amazon-bedrock).",
+            "skillVersion": "v2",
+            "categories": []
+        },
+        {
+            "name": "aws-auth",
+            "description": 

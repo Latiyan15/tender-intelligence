@@ -24,7 +24,7 @@ SEED_PATH = os.path.join(BASE_DIR, "data", "seed_tenders.json")
 
 
 def get_database_url() -> Optional[str]:
-    """Retrieve and normalize DATABASE_URL (handling Render's postgres:// prefix and local .env files)."""
+    """Retrieve and normalize DATABASE_URL (handling Neon pooled connections, Render's postgres:// prefix and local .env files)."""
     url = os.environ.get("DATABASE_URL")
     if not url:
         env_path = os.path.join(BASE_DIR, ".env")
@@ -34,17 +34,59 @@ def get_database_url() -> Optional[str]:
                     for line in f:
                         line = line.strip()
                         if line.startswith("DATABASE_URL="):
-                            url = line.split("=", 1)[1].strip().strip('"').strip("'")
+                            url = line.split("=", 1)[1].strip()
                             break
             except Exception:
                 pass
 
     if not url:
         return None
-    url = url.strip()
+    url = url.strip().strip('"').strip("'")
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
     return url
+
+
+def get_unpooled_database_url() -> Optional[str]:
+    """Retrieve direct unpooled DATABASE_URL_UNPOOLED for schema migrations / DDL per Neon best practices."""
+    url = os.environ.get("DATABASE_URL_UNPOOLED")
+    if not url:
+        env_path = os.path.join(BASE_DIR, ".env")
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("DATABASE_URL_UNPOOLED="):
+                            url = line.split("=", 1)[1].strip()
+                            break
+            except Exception:
+                pass
+
+    if not url:
+        return get_database_url()
+    url = url.strip().strip('"').strip("'")
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+    return url
+
+
+def get_neon_branch() -> str:
+    """Retrieve active Neon branch name from environment or .env."""
+    branch = os.environ.get("NEON_BRANCH")
+    if not branch:
+        env_path = os.path.join(BASE_DIR, ".env")
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("NEON_BRANCH="):
+                            branch = line.split("=", 1)[1].strip().strip('"').strip("'")
+                            break
+            except Exception:
+                pass
+    return branch or "production"
 
 
 def normalize_date_to_iso(date_str: Optional[str]) -> Optional[str]:
@@ -223,9 +265,9 @@ def get_sqlite_connection(target_path: str) -> sqlite3.Connection:
     return conn
 
 
-def get_connection(db_path: Optional[str] = None) -> UnifiedConnection:
+def get_connection(db_path: Optional[str] = None, custom_url: Optional[str] = None) -> UnifiedConnection:
     """Create or return a connection (PostgreSQL if DATABASE_URL set and default path, else SQLite)."""
-    pg_url = get_database_url()
+    pg_url = custom_url or get_database_url()
     if pg_url and (db_path is None or db_path == DB_PATH):
         try:
             import psycopg2
@@ -375,7 +417,9 @@ def seed_db_if_empty(conn: UnifiedConnection):
 
 def init_db(db_path: Optional[str] = None):
     """Create database tables and indexes if they do not exist."""
-    conn = get_connection(db_path)
+    # Use unpooled direct connection for schema DDL/migrations per Neon best practices
+    migration_url = get_unpooled_database_url() if (db_path is None or db_path == DB_PATH) else None
+    conn = get_connection(db_path, custom_url=migration_url)
     cursor = conn.cursor()
 
     if conn.is_pg:
@@ -1091,6 +1135,17 @@ class TenderRepository:
         conn = self._get_conn()
         cursor = conn.cursor()
 
+        if not force:
+            cursor.execute("SELECT COUNT(*) AS total FROM tenders")
+            row = cursor.fetchone()
+            cnt = 0
+            if row:
+                cnt = row["total"] if isinstance(row, dict) and "total" in row else (list(row.values())[0] if isinstance(row, dict) else row[0])
+            if cnt >= len(tenders):
+                logger.info(f"Repository already synchronized ({cnt} tenders in DB). Skipping redundant seed sync.")
+                conn.close()
+                return {"scanned": len(tenders), "discovered": 0, "qualified": 0, "status": "cached"}
+
         scanned = len(tenders)
         discovered = 0
         qualified = 0
@@ -1536,6 +1591,18 @@ class TenderRepository:
 
         conn = self._get_conn()
         cur = conn.cursor()
+
+        if not force:
+            cur.execute("SELECT COUNT(*) AS total FROM tenders")
+            row = cur.fetchone()
+            cnt = 0
+            if row:
+                cnt = row["total"] if isinstance(row, dict) and "total" in row else (list(row.values())[0] if isinstance(row, dict) else row[0])
+            if cnt >= len(tenders):
+                logger.info(f"Neon repository already synchronized ({cnt} tenders in DB). Skipping redundant seed sync.")
+                conn.close()
+                return {"status": "cached", "scanned": len(tenders), "inserted": 0, "updated": 0}
+
         inserted = 0
         updated = 0
         now_str = datetime.utcnow().isoformat()

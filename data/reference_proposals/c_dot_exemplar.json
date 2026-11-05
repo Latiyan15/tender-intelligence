@@ -1,0 +1,91 @@
+{
+  "document_title": "Upgradation of C-DoT Tier III Certified Data Centre @ Bengaluru",
+  "document_reference": "NIKOM/BD-2026/C-DOT-REV1",
+  "date": "26th Oct 2026",
+  "author": "Nikom InfraSolutions Pvt. Ltd. | Pre-Sales Engineering Desk",
+  "signatory": "B.S Kiran Kumar, Director - Pre-Sales Engineering",
+  "client_authority": "Centre for Development of Telematics (C-DoT), Electronic City Phase 1, Bengaluru",
+  "structure_blueprint": {
+    "cover_page": {
+      "title": "Upgradation of C-DoT Tier III Certified Data Centre @ Bengaluru",
+      "date": "26th Oct 2026",
+      "branding": "Nikom InfraSolutions Pvt. Ltd.",
+      "tagline": "Managing DataCentre Lifecycle .."
+    },
+    "page_2_executive_summary": {
+      "header": "TECHNICAL SOLUTION & BUDGETARY OFFER",
+      "subtitle": "Turnkey engineering upgrade, concurrently maintainable architecture, and itemized commercial offer.",
+      "kpi_metrics_banner": [
+        {"label": "Design IT Load", "value": "252 kW", "note": "Tailored to tender IT capacity"},
+        {"label": "Volume / Equipment", "value": "18 Racks", "note": "Scope volume from BOQ"},
+        {"label": "Architecture Tier", "value": "Tier III (TIA-942-C)", "note": "Standard compliance"},
+        {"label": "Energy / Efficiency", "value": "PUE <= 1.5", "note": "Thermal & energy efficiency"},
+        {"label": "Total 5-Year Spend", "value": "Rs. 28.75 Cr + GST", "note": "Total Cost of Ownership"}
+      ],
+      "submission_metadata": {
+        "SUBMITTED TO": "Client Organization / Tender Consignee",
+        "SUBMITTED BY": "Nikom InfraSolutions Pvt. Ltd.",
+        "CONTACT": "B.S Kiran Kumar, Director - Pre-Sales Engineering",
+        "DOCUMENT": "Turnkey Technical Solution & Budgetary Commercial Offer",
+        "VALIDITY": "90 to 180 calendar days from bid submission"
+      }
+    },
+    "sections": [
+      {
+        "number": "1",
+        "title": "Executive Summary",
+        "components": [
+          "4-card Spend Breakdown (Turnkey CAPEX, CAMC Years 4-5, 24x7 Managed O&M 5 Years, Total 5-Year Spend + GST)",
+          "Narrative explaining engineering strategy, inclusions, and exclusions"
+        ]
+      },
+      {
+        "number": "2",
+        "title": "Requirement and Basis of Design",
+        "components": [
+          "Before vs Proposed Comparison Table (Parameters, Existing Facility/Baseline, Proposed Technical Design)",
+          "Engineering Sizing Logic with step-by-step mathematical proof",
+          "Facility Load Breakdown Table (Component, Connected Load kW)",
+          "Site Location and Infrastructure Topology Table (Site, Facility, Climate, Utility, Connectivity)"
+        ]
+      },
+      {
+        "number": "3",
+        "title": "Proposed Technical Solution & Subsystem Architecture",
+        "components": [
+          "Subsystem-by-subsystem engineering specifications (Power, Cooling, Compute/Racks, Fire & Safety, Security, DCIM)"
+        ]
+      },
+      {
+        "number": "10",
+        "title": "Budgetary Commercial Offer",
+        "components": [
+          "Package-wise CAPEX Summary Table (Head, Amount in Rs. Lakhs)",
+          "Subtotal CAPEX (ex-GST) with soft highlight",
+          "GST @ 18% calculation",
+          "Total CAPEX (incl. 18% GST)",
+          "5-Year TCO Table (Turnkey CAPEX, CAMC Years 4-5, Managed O&M 5 Years, Total)",
+          "O&M Manpower Sizing Table (Role, Coverage, Headcount, Monthly Rate in Rs.)"
+        ]
+      },
+      {
+        "number": "11",
+        "title": "Assumptions, Exclusions and Next Steps",
+        "components": [
+          "Bullet list of technical assumptions",
+          "Bullet list of scope exclusions"
+        ]
+      },
+      {
+        "number": "Annexure A",
+        "title": "Item-wise Bill of Quantities (BOQ)",
+        "components": [
+          "Structured table: Sl. | Item Description | Technical Specification & OEM Basis | UoM | Qty | Unit Rate (Rs.) | Amount (Rs.)",
+          "Category Header Divider Rows (e.g. A POWER INFRASTRUCTURE, B COOLING INFRASTRUCTURE, etc.)",
+          "Highlighted Subtotal, GST, and Total rows"
+        ]
+      }
+    ]
+  }
+}
+

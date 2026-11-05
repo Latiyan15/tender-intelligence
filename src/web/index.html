@@ -16,7 +16,7 @@
     rel="stylesheet">
 
   <link rel="icon" type="image/png" href="/static/images/nikom_emblem.png">
-  <link rel="stylesheet" href="/static/css/styles.css?v=20261104_v24_compact_fit">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20261105_v34_single_scrollbar_fix">
 </head>
 
 <body>
@@ -26,8 +26,8 @@
          LEFT SIDEBAR NAVIGATION
          ════════════════════════════════════════════════════════════════════════ -->
     <aside class="sidebar">
-      <!-- Logo Branding -->
-      <div class="sidebar-brand">
+      <!-- Logo Branding (Click to return to Workspaces Hub) -->
+      <a href="#landing" class="sidebar-brand" style="text-decoration: none; cursor: pointer; display: block;" onclick="navigateTo('landing')" title="Return to Workspaces Hub">
         <div class="sidebar-brand-collapsed" title="Nikom InfraSolutions">
           <img src="/static/images/nikom_emblem.png" alt="Nikom Emblem" class="brand-emblem-img">
         </div>
@@ -37,19 +37,36 @@
           </div>
           <div class="brand-subtitle">Tender Intelligence</div>
         </div>
-      </div>
+      </a>
 
       <!-- Navigation Links -->
       <nav class="sidebar-nav">
-        <!-- 1. Dashboard -->
-        <a href="#dashboard" class="nav-item active" data-nav="dashboard">
+        <!-- 0. Workspaces Hub (Landing Page) -->
+        <a href="#landing" class="nav-item active" data-nav="landing" id="sidebar-nav-landing">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
           </span>
-          <span class="nav-label">Dashboard</span>
+          <span class="nav-label">Workspaces Hub</span>
+        </a>
+
+        <!-- Section 1: BIDDING TEAM WORKSPACE -->
+        <div class="sidebar-section-title">BIDDING TEAM</div>
+
+        <!-- 1. Tender Discovery (Dashboard) -->
+        <a href="#dashboard" class="nav-item" data-nav="dashboard">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+              <path d="M2 12h20"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Tender Discovery</span>
           <span class="nav-badge" id="nav-tender-count">0</span>
         </a>
 
@@ -57,38 +74,15 @@
         <a href="#watchlist" class="nav-item" data-nav="watchlist">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+              </polygon>
             </svg>
           </span>
           <span class="nav-label">Watchlist</span>
         </a>
 
-        <!-- 3. Pre-Sales AI (Nikom Assist) -->
-        <a href="#presales" class="nav-item" data-nav="presales" id="sidebar-nav-presales">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-            </svg>
-          </span>
-          <span class="nav-label">Pre-Sales AI</span>
-          <span class="nav-badge nav-badge-presales">Nikom Assist</span>
-        </a>
-
-        <!-- Portals & Repositories -->
-        <div class="sidebar-section-title">PORTALS & REPOSITORY</div>
-        <!-- 4. Sources -->
-        <a href="#sources" class="nav-item" data-nav="sources">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-          </span>
-          <span class="nav-label">Sources</span>
-        </a>
-
-        <!-- 5. Documents -->
+        <!-- 3. Documents -->
         <a href="#documents" class="nav-item" data-nav="documents">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,11 +96,26 @@
           <span class="nav-label">Documents</span>
         </a>
 
-        <!-- 6. Reports -->
+        <!-- 4. Sources -->
+        <a href="#sources" class="nav-item" data-nav="sources">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+              </path>
+            </svg>
+          </span>
+          <span class="nav-label">Sources</span>
+        </a>
+
+        <!-- 5. Reports -->
         <a href="#reports" class="nav-item" data-nav="reports">
           <span class="nav-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
               <line x1="12" y1="22.08" x2="12" y2="12"></line>
             </svg>
@@ -114,7 +123,23 @@
           <span class="nav-label">Reports</span>
         </a>
 
-        <!-- Management Section -->
+        <!-- Section 2: PRE-SALES TEAM WORKSPACE -->
+        <div class="sidebar-section-title">PRE-SALES TEAM</div>
+
+        <!-- 6. Solutioning Agent (Nikom Assist) -->
+        <a href="#presales" class="nav-item" data-nav="presales" id="sidebar-nav-presales">
+          <span class="nav-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Solutioning Agent</span>
+          <span class="nav-badge nav-badge-presales">Nikom Assist</span>
+        </a>
+
+        <!-- Section 3: MANAGEMENT -->
         <div class="sidebar-section-title">MANAGEMENT</div>
         <a href="#runs" class="nav-item" data-nav="runs">
           <span class="nav-icon">
@@ -177,14 +202,15 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="global-search"
-            placeholder="Search tenders, organisations, locations, tender ID..." autocomplete="off">
+          <input type="text" id="global-search" placeholder="Search tenders, organisations, locations, tender ID..."
+            autocomplete="off">
           <span class="kbd-badge">⌘ K</span>
         </div>
 
         <div class="top-header-right">
           <!-- Dynamic Scanner Status Pill (Pulsing live badge) -->
-          <div class="scan-status-pill idle" id="scan-status-pill" onclick="handleScanPillClick()" title="Discovery Scanner Status (Click to scan)">
+          <div class="scan-status-pill idle" id="scan-status-pill" onclick="handleScanPillClick()"
+            title="Discovery Scanner Status (Click to scan)">
             <span class="scan-pulse-dot"></span>
             <span id="scan-status-label">Scanner: Ready</span>
           </div>
@@ -221,7 +247,8 @@
           </button>
 
           <!-- 24h Bidding Alert Button -->
-          <button class="btn-icon" id="btn-email-alert" onclick="openEmailAlertModal()" title="Email 24h Tender Digest to Bidding Team" style="position: relative; color: #38bdf8;">
+          <button class="btn-icon" id="btn-email-alert" onclick="openEmailAlertModal()"
+            title="Email 24h Tender Digest to Bidding Team" style="position: relative; color: #38bdf8;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
@@ -229,7 +256,8 @@
           </button>
 
           <!-- Notifications Bell -->
-          <button class="btn-icon notification-bell" id="btn-notification-bell" onclick="openEmailAlertModal()" title="Bidding Team Alerts">
+          <button class="btn-icon notification-bell" id="btn-notification-bell" onclick="openEmailAlertModal()"
+            title="Bidding Team Alerts">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -273,15 +301,104 @@
           </div>
         </div>
 
-        <!-- ════════════════════════════════════════════════════════════════════
-             VIEW 1: DASHBOARD
+                <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 0: WORKSPACES LANDING & GATEWAY
+             Segregation between Bidding Team & Pre-Sales Team
              ════════════════════════════════════════════════════════════════════ -->
-        <div class="view-page active" id="view-dashboard">
+        <div class="view-page active" id="view-landing">
+          <div class="landing-scope">
+            <div class="blob b-a"></div><div class="blob b-b"></div>
+            <div class="wrap">
+              <header class="top">
+                <div class="lg">N</div>
+                <div><b>Nikom Tender Intelligence</b><span>Bidding and pre-sales, in one place</span></div>
+                <div class="sp"></div>
+                <span class="st"><i></i>Ready · Last sync <span id="landing-sync-time">12:17 AM</span></span>
+                <button type="button" class="tg" id="th-landing" aria-label="Toggle theme" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+              </header>
+
+              <section class="hero">
+                <h1>Where do you want to <em>work</em> today?</h1>
+                <p>Pick your team’s workspace. You can switch between them at any time from the side rail.</p>
+              </section>
+
+              <main class="cards">
+                <a class="card" href="#dashboard" data-k="1" data-go="#dashboard" onclick="navigateToWorkspace('dashboard', event)">
+                  <div class="stage" aria-hidden="true">
+                    <svg viewBox="0 0 200 200">
+                      <defs><linearGradient id="gs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--b1)" stop-opacity="0"/><stop offset="1" stop-color="var(--b1)" stop-opacity=".55"/></linearGradient></defs>
+                      <g fill="none" stroke="var(--b1)" stroke-opacity=".35" stroke-width="1.5"><circle cx="100" cy="100" r="86"/><circle cx="100" cy="100" r="60"/><circle cx="100" cy="100" r="34"/><path d="M100 14v172M14 100h172" stroke-opacity=".18"/></g>
+                      <circle class="tz ring" cx="100" cy="100" r="86" fill="none" stroke="var(--b2)" stroke-width="2"/>
+                      <circle class="tz ring r2" cx="100" cy="100" r="86" fill="none" stroke="var(--b1)" stroke-width="2"/>
+                      <g class="tz sweep"><path d="M100 100L100 14A86 86 0 0 1 186 100Z" fill="url(#gs)"/><path d="M100 100L100 14" stroke="var(--b1)" stroke-width="2.5" stroke-linecap="round"/></g>
+                      <g fill="var(--b2)"><circle class="tz blip" cx="146" cy="66" r="6"/><circle class="tz blip k2" cx="62" cy="128" r="5"/><circle class="tz blip k3" cx="128" cy="144" r="6"/></g>
+                      <circle cx="100" cy="100" r="9" fill="var(--b1)"/><circle cx="100" cy="100" r="3.5" fill="#fff"/>
+                    </svg>
+                  </div>
+                  <div class="body">
+                    <span class="pill">Bidding team</span>
+                    <h2>Tender Discovery</h2>
+                    <p>Track new tenders across every monitored portal, shortlist the relevant ones and run eligibility checks before you bid.</p>
+                    <div class="facts"><div><b id="landing-stat-tenders">938</b><span>Tenders</span></div><div><b id="landing-stat-portals">42</b><span>Portals</span></div><div><b id="landing-stat-sectors">5</b><span>Sectors</span></div></div>
+                    <div class="go"><span>Open Tender Discovery<kbd>1</kbd></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                  </div>
+                </a>
+
+                <a class="card sol" href="#presales" data-k="2" data-go="#presales" onclick="navigateToWorkspace('presales', event)">
+                  <div class="stage" aria-hidden="true">
+                    <svg viewBox="0 0 200 200">
+                      <defs>
+                        <linearGradient id="ls" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--t1)"/><stop offset="1" stop-color="var(--t2)"/></linearGradient>
+                      </defs>
+                      <g class="tz orb"><ellipse cx="100" cy="106" rx="88" ry="34" fill="none" stroke="var(--t2)" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="3 7"/><circle cx="188" cy="106" r="5.5" fill="var(--t2)"/></g>
+                      <g class="l3"><path d="M100 120L156 148L100 176L44 148Z" fill="var(--t1)" fill-opacity=".28" stroke="var(--t1)" stroke-width="2" stroke-linejoin="round"/></g>
+                      <g class="l2"><path d="M100 94L156 122L100 150L44 122Z" fill="var(--t2)" fill-opacity=".4" stroke="var(--t2)" stroke-width="2" stroke-linejoin="round"/></g>
+                      <g class="l1"><path d="M100 66L156 94L100 122L44 94Z" fill="url(#ls)" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/>
+                        <path class="tz bolt" d="M104 78L90 97h9l-4 15 15-20h-9z" fill="#fff"/></g>
+                      <g fill="var(--t1)"><circle class="led" cx="62" cy="152" r="3"/><circle class="led d2" cx="72" cy="157" r="3"/><circle class="led d3" cx="82" cy="162" r="3"/></g>
+                    </svg>
+                  </div>
+                  <div class="body">
+                    <span class="pill">Pre-sales team</span>
+                    <h2>Solutioning</h2>
+                    <p>Turn RFPs into Tier III/IV designs, power and cooling calculations and itemised budgetary offers with Nikom Assist.</p>
+                    <div class="facts"><div><b id="landing-stat-leads">8</b><span>Active leads</span></div><div><b>55+ MW</b><span>Delivered</span></div><div><b>Tier III</b><span>Certified</span></div></div>
+                    <div class="go"><span>Open Solutioning<kbd>2</kbd></span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+                  </div>
+                </a>
+              </main>
+              <div class="foot">Need a different area? Use the side rail once you are inside a workspace.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════
+             VIEW 1: DASHBOARD (BIDDING TEAM: TENDER DISCOVERY)
+             ════════════════════════════════════════════════════════════════════ -->
+        <div class="view-page" id="view-dashboard" style="display: none;">
+          <!-- Top Workspace Context Bar -->
+          <div class="workspace-context-bar bidding-bar">
+            <div class="workspace-context-left">
+              <span class="workspace-team-tag bidding">Bidding team</span>
+              <span class="workspace-sep">/</span>
+              <span class="workspace-name">Tender Discovery</span>
+            </div>
+            <div class="workspace-context-right">
+              <a href="#landing" class="workspace-switch-btn" onclick="navigateTo('landing')">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>All Workspaces</span>
+              </a>
+              <a href="#presales" class="workspace-jump-link presales-link" onclick="navigateTo('presales')">
+                <span>Switch to Pre-sales (Nikom Assist) →</span>
+              </a>
+            </div>
+          </div>
           <!-- Page Title & Quick Actions Row -->
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Tender <span class="discovery-gradient">Discovery</span></h1>
-              <p class="page-subtitle" id="discovery-feed-subtitle">All relevant tenders discovered across monitored portals</p>
+              <p class="page-subtitle" id="discovery-feed-subtitle">All relevant tenders discovered across monitored
+                portals</p>
             </div>
 
             <div class="page-controls">
@@ -419,395 +536,422 @@
           <!-- Visual Analytics Row: 3 Clean Cards (Areas, Sectors, Recent Discoveries) -->
           <div class="analytics-row">
 
-                <!-- Widget 1: Tenders by Area -->
-                <div class="analytics-card" id="area-bars-card">
-                  <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
-                    <div>
-                      <h3 class="analytics-title" style="margin-bottom: 2px;">Tenders by Area</h3>
-                      <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Procurement distribution by technology focus</p>
-                    </div>
-                    <div class="card-header-icon" style="color: var(--primary); display: flex; align-items: center; padding: 2px;">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                      </svg>
-                    </div>
+            <!-- Widget 1: Tenders by Area -->
+            <div class="analytics-card" id="area-bars-card">
+              <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
+                <div>
+                  <h3 class="analytics-title" style="margin-bottom: 2px;">Tenders by Area</h3>
+                  <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Procurement
+                    distribution by technology focus</p>
+                </div>
+                <div class="card-header-icon"
+                  style="color: var(--primary); display: flex; align-items: center; padding: 2px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                </div>
+              </div>
+              <div class="tier-bars-list" id="tier-bars-container">
+                <div class="bar-item">
+                  <div class="bar-labels">
+                    <span class="bar-title"><strong>Cyber Security</strong></span>
+                    <span class="bar-count" id="tier-a-bar-count">0</span>
                   </div>
-                  <div class="tier-bars-list" id="tier-bars-container">
-                    <div class="bar-item">
-                      <div class="bar-labels">
-                        <span class="bar-title"><strong>Cyber Security</strong></span>
-                        <span class="bar-count" id="tier-a-bar-count">0</span>
-                      </div>
-                      <div class="bar-track">
-                        <div class="bar-fill fill-red" id="tier-a-bar-fill" style="width: 0%;"></div>
-                      </div>
-                    </div>
-
-                    <div class="bar-item">
-                      <div class="bar-labels">
-                        <span class="bar-title"><strong>IT Infrastructure</strong></span>
-                        <span class="bar-count" id="tier-b-bar-count">0</span>
-                      </div>
-                      <div class="bar-track">
-                        <div class="bar-fill fill-blue" id="tier-b-bar-fill" style="width: 0%;"></div>
-                      </div>
-                    </div>
-
-                    <div class="bar-item">
-                      <div class="bar-labels">
-                        <span class="bar-title"><strong>Cloud</strong></span>
-                        <span class="bar-count" id="tier-c-bar-count">0</span>
-                      </div>
-                      <div class="bar-track">
-                        <div class="bar-fill fill-green" id="tier-c-bar-fill" style="width: 0%;"></div>
-                      </div>
-                    </div>
-
-                    <div class="bar-item">
-                      <div class="bar-labels">
-                        <span class="bar-title"><strong>Infra & Services</strong></span>
-                        <span class="bar-count" id="tier-d-bar-count">0</span>
-                      </div>
-                      <div class="bar-track">
-                        <div class="bar-fill fill-purple" id="tier-d-bar-fill" style="width: 0%;"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="card-footer-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                    <span class="footer-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">4 focus areas</span>
-                    <a href="#tenders" class="card-link" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
-                      View all &rarr;
-                    </a>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-red" id="tier-a-bar-fill" style="width: 0%;"></div>
                   </div>
                 </div>
 
-                <!-- Widget 2: Tenders by Sector -->
-                <div class="analytics-card sources-bar-card" id="sectors-bar-card">
-                  <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
-                    <div>
-                      <h3 class="analytics-title" style="margin-bottom: 2px;">Tenders by Sector</h3>
-                      <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Distribution across monitored sectors</p>
-                    </div>
-                    <div class="card-header-icon" style="color: var(--primary); display: flex; align-items: center; padding: 2px;">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 20V10M18 20V4M6 20v-4"/>
-                      </svg>
-                    </div>
+                <div class="bar-item">
+                  <div class="bar-labels">
+                    <span class="bar-title"><strong>IT Infrastructure</strong></span>
+                    <span class="bar-count" id="tier-b-bar-count">0</span>
                   </div>
-
-                  <div class="source-bars-list" id="sector-bars-container">
-                    <!-- Populated dynamically via renderSectorBars() in app.js -->
-                  </div>
-
-                  <div class="card-footer-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                    <span class="footer-count-text" id="sector-bars-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">5 sectors shown</span>
-                    <a href="#tenders" class="card-link" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
-                      View all &rarr;
-                    </a>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-blue" id="tier-b-bar-fill" style="width: 0%;"></div>
                   </div>
                 </div>
 
-                <!-- Widget 3: Recent Discoveries (Short & Compact Height) -->
-                <div class="analytics-card recent-tenders-card" id="recent-tenders-card">
-                  <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
-                    <div>
-                      <h3 class="analytics-title" style="margin-bottom: 2px;">Recent Discoveries</h3>
-                      <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Latest tenders ingested in real time</p>
-                    </div>
-                    <a href="#tenders" onclick="navigateTo('tenders'); return false;" class="card-link" style="color: var(--primary); font-size: 11.5px; font-weight: 700;">View all &rarr;</a>
+                <div class="bar-item">
+                  <div class="bar-labels">
+                    <span class="bar-title"><strong>Cloud</strong></span>
+                    <span class="bar-count" id="tier-c-bar-count">0</span>
                   </div>
-
-                  <div class="recent-tenders-list" id="dashboard-recent-tenders">
-                    <!-- Populated dynamically via JS -->
-                  </div>
-
-                  <div class="card-footer-row" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                    <span class="footer-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">Live Ingestion Feed</span>
-                    <a href="#dashboard-tenders-section" onclick="document.getElementById('dashboard-tenders-section')?.scrollIntoView({behavior: 'smooth'}); return false;" class="card-link" style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
-                      View in Table &darr;
-                    </a>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-green" id="tier-c-bar-fill" style="width: 0%;"></div>
                   </div>
                 </div>
 
+                <div class="bar-item">
+                  <div class="bar-labels">
+                    <span class="bar-title"><strong>Infra & Services</strong></span>
+                    <span class="bar-count" id="tier-d-bar-count">0</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill fill-purple" id="tier-d-bar-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Full-Width Tenders Section (Widens across entire screen) -->
-              <div id="dashboard-tenders-mount" style="width: 100%;">
-                <section class="tenders-section" id="dashboard-tenders-section" style="width: 100%;">
-                <div class="table-header-row">
-                  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <h2 class="section-title" style="margin: 0;">
-                      Tenders (<span id="table-total-count">0</span><span id="table-total-context" style="font-size: 13px; font-weight: 500; color: var(--text-3); margin-left: 2px;"></span>)
-                    </h2>
-                    <div id="active-filters-chips" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;"></div>
-                    <span id="table-scan-indicator" class="table-scan-indicator" style="display: none;">
-                      <span class="mini-spin-dot"></span>
-                      <span id="table-scan-indicator-text">Scanning portals...</span>
-                    </span>
-                  </div>
-
-                  <div class="table-search-tools">
-                    <div class="search-mini">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                      </svg>
-                      <input type="text" id="table-search" placeholder="Search in results...">
-                    </div>
-
-                    <!-- Image 2 Pill Buttons Toolbar -->
-                    <div class="pill-btn-group">
-                      <button class="btn-subtle-pill" onclick="toggleFilterBar()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        <span>Filters</span>
-                      </button>
-
-                      <button class="btn-subtle-pill" onclick="toggleSortDirection()">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <line x1="12" y1="5" x2="12" y2="19"></line>
-                          <polyline points="19 12 12 19 5 12"></polyline>
-                        </svg>
-                        <span id="sort-btn-label">Sort</span>
-                      </button>
-
-                      <button class="btn-subtle-pill"
-                        onclick="alert('Table displays 11 columns matching enterprise spec.')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="3" y1="9" x2="21" y2="9"></line>
-                          <line x1="9" y1="21" x2="9" y2="9"></line>
-                        </svg>
-                        <span>Columns</span>
-                      </button>
-
-                      <button class="btn-subtle-pill" onclick="exportTendersCSV()" title="Export CSV">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          stroke-width="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                          <polyline points="7 10 12 15 17 10"></polyline>
-                          <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        <span>Export</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Workflow Lifecycle & Segregation Bar -->
-                <div class="workflow-segregation-bar" id="workflow-segregation-bar">
-                  <button class="wf-tab active" data-status="all" onclick="setWorkflowFilter('all')">
-                    <span>All Tenders</span>
-                    <span class="wf-count" id="wf-count-all">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-watchlist" data-status="watchlist" onclick="setWorkflowFilter('watchlist')">
-                    <span class="wf-tab-star">★</span>
-                    <span>Watchlist</span>
-                    <span class="wf-count" id="wf-count-watchlist">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-considered" data-status="considered" onclick="setWorkflowFilter('considered')">
-                    <span class="wf-dot considered"></span>
-                    <span>Considered / Shortlist</span>
-                    <span class="wf-count" id="wf-count-considered">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-review" data-status="under_review" onclick="setWorkflowFilter('under_review')">
-                    <span class="wf-dot review"></span>
-                    <span>Under Review</span>
-                    <span class="wf-count" id="wf-count-under_review">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-reviewed" data-status="reviewed" onclick="setWorkflowFilter('reviewed')">
-                    <span class="wf-dot reviewed"></span>
-                    <span>Reviewed / Held</span>
-                    <span class="wf-count" id="wf-count-reviewed">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-rejected" data-status="rejected" onclick="setWorkflowFilter('rejected')">
-                    <span class="wf-dot rejected"></span>
-                    <span>Disqualified / Rejected</span>
-                    <span class="wf-count" id="wf-count-rejected">0</span>
-                  </button>
-                  <button class="wf-tab wf-tab-expired" data-status="expired" onclick="setWorkflowFilter('expired')">
-                    <span class="wf-dot expired"></span>
-                    <span>Closed / Expired</span>
-                    <span class="wf-count" id="wf-count-expired">0</span>
-                  </button>
-                </div>
-
-                <div class="filter-toolbar">
-                  <!-- Area Filter Pills -->
-                  <div class="tier-pills-group">
-                    <button class="pill-btn active" data-tier="all">
-                      All <span class="pill-count" id="pill-all-count">0</span>
-                    </button>
-                    <button class="pill-btn pill-tier-a" data-tier="A">
-                      Cyber Security <span class="pill-count" id="pill-a-count">0</span>
-                    </button>
-                    <button class="pill-btn pill-tier-b" data-tier="B">
-                      IT Infrastructure <span class="pill-count" id="pill-b-count">0</span>
-                    </button>
-                    <button class="pill-btn pill-tier-c" data-tier="C">
-                      Cloud <span class="pill-count" id="pill-c-count">0</span>
-                    </button>
-                    <button class="pill-btn pill-tier-d" data-tier="D">
-                      Infra & Services <span class="pill-count" id="pill-d-count">0</span>
-                    </button>
-                  </div>
-
-                  <div class="filter-dropdowns-group">
-                    <div class="dropdown-wrapper">
-                      <select id="filter-source" onchange="applyFilters()">
-                        <option value="">Source: All Portals (42)</option>
-                        <option value="gem">Government e-Marketplace (GeM)</option>
-                        <option value="cppp_latest">CPPP Central Active Tenders</option>
-                        <option value="cppp_epublish">CPPP ePublishing Portal</option>
-                        <option value="up_tenders">Uttar Pradesh eProcurement</option>
-                        <option value="mahatenders">Maharashtra MahaTenders</option>
-                        <option value="karnataka_eproc">Karnataka eProcurement</option>
-                        <option value="tn_tenders">Tamil Nadu TNTenders</option>
-                        <option value="gujarat_nprocure">Gujarat nProcure</option>
-                        <option value="rajasthan_eproc">Rajasthan eProcurement</option>
-                        <option value="mp_tenders">Madhya Pradesh MP Tenders</option>
-                        <option value="haryana_tenders">Haryana eProcurement</option>
-                        <option value="delhi_tenders">Delhi Govt Procurement</option>
-                        <option value="punjab_eproc">Punjab eProcurement</option>
-                        <option value="uk_tenders">Uttarakhand UK Tenders</option>
-                        <option value="wb_tenders">West Bengal WB Tenders</option>
-                        <option value="kerala_tenders">Kerala e-Tenders</option>
-                        <option value="odisha_tenders">Odisha Tenders</option>
-                        <option value="jharkhand_tenders">Jharkhand Tenders</option>
-                        <option value="hp_tenders">Himachal Pradesh HP Tenders</option>
-                        <option value="chhattisgarh_eproc">Chhattisgarh eProc</option>
-                        <option value="jk_tenders">Jammu & Kashmir JK Tenders</option>
-                        <option value="assam_tenders">Assam Tenders (GePNIC)</option>
-                        <option value="andaman_tenders">Andaman & Nicobar Islands</option>
-                        <option value="arunachal_tenders">Arunachal Pradesh Tenders</option>
-                        <option value="bihar_eprocurement">Bihar eProcurement</option>
-                        <option value="ap_eprocurement">Andhra Pradesh eProcurement</option>
-                        <option value="aiims_kalyani_ewizard">AIIMS Kalyani (eWizard)</option>
-                        <option value="aera_ewizard">AERA India (eWizard)</option>
-                        <option value="bcpl_ewizard">Bengal Chemicals (eWizard)</option>
-                        <option value="becil_ewizard">BECIL India (eWizard)</option>
-                        <option value="aiims_tenderwizard">AIIMS (TenderWizard)</option>
-                        <option value="bhel_tenderwizard">BHEL (TenderWizard)</option>
-                        <option value="aiims_guwahati">AIIMS Guwahati</option>
-                        <option value="bel">Bharat Electronics (BEL)</option>
-                        <option value="bhel">Bharat Heavy Electricals (BHEL)</option>
-                        <option value="bpcl">Bharat Petroleum (BPCL)</option>
-                        <option value="iocl">Indian Oil (IOCL)</option>
-                        <option value="beml">BEML Limited</option>
-                        <option value="bial">Bangalore Airport (BIAL)</option>
-                        <option value="bnpm">Bank Note Paper Mill (BNPM)</option>
-                        <option value="bharat_ets">Bharat ElectronicTender (ETS)</option>
-                        <option value="asrtu">State Road Transport (ASRTU)</option>
-                      </select>
-                    </div>
-
-                    <div class="dropdown-wrapper">
-                      <select id="filter-state" onchange="applyFilters()">
-                        <option value="">State: All States (India)</option>
-                        <option value="Delhi">Delhi (NCT)</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="West Bengal">West Bengal</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Odisha">Odisha</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                        <option value="Jammu & Kashmir">Jammu & Kashmir</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Pan India / Central">Pan India / Central</option>
-                      </select>
-                    </div>
-
-                    <div class="dropdown-wrapper">
-                      <select id="filter-sector" onchange="applyFilters()">
-                        <option value="">Sector: All</option>
-                        <option value="Government">Government</option>
-                        <option value="Defence">Defence</option>
-                        <option value="Enterprise / Commercial">Enterprise / Commercial</option>
-                        <option value="Energy & Utilities">Energy & Utilities</option>
-                        <option value="Transport">Transport</option>
-                      </select>
-                    </div>
-
-                    <div class="dropdown-wrapper">
-                      <select id="filter-value" onchange="applyFilters()">
-                        <option value="">Value: All</option>
-                        <option value="5cr">₹ 5 Cr+</option>
-                        <option value="25cr">₹ 25 Cr+</option>
-                        <option value="50cr">₹ 50 Cr+</option>
-                      </select>
-                    </div>
-
-                    <div class="dropdown-wrapper">
-                      <select id="filter-expiry" onchange="applyFilters()">
-                        <option value="all">Bids: All Statuses</option>
-                        <option value="active">Bids: Open / Active Only</option>
-                        <option value="expired">Bids: Closed / Expired Only</option>
-                      </select>
-                    </div>
-
-                    <div class="dropdown-wrapper">
-                      <select id="filter-window" onchange="handleTimeWindowChange(this.value)">
-                        <option value="all" selected>Window: All Time</option>
-                        <option value="24h">Window: Last 24 Hours</option>
-                        <option value="48h">Window: Last 48 Hours</option>
-                        <option value="7d">Window: Last 7 Days</option>
-                        <option value="30d">Window: Last 30 Days</option>
-                      </select>
-                    </div>
-
-                    <button class="btn-reset" onclick="resetFilters()">Reset</button>
-                  </div>
-                </div>
-
-                <div id="active-filters-banner" style="display: none; margin: 10px 0 14px 0; padding: 10px 16px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; font-size: 12.5px; color: var(--text); align-items: center; justify-content: space-between; gap: 12px;"></div>
-                <div class="table-responsive-container">
-                  <table class="tenders-table" id="tenders-table">
-                    <thead>
-                      <tr>
-                        <th style="width: 36px;"><input type="checkbox" id="select-all-tenders" title="Select all visible tenders"></th>
-                        <th style="width: 32px; text-align: center; color: #f59e0b;" title="Executive Watchlist (Star to Pin)">★</th>
-                        <th>Title & Reference</th>
-                        <th>Source</th>
-                        <th>Buyer Organisation</th>
-                        <th>Location</th>
-                        <th>Value</th>
-                        <th>Key Systems</th>
-                        <th>Deadline</th>
-                        <th>Area</th>
-                        <th>Workflow Status</th>
-                        <th style="width: 44px; text-align: center;">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="tenders-tbody">
-                      <!-- Dynamically populated by app.js -->
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+              <div class="card-footer-row"
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                <span class="footer-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">4
+                  focus areas</span>
+                <a href="#tenders" class="card-link"
+                  style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
+                  View all &rarr;
+                </a>
+              </div>
             </div>
+
+            <!-- Widget 2: Tenders by Sector -->
+            <div class="analytics-card sources-bar-card" id="sectors-bar-card">
+              <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
+                <div>
+                  <h3 class="analytics-title" style="margin-bottom: 2px;">Tenders by Sector</h3>
+                  <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Distribution
+                    across monitored sectors</p>
+                </div>
+                <div class="card-header-icon"
+                  style="color: var(--primary); display: flex; align-items: center; padding: 2px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20V10M18 20V4M6 20v-4" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="source-bars-list" id="sector-bars-container">
+                <!-- Populated dynamically via renderSectorBars() in app.js -->
+              </div>
+
+              <div class="card-footer-row"
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                <span class="footer-count-text" id="sector-bars-count-text"
+                  style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">5 sectors shown</span>
+                <a href="#tenders" class="card-link"
+                  style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
+                  View all &rarr;
+                </a>
+              </div>
+            </div>
+
+            <!-- Widget 3: Recent Discoveries (Short & Compact Height) -->
+            <div class="analytics-card recent-tenders-card" id="recent-tenders-card">
+              <div class="card-header-row" style="align-items: flex-start; margin-bottom: 6px;">
+                <div>
+                  <h3 class="analytics-title" style="margin-bottom: 2px;">Recent Discoveries</h3>
+                  <p class="analytics-subtitle" style="font-size: 11.5px; color: var(--text-3); margin: 0;">Latest
+                    tenders ingested in real time</p>
+                </div>
+                <a href="#tenders" onclick="navigateTo('tenders'); return false;" class="card-link"
+                  style="color: var(--primary); font-size: 11.5px; font-weight: 700;">View all &rarr;</a>
+              </div>
+
+              <div class="recent-tenders-list" id="dashboard-recent-tenders">
+                <!-- Populated dynamically via JS -->
+              </div>
+
+              <div class="card-footer-row"
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                <span class="footer-count-text" style="font-size: 11.5px; color: var(--text-3); font-weight: 500;">Live
+                  Ingestion Feed</span>
+                <a href="#dashboard-tenders-section"
+                  onclick="document.getElementById('dashboard-tenders-section')?.scrollIntoView({behavior: 'smooth'}); return false;"
+                  class="card-link"
+                  style="color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;">
+                  View in Table &darr;
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Full-Width Tenders Section (Widens across entire screen) -->
+          <div id="dashboard-tenders-mount" style="width: 100%;">
+            <section class="tenders-section" id="dashboard-tenders-section" style="width: 100%;">
+              <div class="table-header-row">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <h2 class="section-title" style="margin: 0;">
+                    Tenders (<span id="table-total-count">0</span><span id="table-total-context"
+                      style="font-size: 13px; font-weight: 500; color: var(--text-3); margin-left: 2px;"></span>)
+                  </h2>
+                  <div id="active-filters-chips" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  </div>
+                  <span id="table-scan-indicator" class="table-scan-indicator" style="display: none;">
+                    <span class="mini-spin-dot"></span>
+                    <span id="table-scan-indicator-text">Scanning portals...</span>
+                  </span>
+                </div>
+
+                <div class="table-search-tools">
+                  <div class="search-mini">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="table-search" placeholder="Search in results...">
+                  </div>
+
+                  <!-- Image 2 Pill Buttons Toolbar -->
+                  <div class="pill-btn-group">
+                    <button class="btn-subtle-pill" onclick="toggleFilterBar()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <span>Filters</span>
+                    </button>
+
+                    <button class="btn-subtle-pill" onclick="toggleSortDirection()">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <polyline points="19 12 12 19 5 12"></polyline>
+                      </svg>
+                      <span id="sort-btn-label">Sort</span>
+                    </button>
+
+                    <button class="btn-subtle-pill"
+                      onclick="alert('Table displays 11 columns matching enterprise spec.')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                      </svg>
+                      <span>Columns</span>
+                    </button>
+
+                    <button class="btn-subtle-pill" onclick="exportTendersCSV()" title="Export CSV">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Export</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Workflow Lifecycle & Segregation Bar -->
+              <div class="workflow-segregation-bar" id="workflow-segregation-bar">
+                <button class="wf-tab active" data-status="all" onclick="setWorkflowFilter('all')">
+                  <span>All Tenders</span>
+                  <span class="wf-count" id="wf-count-all">0</span>
+                </button>
+                <button class="wf-tab wf-tab-watchlist" data-status="watchlist"
+                  onclick="setWorkflowFilter('watchlist')">
+                  <span class="wf-tab-star">★</span>
+                  <span>Watchlist</span>
+                  <span class="wf-count" id="wf-count-watchlist">0</span>
+                </button>
+                <button class="wf-tab wf-tab-considered" data-status="considered"
+                  onclick="setWorkflowFilter('considered')">
+                  <span class="wf-dot considered"></span>
+                  <span>Considered / Shortlist</span>
+                  <span class="wf-count" id="wf-count-considered">0</span>
+                </button>
+                <button class="wf-tab wf-tab-review" data-status="under_review"
+                  onclick="setWorkflowFilter('under_review')">
+                  <span class="wf-dot review"></span>
+                  <span>Under Review</span>
+                  <span class="wf-count" id="wf-count-under_review">0</span>
+                </button>
+                <button class="wf-tab wf-tab-reviewed" data-status="reviewed" onclick="setWorkflowFilter('reviewed')">
+                  <span class="wf-dot reviewed"></span>
+                  <span>Reviewed / Held</span>
+                  <span class="wf-count" id="wf-count-reviewed">0</span>
+                </button>
+                <button class="wf-tab wf-tab-rejected" data-status="rejected" onclick="setWorkflowFilter('rejected')">
+                  <span class="wf-dot rejected"></span>
+                  <span>Disqualified / Rejected</span>
+                  <span class="wf-count" id="wf-count-rejected">0</span>
+                </button>
+                <button class="wf-tab wf-tab-expired" data-status="expired" onclick="setWorkflowFilter('expired')">
+                  <span class="wf-dot expired"></span>
+                  <span>Closed / Expired</span>
+                  <span class="wf-count" id="wf-count-expired">0</span>
+                </button>
+              </div>
+
+              <div class="filter-toolbar">
+                <!-- Area Filter Pills -->
+                <div class="tier-pills-group">
+                  <button class="pill-btn active" data-tier="all">
+                    All <span class="pill-count" id="pill-all-count">0</span>
+                  </button>
+                  <button class="pill-btn pill-tier-a" data-tier="A">
+                    Cyber Security <span class="pill-count" id="pill-a-count">0</span>
+                  </button>
+                  <button class="pill-btn pill-tier-b" data-tier="B">
+                    IT Infrastructure <span class="pill-count" id="pill-b-count">0</span>
+                  </button>
+                  <button class="pill-btn pill-tier-c" data-tier="C">
+                    Cloud <span class="pill-count" id="pill-c-count">0</span>
+                  </button>
+                  <button class="pill-btn pill-tier-d" data-tier="D">
+                    Infra & Services <span class="pill-count" id="pill-d-count">0</span>
+                  </button>
+                </div>
+
+                <div class="filter-dropdowns-group">
+                  <div class="dropdown-wrapper">
+                    <select id="filter-source" onchange="applyFilters()">
+                      <option value="">Source: All Portals (42)</option>
+                      <option value="gem">Government e-Marketplace (GeM)</option>
+                      <option value="cppp_latest">CPPP Central Active Tenders</option>
+                      <option value="cppp_epublish">CPPP ePublishing Portal</option>
+                      <option value="up_tenders">Uttar Pradesh eProcurement</option>
+                      <option value="mahatenders">Maharashtra MahaTenders</option>
+                      <option value="karnataka_eproc">Karnataka eProcurement</option>
+                      <option value="tn_tenders">Tamil Nadu TNTenders</option>
+                      <option value="gujarat_nprocure">Gujarat nProcure</option>
+                      <option value="rajasthan_eproc">Rajasthan eProcurement</option>
+                      <option value="mp_tenders">Madhya Pradesh MP Tenders</option>
+                      <option value="haryana_tenders">Haryana eProcurement</option>
+                      <option value="delhi_tenders">Delhi Govt Procurement</option>
+                      <option value="punjab_eproc">Punjab eProcurement</option>
+                      <option value="uk_tenders">Uttarakhand UK Tenders</option>
+                      <option value="wb_tenders">West Bengal WB Tenders</option>
+                      <option value="kerala_tenders">Kerala e-Tenders</option>
+                      <option value="odisha_tenders">Odisha Tenders</option>
+                      <option value="jharkhand_tenders">Jharkhand Tenders</option>
+                      <option value="hp_tenders">Himachal Pradesh HP Tenders</option>
+                      <option value="chhattisgarh_eproc">Chhattisgarh eProc</option>
+                      <option value="jk_tenders">Jammu & Kashmir JK Tenders</option>
+                      <option value="assam_tenders">Assam Tenders (GePNIC)</option>
+                      <option value="andaman_tenders">Andaman & Nicobar Islands</option>
+                      <option value="arunachal_tenders">Arunachal Pradesh Tenders</option>
+                      <option value="bihar_eprocurement">Bihar eProcurement</option>
+                      <option value="ap_eprocurement">Andhra Pradesh eProcurement</option>
+                      <option value="aiims_kalyani_ewizard">AIIMS Kalyani (eWizard)</option>
+                      <option value="aera_ewizard">AERA India (eWizard)</option>
+                      <option value="bcpl_ewizard">Bengal Chemicals (eWizard)</option>
+                      <option value="becil_ewizard">BECIL India (eWizard)</option>
+                      <option value="aiims_tenderwizard">AIIMS (TenderWizard)</option>
+                      <option value="bhel_tenderwizard">BHEL (TenderWizard)</option>
+                      <option value="aiims_guwahati">AIIMS Guwahati</option>
+                      <option value="bel">Bharat Electronics (BEL)</option>
+                      <option value="bhel">Bharat Heavy Electricals (BHEL)</option>
+                      <option value="bpcl">Bharat Petroleum (BPCL)</option>
+                      <option value="iocl">Indian Oil (IOCL)</option>
+                      <option value="beml">BEML Limited</option>
+                      <option value="bial">Bangalore Airport (BIAL)</option>
+                      <option value="bnpm">Bank Note Paper Mill (BNPM)</option>
+                      <option value="bharat_ets">Bharat ElectronicTender (ETS)</option>
+                      <option value="asrtu">State Road Transport (ASRTU)</option>
+                    </select>
+                  </div>
+
+                  <div class="dropdown-wrapper">
+                    <select id="filter-state" onchange="applyFilters()">
+                      <option value="">State: All States (India)</option>
+                      <option value="Delhi">Delhi (NCT)</option>
+                      <option value="Maharashtra">Maharashtra</option>
+                      <option value="Uttar Pradesh">Uttar Pradesh</option>
+                      <option value="West Bengal">West Bengal</option>
+                      <option value="Karnataka">Karnataka</option>
+                      <option value="Tamil Nadu">Tamil Nadu</option>
+                      <option value="Gujarat">Gujarat</option>
+                      <option value="Rajasthan">Rajasthan</option>
+                      <option value="Madhya Pradesh">Madhya Pradesh</option>
+                      <option value="Kerala">Kerala</option>
+                      <option value="Andhra Pradesh">Andhra Pradesh</option>
+                      <option value="Telangana">Telangana</option>
+                      <option value="Bihar">Bihar</option>
+                      <option value="Odisha">Odisha</option>
+                      <option value="Punjab">Punjab</option>
+                      <option value="Haryana">Haryana</option>
+                      <option value="Assam">Assam</option>
+                      <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                      <option value="Uttarakhand">Uttarakhand</option>
+                      <option value="Himachal Pradesh">Himachal Pradesh</option>
+                      <option value="Jammu & Kashmir">Jammu & Kashmir</option>
+                      <option value="Chhattisgarh">Chhattisgarh</option>
+                      <option value="Jharkhand">Jharkhand</option>
+                      <option value="Pan India / Central">Pan India / Central</option>
+                    </select>
+                  </div>
+
+                  <div class="dropdown-wrapper">
+                    <select id="filter-sector" onchange="applyFilters()">
+                      <option value="">Sector: All</option>
+                      <option value="Government">Government</option>
+                      <option value="Defence">Defence</option>
+                      <option value="Enterprise / Commercial">Enterprise / Commercial</option>
+                      <option value="Energy & Utilities">Energy & Utilities</option>
+                      <option value="Transport">Transport</option>
+                    </select>
+                  </div>
+
+                  <div class="dropdown-wrapper">
+                    <select id="filter-value" onchange="applyFilters()">
+                      <option value="">Value: All</option>
+                      <option value="5cr">₹ 5 Cr+</option>
+                      <option value="25cr">₹ 25 Cr+</option>
+                      <option value="50cr">₹ 50 Cr+</option>
+                    </select>
+                  </div>
+
+                  <div class="dropdown-wrapper">
+                    <select id="filter-expiry" onchange="applyFilters()">
+                      <option value="all">Bids: All Statuses</option>
+                      <option value="active">Bids: Open / Active Only</option>
+                      <option value="expired">Bids: Closed / Expired Only</option>
+                    </select>
+                  </div>
+
+                  <div class="dropdown-wrapper">
+                    <select id="filter-window" onchange="handleTimeWindowChange(this.value)">
+                      <option value="all" selected>Window: All Time</option>
+                      <option value="24h">Window: Last 24 Hours</option>
+                      <option value="48h">Window: Last 48 Hours</option>
+                      <option value="7d">Window: Last 7 Days</option>
+                      <option value="30d">Window: Last 30 Days</option>
+                    </select>
+                  </div>
+
+                  <button class="btn-reset" onclick="resetFilters()">Reset</button>
+                </div>
+              </div>
+
+              <div id="active-filters-banner"
+                style="display: none; margin: 10px 0 14px 0; padding: 10px 16px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; font-size: 12.5px; color: var(--text); align-items: center; justify-content: space-between; gap: 12px;">
+              </div>
+              <div class="table-responsive-container">
+                <table class="tenders-table" id="tenders-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 36px;"><input type="checkbox" id="select-all-tenders"
+                          title="Select all visible tenders"></th>
+                      <th style="width: 32px; text-align: center; color: #f59e0b;"
+                        title="Executive Watchlist (Star to Pin)">★</th>
+                      <th>Title & Reference</th>
+                      <th>Source</th>
+                      <th>Buyer Organisation</th>
+                      <th>Location</th>
+                      <th>Value</th>
+                      <th>Key Systems</th>
+                      <th>Deadline</th>
+                      <th>Area</th>
+                      <th>Workflow Status</th>
+                      <th style="width: 44px; text-align: center;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tenders-tbody">
+                    <!-- Dynamically populated by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </div>
 
         <!-- ════════════════════════════════════════════════════════════════════
@@ -821,7 +965,9 @@
             </div>
             <div class="page-controls">
               <button class="btn-panel-primary" style="flex: none; padding: 8px 16px;" onclick="triggerDiscoveryScan()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> <span>Scan All Portals Now</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg> <span>Scan All Portals Now</span>
               </button>
             </div>
           </div>
@@ -852,7 +998,9 @@
 
           <!-- Quick Search Bar for 42 Portals -->
           <div class="sources-search-wrap" style="margin-bottom: 16px;">
-            <input type="text" id="sources-search-input" class="sources-search-input" placeholder="Search portals by name, code, state, or authority (e.g. GeM, MahaTenders, IOCL, AIIMS)..." oninput="filterSourcesBySearch(this.value)">
+            <input type="text" id="sources-search-input" class="sources-search-input"
+              placeholder="Search portals by name, code, state, or authority (e.g. GeM, MahaTenders, IOCL, AIIMS)..."
+              oninput="filterSourcesBySearch(this.value)">
           </div>
 
           <!-- Category Filter Chips Bar -->
@@ -868,14 +1016,15 @@
 
         </div>
 
-<!-- ════════════════════════════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════════════════════════
              VIEW 5: DOCUMENTS (EXTRACTED EVIDENCE REPOSITORY)
              ════════════════════════════════════════════════════════════════════ -->
         <div class="view-page" id="view-documents" style="display: none;">
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Document Repository & Extraction</h1>
-              <p class="page-subtitle">Official NIT notices, technical specifications, and automated data extraction synced to active tenders</p>
+              <p class="page-subtitle">Official NIT notices, technical specifications, and automated data extraction
+                synced to active tenders</p>
             </div>
             <div class="page-controls">
               <button class="btn-subtle-pill" onclick="loadDocumentsView(true)">
@@ -892,7 +1041,13 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+                  <span class="kpi-icon kpi-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-total">0</div>
                     <div class="kpi-label">Total Documents Synced</div>
@@ -903,7 +1058,10 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span>
+                  <span class="kpi-icon kpi-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-cyber">0</div>
                     <div class="kpi-label">Cyber Security NITs</div>
@@ -914,7 +1072,13 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-indigo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></span>
+                  <span class="kpi-icon kpi-indigo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <rect x="2" y="2" width="20" height="8" rx="2"></rect>
+                      <rect x="2" y="14" width="20" height="8" rx="2"></rect>
+                      <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                      <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                    </svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-infra">0</div>
                     <div class="kpi-label">IT Infrastructure Docs</div>
@@ -925,7 +1089,10 @@
             <div class="kpi-card">
               <div class="kpi-top-row">
                 <div class="kpi-icon-wrap">
-                  <span class="kpi-icon kpi-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg></span>
+                  <span class="kpi-icon kpi-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2">
+                      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                    </svg></span>
                   <div>
                     <div class="kpi-number" id="doc-kpi-cloud">0</div>
                     <div class="kpi-label">Cloud & Services Docs</div>
@@ -938,7 +1105,8 @@
           <div class="tenders-section" style="height: auto; max-height: none;">
             <div class="table-header-row" style="margin-bottom: 14px;">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <h3 class="analytics-title" style="margin: 0;">Official Tender Documents (<span id="documents-count">0</span>)</h3>
+                <h3 class="analytics-title" style="margin: 0;">Official Tender Documents (<span
+                    id="documents-count">0</span>)</h3>
               </div>
               <div class="table-search-tools">
                 <div class="search-mini" style="width: 250px;">
@@ -946,7 +1114,8 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
-                  <input type="text" id="doc-table-search" placeholder="Search by title, ref, or buyer..." oninput="filterDocumentsTable()">
+                  <input type="text" id="doc-table-search" placeholder="Search by title, ref, or buyer..."
+                    oninput="filterDocumentsTable()">
                 </div>
                 <div class="dropdown-wrapper">
                   <select id="doc-filter-tier" onchange="filterDocumentsTable()">
@@ -1089,7 +1258,8 @@
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Executive Reports & <span class="discovery-gradient">Intelligence</span></h1>
-              <p class="page-subtitle">Aggregated procurement intelligence, tier distribution audits, and executive briefing dossiers</p>
+              <p class="page-subtitle">Aggregated procurement intelligence, tier distribution audits, and executive
+                briefing dossiers</p>
             </div>
             <div class="page-controls">
               <button class="btn-secondary" onclick="exportTendersCSV()">
@@ -1138,27 +1308,40 @@
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
                         <strong style="color: var(--text);">Daily Tender Intelligence Executive Briefing</strong>
                       </div>
                     </td>
-                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>All Discovered Portals</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">PDF Dossier</span></td>
+                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span>
+                    </td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>All Discovered
+                        Portals</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">PDF Dossier</span>
+                    </td>
                     <td style="text-align: center;">
-                      <button class="btn-download" onclick="downloadReportBriefing('Daily_Tender_Intelligence')">Download PDF ↗</button>
+                      <button class="btn-download"
+                        onclick="downloadReportBriefing('Daily_Tender_Intelligence')">Download PDF ↗</button>
                     </td>
                   </tr>
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
                         <strong style="color: var(--text);">Cyber Security Opportunity Extract</strong>
                       </div>
                     </td>
-                    <td><span class="live-report-date-2" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cyber Security Scope</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
+                    <td><span class="live-report-date-2" style="color: var(--text-2); font-size: 12px;">Today</span>
+                    </td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cyber Security
+                        Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span>
+                    </td>
                     <td style="text-align: center;">
                       <button class="btn-download" onclick="exportTendersCSV('A')">Download CSV ↗</button>
                     </td>
@@ -1166,13 +1349,19 @@
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
                         <strong style="color: var(--text);">IT Infrastructure Master File</strong>
                       </div>
                     </td>
-                    <td><span class="live-report-date-3" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>IT Infrastructure Scope</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
+                    <td><span class="live-report-date-3" style="color: var(--text-2); font-size: 12px;">Today</span>
+                    </td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>IT Infrastructure
+                        Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span>
+                    </td>
                     <td style="text-align: center;">
                       <button class="btn-download" onclick="exportTendersCSV('B')">Download CSV ↗</button>
                     </td>
@@ -1180,13 +1369,19 @@
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
                         <strong style="color: var(--text);">Cloud Computing Opportunity Extract</strong>
                       </div>
                     </td>
-                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span></td>
-                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cloud & DC Scope</span></td>
-                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span></td>
+                    <td><span class="live-report-date-1" style="color: var(--text-2); font-size: 12px;">Today</span>
+                    </td>
+                    <td><span class="table-status-pill extracted"><span class="status-dot"></span>Cloud & DC
+                        Scope</span></td>
+                    <td><span style="font-family: monospace; font-size: 11px; color: var(--text-3);">CSV Dataset</span>
+                    </td>
                     <td style="text-align: center;">
                       <button class="btn-download" onclick="exportTendersCSV('C')">Download CSV ↗</button>
                     </td>
@@ -1204,7 +1399,8 @@
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Tender <span class="discovery-gradient">Watchlist</span> & Priority Bids</h1>
-              <p class="page-subtitle">High-value opportunities and strategic tenders pinned for qualification and bidding consortiums</p>
+              <p class="page-subtitle">High-value opportunities and strategic tenders pinned for qualification and
+                bidding consortiums</p>
             </div>
             <div class="page-controls">
               <button class="btn-secondary" onclick="exportTendersCSV()">
@@ -1234,7 +1430,9 @@
             <div class="kpi-card">
               <div class="kpi-header-row">
                 <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
                 </div>
                 <div class="kpi-trend positive"><span>Shortlist</span></div>
               </div>
@@ -1245,7 +1443,10 @@
             <div class="kpi-card">
               <div class="kpi-header-row">
                 <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
+                  </svg>
                 </div>
                 <div class="kpi-trend negative"><span>&lt; 72 Hours</span></div>
               </div>
@@ -1256,7 +1457,10 @@
             <div class="kpi-card">
               <div class="kpi-header-row">
                 <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
                 </div>
                 <div class="kpi-trend positive"><span>Valuation</span></div>
               </div>
@@ -1269,9 +1473,12 @@
             <div class="table-header-row" style="margin-bottom: 12px;">
               <h3 class="analytics-title" id="watchlist-table-title">Bookmarked Opportunities (0)</h3>
               <div class="pill-btn-group">
-                <button class="pill-btn active" id="wl-filter-all" onclick="filterWatchlistView('all')">All Pinned</button>
-                <button class="pill-btn" id="wl-filter-considered" onclick="filterWatchlistView('considered')">Considered Bids</button>
-                <button class="pill-btn" id="wl-filter-urgent" onclick="filterWatchlistView('urgent')">Urgent Closing</button>
+                <button class="pill-btn active" id="wl-filter-all" onclick="filterWatchlistView('all')">All
+                  Pinned</button>
+                <button class="pill-btn" id="wl-filter-considered"
+                  onclick="filterWatchlistView('considered')">Considered Bids</button>
+                <button class="pill-btn" id="wl-filter-urgent" onclick="filterWatchlistView('urgent')">Urgent
+                  Closing</button>
               </div>
             </div>
 
@@ -1312,7 +1519,8 @@
           <div class="page-header-row">
             <div>
               <h1 class="page-title">Automated <span class="discovery-gradient">Collection Runs</span></h1>
-              <p class="page-subtitle">Real-time scraper execution history, portal response latencies, and sync schedules</p>
+              <p class="page-subtitle">Real-time scraper execution history, portal response latencies, and sync
+                schedules</p>
             </div>
             <div class="page-controls">
               <button class="btn-primary-run" onclick="triggerDiscoveryScan()">
@@ -1354,545 +1562,573 @@
           </div>
         </div>
 
-        </div>
+    </div>
 
-        <!-- ════════════════════════════════════════════════════════════════════
+    <!-- ════════════════════════════════════════════════════════════════════
              VIEW 11: TEAM (PROCUREMENT & BIDDING TEAM)
              ════════════════════════════════════════════════════════════════════ -->
-        <div class="view-page" id="view-team" style="display: none;">
-          <div class="page-header-row">
+    <div class="view-page" id="view-team" style="display: none;">
+      <div class="page-header-row">
+        <div>
+          <h1 class="page-title">Procurement & <span class="discovery-gradient">Bidding Team</span></h1>
+          <p class="page-subtitle">Bid managers, technical evaluators, and notification preferences</p>
+        </div>
+      </div>
+
+      <div class="settings-grid" style="margin-bottom: 24px;">
+        <div class="analytics-card">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+            <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px;">U</div>
             <div>
-              <h1 class="page-title">Procurement & <span class="discovery-gradient">Bidding Team</span></h1>
-              <p class="page-subtitle">Bid managers, technical evaluators, and notification preferences</p>
+              <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">User</h3>
+              <span style="font-size: 11.5px; color: var(--primary); font-weight: 600;">Lead Bid Manager</span>
             </div>
           </div>
-
-          <div class="settings-grid" style="margin-bottom: 24px;">
-            <div class="analytics-card">
-              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px;">U</div>
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">User</h3>
-                  <span style="font-size: 11.5px; color: var(--primary); font-weight: 600;">Lead Bid Manager</span>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
-                Responsible for Tier A Cyber Security qualification, client liaisons, and consortium lead management.
-              </div>
-              <div class="table-status-pill extracted"><span class="status-dot"></span>Active Evaluator</div>
-            </div>
-
-            <div class="analytics-card">
-              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #10b981, #059669);">PV</div>
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Priyansh Verma</h3>
-                  <span style="font-size: 11.5px; color: #10b981; font-weight: 600;">Technical Infrastructure Specialist</span>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
-                Evaluates online modular UPS, precision air conditioning (PAC), and gas suppression requirements.
-              </div>
-              <div class="table-status-pill extracted"><span class="status-dot"></span>Technical Lead</div>
-            </div>
-
-            <div class="analytics-card">
-              <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                <div class="user-avatar" style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #8b5cf6, #6d28d9);">MN</div>
-                <div>
-                  <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Meera Nair</h3>
-                  <span style="font-size: 11.5px; color: #8b5cf6; font-weight: 600;">BOQ & Compliance Lead</span>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
-                Manages GeM portal submissions, EMD bank guarantees, and documentation extraction checklists.
-              </div>
-              <div class="table-status-pill extracted"><span class="status-dot"></span>Compliance Reviewer</div>
-            </div>
+          <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+            Responsible for Tier A Cyber Security qualification, client liaisons, and consortium lead management.
           </div>
+          <div class="table-status-pill extracted"><span class="status-dot"></span>Active Evaluator</div>
         </div>
 
-        <!-- ═══════════════════════════════════════════════════════════════════════
+        <div class="analytics-card">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+            <div class="user-avatar"
+              style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #10b981, #059669);">
+              PV</div>
+            <div>
+              <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Priyansh Verma</h3>
+              <span style="font-size: 11.5px; color: #10b981; font-weight: 600;">Technical Infrastructure
+                Specialist</span>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+            Evaluates online modular UPS, precision air conditioning (PAC), and gas suppression requirements.
+          </div>
+          <div class="table-status-pill extracted"><span class="status-dot"></span>Technical Lead</div>
+        </div>
+
+        <div class="analytics-card">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+            <div class="user-avatar"
+              style="width: 44px; height: 44px; font-size: 15px; background: linear-gradient(135deg, #8b5cf6, #6d28d9);">
+              MN</div>
+            <div>
+              <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Meera Nair</h3>
+              <span style="font-size: 11.5px; color: #8b5cf6; font-weight: 600;">BOQ & Compliance Lead</span>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px;">
+            Manages GeM portal submissions, EMD bank guarantees, and documentation extraction checklists.
+          </div>
+          <div class="table-status-pill extracted"><span class="status-dot"></span>Compliance Reviewer</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
              VIEW 12: PRE-SALES & SALES ENGINEERING AI STUDIO (NIKOM ASSIST)
              ═══════════════════════════════════════════════════════════════════════ -->
-        <div class="view-page" id="view-presales" style="display: none; flex-direction: column; gap: 16px;">
-          <!-- Studio Header Banner -->
-          <div class="presales-hero-banner">
-            <div class="presales-hero-left">
-              <div class="presales-avatar-badge">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-              </div>
-              <div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <h1 class="page-title" style="margin: 0; font-size: 16px; font-weight: 800;">Nikom Assist <span class="discovery-gradient">Pre-Sales Studio</span></h1>
-                  <span class="presales-role-pill">Senior Data Centre Design Engineer</span>
-                  <span class="presales-online-badge"><span class="status-dot"></span>Active AI</span>
-                </div>
-                <p class="page-subtitle" style="margin: 2px 0 0; font-size: 11px;">
-                  Engineering-first consulting grounded on 25+ years expertise • 206+ PF • 10,528+ Racks • 55+ MW • Tier III Certified
-                </p>
-              </div>
-            </div>
-            <div class="presales-hero-actions">
-              <button type="button" class="btn-secondary" onclick="resetPresalesChat()" style="font-size: 11px; padding: 5px 9px; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-                <span>Reset</span>
-              </button>
-              <button type="button" class="btn-primary" onclick="viewCapturedLeadsModal()" style="font-size: 11px; padding: 5px 10px; display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); flex-shrink: 0;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                <span>Leads (<span id="presales-lead-count-badge">0</span>)</span>
-              </button>
+    <div class="view-page" id="view-presales" style="display: none;">
+      <!-- Top Workspace Context Bar -->
+      <div class="workspace-context-bar presales-bar">
+        <div class="workspace-context-left">
+          <span class="workspace-team-tag presales">Pre-sales team</span>
+          <span class="workspace-sep">/</span>
+          <span class="workspace-name">Solutioning Agent</span>
+        </div>
+        <div class="workspace-context-right">
+          <a href="#landing" class="workspace-switch-btn" onclick="navigateTo('landing')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>All Workspaces</span>
+          </a>
+          <a href="#dashboard" class="workspace-jump-link bidding-link" onclick="navigateTo('dashboard')">
+            <span>Switch to Bidding (Tender Discovery) →</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Studio Main Card Container -->
+      <div class="presales-studio-card">
+
+        <!-- Studio Header Banner -->
+        <div class="presales-hero-banner">
+          <div class="presales-hero-left">
+            <div>
+              <h1 class="page-title" style="margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em;">
+                Nikom Assist <span style="color: #a78bfa; font-weight: 700;">Solutioning Studio</span>
+              </h1>
+              <p class="page-subtitle"
+                style="margin: 4px 0 0; font-size: 11.5px; color: var(--text-3); font-weight: 500;">
+                Solutions Architecture & Engineering Desk • Client Presentations • Turnkey Infrastructure • Sizing & BOQs
+              </p>
             </div>
           </div>
+          <div class="presales-hero-actions">
+            <span class="presales-online-badge"><span class="status-dot"></span>Active AI</span>
+            <button type="button" class="btn-presales-reset" onclick="resetPresalesChat()" title="Reset consultation">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M8 16H3v5"></path>
+              </svg>
+              <span>Reset</span>
+            </button>
+            <button type="button" class="btn-presales-leads" onclick="viewCapturedLeadsModal()"
+              title="View captured leads">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <polyline points="16 11 18 13 22 9"></polyline>
+              </svg>
+              <span>Leads (<span id="presales-lead-count-badge">0</span>)</span>
+            </button>
+          </div>
+        </div>
 
-          <!-- Quick Scenario Presets Bar -->
-          <div class="presales-scenarios-bar">
-            <span class="scenario-label">Quick Scenarios:</span>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('budgetary_offer')" style="border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.08);">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              <span style="font-weight: 700; color: #c084fc;">Solution Document & Budgetary Offer</span>
+        <!-- Chat History Window -->
+        <div class="presales-chat-messages" id="presales-chat-messages">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Input Box with File Attachment & Drag-Drop Capsule -->
+        <div class="presales-input-container">
+          <!-- Active Attached Document Preview Chips -->
+          <div id="presales-attachment-preview" class="presales-attachment-preview" style="display: none;"></div>
+
+          <div class="presales-input-capsule">
+            <!-- Paperclip Upload Button -->
+            <button type="button" id="presales-attach-btn" class="btn-attach-capsule"
+              onclick="triggerPresalesFileUpload()"
+              title="Upload Client RFP, Tender Doc, or Technical Specs (PDF/DOCX/TXT)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path
+                  d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                </path>
+              </svg>
             </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('gpu_dlc')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
-              <span>High-Density GPU / AI DC (BEL 100 kW DLC)</span>
+            <input type="file" id="presales-file-upload-input" accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.json,.md"
+              multiple style="display: none;" onchange="handlePresalesMultiFileUpload(event)">
+
+            <textarea id="presales-prompt-input" rows="1"
+              placeholder="Ask a question, discuss architecture or upload an RFP"
+              onkeydown="handlePresalesKeydown(event)"></textarea>
+
+            <button type="button" id="presales-send-btn" class="btn-send-capsule" onclick="sendPresalesMessage()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>Send</span>
             </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cdot_upgrade')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-              <span>Tier III Turnkey Upgrade (C-DoT 252 kW In-Row)</span>
+          </div>
+          <div class="presales-input-footer">
+            <span class="footer-left">Enter to send <span class="footer-dot">•</span> Shift + Enter for a new
+              line</span>
+            <span class="footer-right">A lead summary is created automatically once capacity is specified</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    </main>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+         RIGHT DETAILS INSPECTOR PANEL (SLIDE-OVER / SPLIT DRAWER)
+         ════════════════════════════════════════════════════════════════════════ -->
+  <aside class="details-panel" id="details-panel">
+
+    <!-- Panel Header -->
+    <div class="panel-header">
+      <div class="panel-title-row">
+        <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0;">
+          <span class="panel-ref-badge" id="panel-header-ref" onclick="copyCurrentRef()"
+            title="Click to copy reference number">REF</span>
+          <div style="flex: 1; min-width: 0;">
+            <h2 class="panel-tender-title" id="panel-title" onclick="togglePanelTitle()"
+              title="Click to expand/collapse full title">Tender Details</h2>
+            <button type="button" id="panel-title-toggle-btn" class="btn-title-toggle" onclick="togglePanelTitle()"
+              style="display: none;">
+              <span id="panel-title-toggle-text">Show full title ▾</span>
             </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('power_backup')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>2N Power & DG Sizing (CPCB IV+)</span>
-            </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('cooling_calc')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
-              <span>Precision Cooling & TR Sizing</span>
-            </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('boq_audit')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>
-              <span>RFP & BOQ Technical Specs Audit</span>
-            </button>
-            <button type="button" class="scenario-chip" onclick="selectPresalesScenario('om_amc')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-              <span>24x7 O&M & SLA Guarantee</span>
+          </div>
+        </div>
+        <button class="panel-close-btn" onclick="closeDetailsPanel()" title="Close details panel (Esc)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="panel-badges-row">
+        <span class="panel-tier-badge" id="panel-tier-badge">Cyber Security</span>
+        <span class="panel-source-badge" id="panel-source-badge">GeM</span>
+        <span class="panel-type-badge" id="panel-type-badge">Open Tender</span>
+      </div>
+
+      <!-- Human Verification & Approval Bar -->
+      <div class="panel-verification-card" id="panel-verification-card">
+        <div class="verification-status-wrap">
+          <span class="verification-dot" id="panel-verif-dot"></span>
+          <div>
+            <div class="verification-label" id="panel-verif-label">Pending Verification</div>
+            <div class="verification-sub" id="panel-verif-sub">Bidding engineer must verify feasibility</div>
+          </div>
+        </div>
+        <div class="verification-actions">
+          <button type="button" class="btn-verif-approve" id="btn-verif-approve" onclick="verifyCurrentTender()"
+            title="Approve tender for bidding and official NIT upload">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Verify & Approve</span>
+          </button>
+          <button type="button" class="btn-verif-reject" id="btn-verif-reject" onclick="rejectCurrentTender()"
+            title="Flag tender as out-of-scope or disqualified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel Navigation Tabs -->
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-ptab="overview" onclick="switchPanelTab('overview')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Overview</span>
+        </button>
+        <button class="panel-tab" data-ptab="documents" onclick="switchPanelTab('documents')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Documents & Pack</span>
+          <span class="tab-badge" id="tab-badge-docs-count">0</span>
+        </button>
+        <button class="panel-tab" data-ptab="eligibility" onclick="switchPanelTab('eligibility')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>Qualify & Eligibility</span>
+          <span class="tab-badge"
+            style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">AI</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Panel Scrollable Body -->
+    <div class="panel-body">
+
+      <!-- Tab 1: Overview Tab -->
+      <div class="tab-content active" id="ptab-overview">
+
+        <!-- Expired / Submission Closed Alert Banner -->
+        <div class="panel-expired-banner" id="panel-expiry-banner" style="display: none;"></div>
+
+        <!-- Quick Metrics Ribbon -->
+        <div class="panel-kpi-ribbon">
+          <div class="panel-kpi-item">
+            <span class="panel-kpi-label">Estimated Value</span>
+            <span class="panel-kpi-val highlight" id="panel-value">Refer BOQ</span>
+          </div>
+          <div class="panel-kpi-divider"></div>
+          <div class="panel-kpi-item">
+            <span class="panel-kpi-label">EMD Security</span>
+            <span class="panel-kpi-val" id="panel-det-emd">Exempted</span>
+          </div>
+          <div class="panel-kpi-divider"></div>
+          <div class="panel-kpi-item">
+            <span class="panel-kpi-label">Days to Due</span>
+            <span class="panel-kpi-val" id="panel-days-left">Active</span>
+          </div>
+        </div>
+
+        <!-- Tender Pursuit & Management Control Box -->
+        <div class="panel-management-box">
+          <div class="panel-management-header">
+            <div class="panel-management-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Pipeline Stage & Strategy</span>
+            </div>
+            <button class="panel-star-btn" id="panel-star-toggle-btn" onclick="toggleCurrentTenderWatchlist()"
+              title="Pin to Watchlist">
+              <svg class="panel-star-svg" id="panel-star-icon-svg" width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                </polygon>
+              </svg>
+              <span id="panel-star-label">Watchlist</span>
             </button>
           </div>
 
-          <!-- Main Studio Two-Column Grid -->
-          <div class="presales-studio-grid">
-            <!-- Left: Chat & Architecture Consultation Area -->
-            <div class="presales-chat-column">
-              <div class="presales-chat-card">
-                <div class="presales-chat-header">
-                  <div style="display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1;">
-                    <div class="pulse-indicator" style="background: #a855f7; flex-shrink: 0;"></div>
-                    <span style="font-size: 12.5px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nikom Assist Stream</span>
-                    <span id="presales-active-context-tag" class="context-pill" style="display: none;"></span>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                    <button type="button" class="btn-header-quick-offer" onclick="requestBudgetaryOfferInChat()" title="Quickly generate official Solution Document & Budgetary Offer">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                      <span>Budgetary Offer</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Chat History Window -->
-                <div class="presales-chat-messages" id="presales-chat-messages">
-                  <!-- Injected via JS -->
-                </div>
-
-                <!-- Input Box -->
-                <div class="presales-input-container">
-                  <div class="presales-input-wrapper">
-                    <textarea id="presales-prompt-input" rows="2" placeholder="Ask about heat load sizing, Tier III redundancy, 100 kW DLC liquid cooling, DG margin, or client RFP clauses..." onkeydown="handlePresalesKeydown(event)"></textarea>
-                    <button type="button" id="presales-send-btn" class="btn-send-presales" onclick="sendPresalesMessage()">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                      </svg>
-                      <span>Send</span>
-                    </button>
-                  </div>
-                  <div class="presales-input-footer">
-                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line</span>
-                    <span style="color: var(--text-3);">Structured <strong>LEAD SUMMARY</strong> generated automatically upon capacity specifications</span>
-                  </div>
-                </div>
+          <div class="panel-management-fields">
+            <div class="management-field-group">
+              <label>Pursuit Lifecycle Stage</label>
+              <div class="workflow-select-wrap">
+                <select id="panel-workflow-status-select" onchange="onPanelWorkflowStatusChange(this.value)">
+                  <option value="new">New Ingest (Pending Verification)</option>
+                  <option value="verified">Verified (Ready for NIT Submission)</option>
+                  <option value="doc_attached">Official NIT Attached (In Qualification)</option>
+                  <option value="considered">Considered / Shortlist for Bidding</option>
+                  <option value="under_review">Under Technical Review</option>
+                  <option value="reviewed">Reviewed / On Hold</option>
+                  <option value="rejected">Disqualified / Rejected</option>
+                </select>
               </div>
             </div>
 
-            <!-- Right: Sizing Rule Engine & Leads Snapshot Column -->
-            <div class="presales-tools-column">
-              <!-- Sizing Rule Engine (Section 5.2) -->
-              <div class="presales-tool-card">
-                <div class="tool-card-header">
-                  <div style="display: flex; align-items: center; gap: 7px; min-width: 0;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                    <span style="font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap;">DC Sizing Calculator</span>
-                  </div>
-                  <span class="tool-badge">Sec 5.2</span>
-                </div>
+            <div class="management-field-group">
+              <label>Assigned Lead Engineer</label>
+              <select id="panel-assigned-to-select" onchange="onPanelAssigneeChange(this.value)">
+                <option value="">Unassigned</option>
+                <option value="User">User (Lead Bid Manager)</option>
+                <option value="Priyansh Verma">Priyansh Verma (Tech Infrastructure)</option>
+                <option value="Meera Nair">Meera Nair (BOQ & Compliance)</option>
+                <option value="Bidding Team">Nikom Bidding Team</option>
+              </select>
+            </div>
 
-                <div class="sizing-inputs-grid">
-                  <div class="sizing-field">
-                    <label>IT Load (kW)</label>
-                    <input type="number" id="calc-it-load" value="250" min="5" max="10000" step="5" oninput="updateDensityEstimate()">
-                  </div>
-                  <div class="sizing-field">
-                    <label>Rack Count</label>
-                    <input type="number" id="calc-rack-count" value="25" min="1" max="500" step="1" oninput="updateDensityEstimate()">
-                  </div>
-                  <div class="sizing-field">
-                    <label title="kW per Rack">kW/Rack</label>
-                    <input type="number" id="calc-kw-per-rack" value="10.0" min="1" max="150" step="0.5" readonly style="opacity: 0.85;">
-                  </div>
-                  <div class="sizing-field full-width">
-                    <label>Redundancy Architecture</label>
-                    <select id="calc-redundancy">
-                      <option value="Tier III (2N Power, N+1 Cooling)">Tier III (2N Power, N+1 Cooling)</option>
-                      <option value="Tier IV (2N+1 Fault Tolerant)">Tier IV (2N+1 Fault Tolerant)</option>
-                      <option value="Tier II (N+1 Redundant)">Tier II (N+1 Redundant)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button type="button" class="btn-calc-action" onclick="runPresalesSizing()">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                  <span>Calculate Sizing & Architecture</span>
-                </button>
-
-                <!-- Results Output Display -->
-                <div id="sizing-results-output" class="sizing-results-container" style="display: none;">
-                  <!-- Injected via JS -->
-                </div>
+            <div class="management-field-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label style="margin-bottom: 0;">Internal Strategy Notes</label>
+                <span class="notes-autosave-status" id="notes-save-indicator">Saved</span>
               </div>
-
-              <!-- Captured Leads & Action Items Card -->
-              <div class="presales-tool-card" style="margin-top: 10px;">
-                <div class="tool-card-header">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                    <span style="font-size: 13px; font-weight: 700; color: var(--text);">Captured Pre-Sales Leads</span>
-                  </div>
-                  <span class="tool-badge-green" id="leads-counter-pill">0 Leads</span>
-                </div>
-                <div id="presales-leads-list" class="presales-leads-list">
-                  <!-- Injected via JS -->
-                </div>
-              </div>
+              <textarea id="panel-user-notes" rows="2"
+                placeholder="Add qualification notes, OEM partner requirements, pricing strategy..."
+                oninput="onPanelNotesInput()"></textarea>
             </div>
           </div>
         </div>
 
-      </main>
+        <!-- Structured Metadata Rows with Custom SVG Icons (No Emojis) -->
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Reference No.</span>
+          </div>
+          <div class="detail-value font-mono" id="panel-ref-no">—</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+              <line x1="9" y1="22" x2="9" y2="22.01"></line>
+              <line x1="15" y1="22" x2="15" y2="22.01"></line>
+              <line x1="9" y1="6" x2="9" y2="6.01"></line>
+              <line x1="15" y1="6" x2="15" y2="6.01"></line>
+              <line x1="9" y1="10" x2="9" y2="10.01"></line>
+              <line x1="15" y1="10" x2="15" y2="10.01"></line>
+              <line x1="9" y1="14" x2="9" y2="14.01"></line>
+              <line x1="15" y1="14" x2="15" y2="14.01"></line>
+            </svg>
+            <span>Buyer Organisation</span>
+          </div>
+          <div class="detail-value" id="panel-buyer-org">—</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Location / State</span>
+          </div>
+          <div class="detail-value" id="panel-location">—</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Published Date</span>
+          </div>
+          <div class="detail-value">
+            <span id="panel-pub-date">—</span>
+            <span class="badge-new">New</span>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Submission Due</span>
+          </div>
+          <div class="detail-value font-mono" id="panel-deadline">—</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span>Tender Type</span>
+          </div>
+          <div class="detail-value" id="panel-tender-type">Open Tender</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+            <span>Key Systems</span>
+          </div>
+          <div class="systems-tags-container" id="panel-key-systems">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <div class="detail-row scope-box">
+          <div class="detail-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Brief Scope of Work</span>
+          </div>
+          <div class="scope-text" id="panel-scope">—</div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Documents & Pack Tab -->
+      <div class="tab-content" id="ptab-documents">
+
+        <!-- Auto-Fetch GeM Banner (Dynamic) -->
+        <div class="panel-autofetch-box" id="panel-autofetch-box" style="display: none;">
+          <div class="autofetch-header">
+            <div class="autofetch-icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <div class="autofetch-text">
+              <div class="autofetch-title">Direct Government PDF Available</div>
+              <div class="autofetch-sub">Official signed GeM tender notice can be retrieved automatically.</div>
+            </div>
+          </div>
+          <button type="button" class="btn-autofetch-trigger" id="btn-autofetch-trigger"
+            onclick="autoFetchCurrentTenderDoc()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="vertical-align: -2px; margin-right: 4px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Fetch & Attach Official GeM PDF</span>
+          </button>
+        </div>
+
+        <!-- Official Document Drag-and-Drop Uploader -->
+        <div class="panel-upload-zone" id="panel-upload-zone" ondragover="handleDragOver(event)"
+          ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)">
+          <input type="file" id="panel-file-input" style="display: none;" onchange="handleFileSelect(event)"
+            accept=".pdf,.zip,.rar,.xlsx,.xls,.docx" />
+          <div class="upload-zone-content" onclick="document.getElementById('panel-file-input').click()">
+            <div class="upload-icon-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="upload-main-text">
+              <strong>Click to Upload Official NIT / Tender Pack</strong> or drag and drop
+            </div>
+            <div class="upload-hint-text">
+              Accepts authentic government PDF, BOQ Spreadsheet (.xlsx), or ZIP packages
+            </div>
+          </div>
+          <div id="upload-progress-wrap" style="display: none; margin-top: 10px; width: 100%;">
+            <div style="font-size: 11.5px; color: var(--primary); font-weight: 600; margin-bottom: 4px;"
+              id="upload-progress-label">Uploading document...</div>
+            <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+              <div id="upload-progress-bar"
+                style="width: 45%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents List Section -->
+        <div class="panel-docs-header-row">
+          <span class="panel-docs-section-title">Official Procurement Documents</span>
+          <span class="panel-docs-count-pill" id="panel-docs-attached-count">0 Attached</span>
+        </div>
+
+        <div class="documents-list-table" id="panel-docs-list-container">
+          <!-- Dynamic document rows injected via JS -->
+        </div>
+
+
+
+      </div>
+
+      <!-- Tab 3: Qualify & Eligibility Tab (Unified AI Engine) -->
+      <div class="tab-content" id="ptab-eligibility">
+        <div class="eligibility-container" id="panel-eligibility-container">
+          <!-- Injected via loadPanelEligibility() -->
+        </div>
+      </div>
 
     </div>
 
-    <!-- ════════════════════════════════════════════════════════════════════════
-         RIGHT DETAILS INSPECTOR PANEL (SLIDE-OVER / SPLIT DRAWER)
-         ════════════════════════════════════════════════════════════════════════ -->
-    <aside class="details-panel" id="details-panel">
+    <!-- Panel Sticky Bottom Action Buttons -->
+    <div class="panel-footer">
+      <button class="btn-panel-primary" onclick="copyRefAndSearchPortal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>Copy Ref & Search</span>
+      </button>
 
-      <!-- Panel Header -->
-      <div class="panel-header">
-        <div class="panel-title-row">
-          <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0;">
-            <span class="panel-ref-badge" id="panel-header-ref" onclick="copyCurrentRef()" title="Click to copy reference number">REF</span>
-            <div style="flex: 1; min-width: 0;">
-              <h2 class="panel-tender-title" id="panel-title" onclick="togglePanelTitle()" title="Click to expand/collapse full title">Tender Details</h2>
-              <button type="button" id="panel-title-toggle-btn" class="btn-title-toggle" onclick="togglePanelTitle()" style="display: none;">
-                <span id="panel-title-toggle-text">Show full title ▾</span>
-              </button>
-            </div>
-          </div>
-          <button class="panel-close-btn" onclick="closeDetailsPanel()" title="Close details panel (Esc)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
+      <a href="#" target="_blank" rel="noopener" class="btn-panel-secondary" id="panel-portal-url-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>Official Portal</span>
+      </a>
+    </div>
 
-        <div class="panel-badges-row">
-          <span class="panel-tier-badge" id="panel-tier-badge">Cyber Security</span>
-          <span class="panel-source-badge" id="panel-source-badge">GeM</span>
-          <span class="panel-type-badge" id="panel-type-badge">Open Tender</span>
-        </div>
-
-        <!-- Human Verification & Approval Bar -->
-        <div class="panel-verification-card" id="panel-verification-card">
-          <div class="verification-status-wrap">
-            <span class="verification-dot" id="panel-verif-dot"></span>
-            <div>
-              <div class="verification-label" id="panel-verif-label">Pending Verification</div>
-              <div class="verification-sub" id="panel-verif-sub">Bidding engineer must verify feasibility</div>
-            </div>
-          </div>
-          <div class="verification-actions">
-            <button type="button" class="btn-verif-approve" id="btn-verif-approve" onclick="verifyCurrentTender()" title="Approve tender for bidding and official NIT upload">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              <span>Verify & Approve</span>
-            </button>
-            <button type="button" class="btn-verif-reject" id="btn-verif-reject" onclick="rejectCurrentTender()" title="Flag tender as out-of-scope or disqualified">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Panel Navigation Tabs -->
-        <div class="panel-tabs">
-          <button class="panel-tab active" data-ptab="overview" onclick="switchPanelTab('overview')">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            <span>Overview</span>
-          </button>
-          <button class="panel-tab" data-ptab="documents" onclick="switchPanelTab('documents')">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-            <span>Documents & Pack</span>
-            <span class="tab-badge" id="tab-badge-docs-count">0</span>
-          </button>
-          <button class="panel-tab" data-ptab="eligibility" onclick="switchPanelTab('eligibility')">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span>Qualify & Eligibility</span>
-            <span class="tab-badge" style="background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3);">AI</span>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- Panel Scrollable Body -->
-      <div class="panel-body">
-
-        <!-- Tab 1: Overview Tab -->
-        <div class="tab-content active" id="ptab-overview">
-
-          <!-- Expired / Submission Closed Alert Banner -->
-          <div class="panel-expired-banner" id="panel-expiry-banner" style="display: none;"></div>
-
-          <!-- Quick Metrics Ribbon -->
-          <div class="panel-kpi-ribbon">
-            <div class="panel-kpi-item">
-              <span class="panel-kpi-label">Estimated Value</span>
-              <span class="panel-kpi-val highlight" id="panel-value">Refer BOQ</span>
-            </div>
-            <div class="panel-kpi-divider"></div>
-            <div class="panel-kpi-item">
-              <span class="panel-kpi-label">EMD Security</span>
-              <span class="panel-kpi-val" id="panel-det-emd">Exempted</span>
-            </div>
-            <div class="panel-kpi-divider"></div>
-            <div class="panel-kpi-item">
-              <span class="panel-kpi-label">Days to Due</span>
-              <span class="panel-kpi-val" id="panel-days-left">Active</span>
-            </div>
-          </div>
-
-          <!-- Tender Pursuit & Management Control Box -->
-          <div class="panel-management-box">
-            <div class="panel-management-header">
-              <div class="panel-management-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                <span>Pipeline Stage & Strategy</span>
-              </div>
-              <button class="panel-star-btn" id="panel-star-toggle-btn" onclick="toggleCurrentTenderWatchlist()" title="Pin to Watchlist">
-                <svg class="panel-star-svg" id="panel-star-icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span id="panel-star-label">Watchlist</span>
-              </button>
-            </div>
-
-            <div class="panel-management-fields">
-              <div class="management-field-group">
-                <label>Pursuit Lifecycle Stage</label>
-                <div class="workflow-select-wrap">
-                  <select id="panel-workflow-status-select" onchange="onPanelWorkflowStatusChange(this.value)">
-                    <option value="new">New Ingest (Pending Verification)</option>
-                    <option value="verified">Verified (Ready for NIT Submission)</option>
-                    <option value="doc_attached">Official NIT Attached (In Qualification)</option>
-                    <option value="considered">Considered / Shortlist for Bidding</option>
-                    <option value="under_review">Under Technical Review</option>
-                    <option value="reviewed">Reviewed / On Hold</option>
-                    <option value="rejected">Disqualified / Rejected</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="management-field-group">
-                <label>Assigned Lead Engineer</label>
-                <select id="panel-assigned-to-select" onchange="onPanelAssigneeChange(this.value)">
-                  <option value="">Unassigned</option>
-                  <option value="User">User (Lead Bid Manager)</option>
-                  <option value="Priyansh Verma">Priyansh Verma (Tech Infrastructure)</option>
-                  <option value="Meera Nair">Meera Nair (BOQ & Compliance)</option>
-                  <option value="Bidding Team">Nikom Bidding Team</option>
-                </select>
-              </div>
-
-              <div class="management-field-group">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                  <label style="margin-bottom: 0;">Internal Strategy Notes</label>
-                  <span class="notes-autosave-status" id="notes-save-indicator">Saved</span>
-                </div>
-                <textarea id="panel-user-notes" rows="2" placeholder="Add qualification notes, OEM partner requirements, pricing strategy..." oninput="onPanelNotesInput()"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Structured Metadata Rows with Custom SVG Icons (No Emojis) -->
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-              <span>Reference No.</span>
-            </div>
-            <div class="detail-value font-mono" id="panel-ref-no">—</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="22.01"></line><line x1="15" y1="22" x2="15" y2="22.01"></line><line x1="9" y1="6" x2="9" y2="6.01"></line><line x1="15" y1="6" x2="15" y2="6.01"></line><line x1="9" y1="10" x2="9" y2="10.01"></line><line x1="15" y1="10" x2="15" y2="10.01"></line><line x1="9" y1="14" x2="9" y2="14.01"></line><line x1="15" y1="14" x2="15" y2="14.01"></line></svg>
-              <span>Buyer Organisation</span>
-            </div>
-            <div class="detail-value" id="panel-buyer-org">—</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              <span>Location / State</span>
-            </div>
-            <div class="detail-value" id="panel-location">—</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <span>Published Date</span>
-            </div>
-            <div class="detail-value">
-              <span id="panel-pub-date">—</span>
-              <span class="badge-new">New</span>
-            </div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>Submission Due</span>
-            </div>
-            <div class="detail-value font-mono" id="panel-deadline">—</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-              <span>Tender Type</span>
-            </div>
-            <div class="detail-value" id="panel-tender-type">Open Tender</div>
-          </div>
-
-          <div class="detail-row">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
-              <span>Key Systems</span>
-            </div>
-            <div class="systems-tags-container" id="panel-key-systems">
-              <!-- Injected via JS -->
-            </div>
-          </div>
-
-          <div class="detail-row scope-box">
-            <div class="detail-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-              <span>Brief Scope of Work</span>
-            </div>
-            <div class="scope-text" id="panel-scope">—</div>
-          </div>
-        </div>
-
-        <!-- Tab 2: Documents & Pack Tab -->
-        <div class="tab-content" id="ptab-documents">
-
-          <!-- Auto-Fetch GeM Banner (Dynamic) -->
-          <div class="panel-autofetch-box" id="panel-autofetch-box" style="display: none;">
-            <div class="autofetch-header">
-              <div class="autofetch-icon-wrap">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              </div>
-              <div class="autofetch-text">
-                <div class="autofetch-title">Direct Government PDF Available</div>
-                <div class="autofetch-sub">Official signed GeM tender notice can be retrieved automatically.</div>
-              </div>
-            </div>
-            <button type="button" class="btn-autofetch-trigger" id="btn-autofetch-trigger" onclick="autoFetchCurrentTenderDoc()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Fetch & Attach Official GeM PDF</span>
-            </button>
-          </div>
-
-          <!-- Official Document Drag-and-Drop Uploader -->
-          <div class="panel-upload-zone" id="panel-upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)">
-            <input type="file" id="panel-file-input" style="display: none;" onchange="handleFileSelect(event)" accept=".pdf,.zip,.rar,.xlsx,.xls,.docx" />
-            <div class="upload-zone-content" onclick="document.getElementById('panel-file-input').click()">
-              <div class="upload-icon-circle">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              </div>
-              <div class="upload-main-text">
-                <strong>Click to Upload Official NIT / Tender Pack</strong> or drag and drop
-              </div>
-              <div class="upload-hint-text">
-                Accepts authentic government PDF, BOQ Spreadsheet (.xlsx), or ZIP packages
-              </div>
-            </div>
-            <div id="upload-progress-wrap" style="display: none; margin-top: 10px; width: 100%;">
-              <div style="font-size: 11.5px; color: var(--primary); font-weight: 600; margin-bottom: 4px;" id="upload-progress-label">Uploading document...</div>
-              <div style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                <div id="upload-progress-bar" style="width: 45%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Documents List Section -->
-          <div class="panel-docs-header-row">
-            <span class="panel-docs-section-title">Official Procurement Documents</span>
-            <span class="panel-docs-count-pill" id="panel-docs-attached-count">0 Attached</span>
-          </div>
-
-          <div class="documents-list-table" id="panel-docs-list-container">
-            <!-- Dynamic document rows injected via JS -->
-          </div>
-
-
-
-        </div>
-
-        <!-- Tab 3: Qualify & Eligibility Tab (Unified AI Engine) -->
-        <div class="tab-content" id="ptab-eligibility">
-          <div class="eligibility-container" id="panel-eligibility-container">
-            <!-- Injected via loadPanelEligibility() -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Panel Sticky Bottom Action Buttons -->
-      <div class="panel-footer">
-        <button class="btn-panel-primary" onclick="copyRefAndSearchPortal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          <span>Copy Ref & Search</span>
-        </button>
-
-        <a href="#" target="_blank" rel="noopener" class="btn-panel-secondary" id="panel-portal-url-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-          <span>Official Portal</span>
-        </a>
-      </div>
-
-    </aside>
+  </aside>
 
   </div>
 
@@ -1905,7 +2141,12 @@
     <div class="modal-dialog" style="max-width: 580px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span>
+          <span class="modal-icon"
+            style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg></span>
           <div>
             <h3 class="modal-title">Bidding Team Email Digest</h3>
             <p class="modal-subtitle">Dispatch verified new tender alerts from the past 24 hours</p>
@@ -1914,9 +2155,13 @@
         <button class="modal-close-btn" onclick="closeEmailAlertModal()">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px 24px;">
-        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.5; color: var(--text-2);">
-          <strong style="color: #38bdf8; display: block; margin-bottom: 4px;">Human Verification Pipeline Initializer</strong>
-          Dispatches an executive intelligence email containing all opportunities qualified in the rolling 24-hour window. The bidding engineer uses this digest to begin human verification and retrieve the official tender pack.
+        <div
+          style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 13px; line-height: 1.5; color: var(--text-2);">
+          <strong style="color: #38bdf8; display: block; margin-bottom: 4px;">Human Verification Pipeline
+            Initializer</strong>
+          Dispatches an executive intelligence email containing all opportunities qualified in the rolling 24-hour
+          window. The bidding engineer uses this digest to begin human verification and retrieve the official tender
+          pack.
         </div>
 
         <div class="form-group" style="margin-bottom: 16px;">
@@ -1924,7 +2169,8 @@
             <span>Target Recipient Email *</span>
             <span style="color: #10b981; font-weight: 600; font-size: 11px;">Active Test Mode</span>
           </label>
-          <input type="email" id="input-alert-email" class="form-input" value="nikominfrasolutionsss@gmail.com" required style="font-family: monospace; font-size: 13.5px;" />
+          <input type="email" id="input-alert-email" class="form-input" value="nikominfrasolutionsss@gmail.com" required
+            style="font-family: monospace; font-size: 13.5px;" />
         </div>
 
         <div class="form-row-2" style="margin-bottom: 16px;">
@@ -1939,19 +2185,24 @@
           </div>
           <div class="form-group">
             <label class="form-label">Qualified Tenders Ready</label>
-            <div id="alert-summary-count" style="padding: 9px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-weight: 700; color: #38bdf8; font-size: 13.5px;">
+            <div id="alert-summary-count"
+              style="padding: 9px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; font-weight: 700; color: #38bdf8; font-size: 13.5px;">
               Loading count...
             </div>
           </div>
         </div>
 
-        <div id="email-dispatch-status" style="display: none; padding: 12px; border-radius: 6px; font-size: 12.5px; margin-top: 10px;"></div>
+        <div id="email-dispatch-status"
+          style="display: none; padding: 12px; border-radius: 6px; font-size: 12.5px; margin-top: 10px;"></div>
       </div>
-      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
-        <button type="button" class="btn-modal-secondary" onclick="previewEmailDigestInBrowser()" style="font-size: 12px;">Preview in Browser ↗</button>
+      <div class="modal-footer"
+        style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn-modal-secondary" onclick="previewEmailDigestInBrowser()"
+          style="font-size: 12px;">Preview in Browser ↗</button>
         <div style="display: flex; gap: 10px;">
           <button type="button" class="btn-modal-secondary" onclick="closeEmailAlertModal()">Close</button>
-          <button type="button" class="btn-modal-primary" id="btn-send-email-digest" onclick="sendBiddingEmailAlert()" style="background: #2563eb; font-weight: 600;">Send Digest Now</button>
+          <button type="button" class="btn-modal-primary" id="btn-send-email-digest" onclick="sendBiddingEmailAlert()"
+            style="background: #2563eb; font-weight: 600;">Send Digest Now</button>
         </div>
       </div>
     </div>
@@ -1959,20 +2210,32 @@
 
   <!-- Modal: Disqualification Warning & Override Confirmation -->
   <div class="modal-backdrop" id="modal-disqualification-warning" style="display: none; z-index: 9999;">
-    <div class="modal-dialog" style="max-width: 540px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
-      <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+    <div class="modal-dialog"
+      style="max-width: 540px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+      <div class="modal-header"
+        style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>
+          <span class="modal-icon"
+            style="background: rgba(239, 68, 68, 0.2); color: #ef4444; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg></span>
           <div>
-            <h3 class="modal-title" style="color: #ef4444; font-size: 16px; margin: 0;">Warning: Disqualified Tender Override</h3>
-            <p class="modal-subtitle" style="margin-top: 2px;">Confirming movement of an out-of-scope / disqualified tender</p>
+            <h3 class="modal-title" style="color: #ef4444; font-size: 16px; margin: 0;">Warning: Disqualified Tender
+              Override</h3>
+            <p class="modal-subtitle" style="margin-top: 2px;">Confirming movement of an out-of-scope / disqualified
+              tender</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeDisqualificationWarningModal(false)">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px 24px;">
-        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
-          <div style="font-weight: 600; color: #ef4444; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 13.5px;">
+        <div
+          style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+          <div
+            style="font-weight: 600; color: #ef4444; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 13.5px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -1981,29 +2244,45 @@
             Automated Disqualification Safeguard Triggered
           </div>
           <div style="font-size: 13px; color: var(--text-2); line-height: 1.5;">
-            This tender was analyzed and flagged as <strong>Disqualified / Out-of-Scope</strong> by the intelligence matching engine. Moving it will override the automated rejection and re-introduce it into your active pipeline.
+            This tender was analyzed and flagged as <strong>Disqualified / Out-of-Scope</strong> by the intelligence
+            matching engine. Moving it will override the automated rejection and re-introduce it into your active
+            pipeline.
           </div>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 13px;">
-          <div style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Tender Details</div>
-          <div id="warn-modal-tender-title" style="font-weight: 600; color: var(--text-1); margin: 6px 0 8px 0; line-height: 1.4;">—</div>
+        <div
+          style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 13px;">
+          <div
+            style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">
+            Tender Details</div>
+          <div id="warn-modal-tender-title"
+            style="font-weight: 600; color: var(--text-1); margin: 6px 0 8px 0; line-height: 1.4;">—</div>
           <div style="display: flex; gap: 16px; margin-bottom: 10px; font-size: 12px; color: var(--text-2);">
-            <div>Reference: <span id="warn-modal-tender-ref" style="font-family: monospace; color: var(--text-1); font-weight: 600;">—</span></div>
+            <div>Reference: <span id="warn-modal-tender-ref"
+                style="font-family: monospace; color: var(--text-1); font-weight: 600;">—</span></div>
             <div>Portal: <span id="warn-modal-tender-portal" style="color: var(--text-1);">—</span></div>
           </div>
-          <div style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 10px;">Identified Disqualification Reason</div>
-          <div id="warn-modal-tender-reason" style="font-size: 12px; font-family: monospace; color: #f87171; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; margin-top: 4px; word-break: break-word; border: 1px solid rgba(239, 68, 68, 0.2);">—</div>
+          <div
+            style="color: var(--text-3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-top: 10px;">
+            Identified Disqualification Reason</div>
+          <div id="warn-modal-tender-reason"
+            style="font-size: 12px; font-family: monospace; color: #f87171; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; margin-top: 4px; word-break: break-word; border: 1px solid rgba(239, 68, 68, 0.2);">
+            —</div>
         </div>
 
-        <div style="margin-top: 16px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(56, 189, 248, 0.08); border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
+        <div
+          style="margin-top: 16px; font-size: 13px; color: var(--text-2); display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(56, 189, 248, 0.08); border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
           <span>Target Field / Status:</span>
           <strong id="warn-modal-target-status" style="color: #38bdf8; font-size: 14px;">—</strong>
         </div>
       </div>
-      <div class="modal-footer" style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" class="btn-modal-secondary" onclick="closeDisqualificationWarningModal(false)">Cancel (Keep Disqualified)</button>
-        <button type="button" class="btn-modal-primary" id="btn-confirm-disqual-override" style="background: #dc2626; border-color: #ef4444; color: #ffffff; font-weight: 600;" onclick="executeDisqualificationOverride()">Confirm & Move</button>
+      <div class="modal-footer"
+        style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-modal-secondary" onclick="closeDisqualificationWarningModal(false)">Cancel
+          (Keep Disqualified)</button>
+        <button type="button" class="btn-modal-primary" id="btn-confirm-disqual-override"
+          style="background: #dc2626; border-color: #ef4444; color: #ffffff; font-weight: 600;"
+          onclick="executeDisqualificationOverride()">Confirm & Move</button>
       </div>
     </div>
   </div>
@@ -2013,7 +2292,14 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(37, 99, 235, 0.12); color: #2563eb; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+          <span class="modal-icon"
+            style="background: rgba(37, 99, 235, 0.12); color: #2563eb; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+              </path>
+            </svg></span>
           <div>
             <h3 class="modal-title">Register Monitored Portal</h3>
             <p class="modal-subtitle">Configure an automated tender intake endpoint</p>
@@ -2064,7 +2350,12 @@
             </select>
           </div>
           <div class="modal-alert-box">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="flex-shrink: 0; margin-top: 2px;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
             <div>New sources will be registered in <strong>Adapter Standby</strong> mode until connection diagnostics
               and CAPTCHA handling parameters are verified.</div>
           </div>
@@ -2082,7 +2373,14 @@
     <div class="modal-dialog">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-icon" id="src-det-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg></span>
+          <span class="modal-icon" id="src-det-icon"
+            style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="2"></circle>
+              <path
+                d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14">
+              </path>
+            </svg></span>
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <h3 class="modal-title" id="src-det-name">Portal Details</h3>
@@ -2142,33 +2440,54 @@
       <div class="bulk-separator"></div>
 
       <div class="bulk-actions-row">
-        <button class="bulk-btn bulk-btn-consider" onclick="executeBulkAction('bulk_consider')" title="Shortlist selected for active bidding">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <button class="bulk-btn bulk-btn-consider" onclick="executeBulkAction('bulk_consider')"
+          title="Shortlist selected for active bidding">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
           <span>Consider / Shortlist</span>
         </button>
 
-        <button class="bulk-btn bulk-btn-review" onclick="executeBulkAction('bulk_under_review')" title="Move to active technical evaluation">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+        <button class="bulk-btn bulk-btn-review" onclick="executeBulkAction('bulk_under_review')"
+          title="Move to active technical evaluation">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 14 14"></polyline>
+          </svg>
           <span>Under Review</span>
         </button>
 
-        <button class="bulk-btn bulk-btn-reviewed" onclick="executeBulkAction('bulk_reviewed')" title="Mark as inspected / on hold">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        <button class="bulk-btn bulk-btn-reviewed" onclick="executeBulkAction('bulk_reviewed')"
+          title="Mark as inspected / on hold">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
           <span>Mark Reviewed</span>
         </button>
 
-        <button class="bulk-btn bulk-btn-watchlist" onclick="executeBulkAction('toggle_watchlist')" title="Pin or unpin selected from executive watchlist">
+        <button class="bulk-btn bulk-btn-watchlist" onclick="executeBulkAction('toggle_watchlist')"
+          title="Pin or unpin selected from executive watchlist">
           <span style="font-size: 14px; line-height: 1;">★</span>
           <span>Watchlist</span>
         </button>
 
-        <button class="bulk-btn bulk-btn-reject" onclick="executeBulkAction('bulk_reject')" title="Mark as disqualified / out of scope">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <button class="bulk-btn bulk-btn-reject" onclick="executeBulkAction('bulk_reject')"
+          title="Mark as disqualified / out of scope">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
           <span>Reject</span>
         </button>
 
-        <button class="bulk-btn bulk-btn-export" onclick="exportSelectedTendersCSV()" title="Download CSV dossier of selected tenders">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <button class="bulk-btn bulk-btn-export" onclick="exportSelectedTendersCSV()"
+          title="Download CSV dossier of selected tenders">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
           <span>Export CSV</span>
         </button>
       </div>
@@ -2176,7 +2495,10 @@
       <div class="bulk-separator"></div>
 
       <button class="bulk-btn-close" onclick="clearTenderSelection()" title="Clear selection">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
         <span>Clear</span>
       </button>
     </div>
@@ -2187,13 +2509,23 @@
     <div class="modal-dialog" style="max-width: 860px; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary); width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
+          <span class="modal-icon"
+            style="background: rgba(37, 99, 235, 0.1); color: var(--primary); width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg></span>
           <div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Bid Preparation & Statutory Drafting Studio</h3>
-              <span id="drafting-tender-id-pill" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(37, 99, 235, 0.1); color: var(--primary); font-weight: 600; font-family: monospace; border: 1px solid rgba(37, 99, 235, 0.2);"></span>
+              <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Bid Preparation & Statutory
+                Drafting Studio</h3>
+              <span id="drafting-tender-id-pill"
+                style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(37, 99, 235, 0.1); color: var(--primary); font-weight: 600; font-family: monospace; border: 1px solid rgba(37, 99, 235, 0.2);"></span>
             </div>
-            <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-draft undertakings on Nikom letterhead, generate OEM MAF requests, and resolve AI-detected missing documents</p>
+            <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-draft
+              undertakings on Nikom letterhead, generate OEM MAF requests, and resolve AI-detected missing documents</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeBidDraftingModal()">&times;</button>
@@ -2203,14 +2535,23 @@
         <!-- Injected dynamically via renderDraftingStudio() in app.js -->
       </div>
 
-      <div class="modal-footer" style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
+      <div class="modal-footer"
+        style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
         <div style="font-size: 11.5px; color: var(--text-2); display: flex; align-items: center; gap: 6px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary); vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> All undertakings formatted on official Nikom InfraSolutions Pvt. Ltd. letterhead
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            style="color: var(--primary); vertical-align: -1px; margin-right: 4px;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg> All undertakings formatted on official Nikom InfraSolutions Pvt. Ltd. letterhead
         </div>
         <div style="display: flex; gap: 10px;">
           <button type="button" class="btn-modal-secondary" onclick="closeBidDraftingModal()">Close</button>
-          <button type="button" class="btn-modal-primary" id="btn-export-bid-zip" onclick="downloadBidSubmissionZip()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <button type="button" class="btn-modal-primary" id="btn-export-bid-zip" onclick="downloadBidSubmissionZip()"
+            style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
             <span>Download Complete Bid Pack (ZIP)</span>
           </button>
         </div>
@@ -2226,10 +2567,17 @@
     <div class="modal-dialog" style="max-width: 840px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
         <div class="modal-title-wrap">
-          <span class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg></span>
+          <span class="modal-icon"
+            style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg></span>
           <div>
-            <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Pre-Sales Leads & Consultation Opportunities</h3>
-            <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-captured by Nikom Assist following standard Lead Qualification guidelines</p>
+            <h3 class="modal-title" style="margin: 0; font-size: 16px; font-weight: 700;">Solutioning Opportunities & Client Presentations</h3>
+            <p class="modal-subtitle" style="margin: 2px 0 0; font-size: 11.5px; color: var(--text-2);">Auto-captured by
+              Nikom Assist following standard Lead Qualification guidelines</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeCapturedLeadsModal()">&times;</button>
@@ -2239,7 +2587,8 @@
         <!-- Injected via JS -->
       </div>
 
-      <div class="modal-footer" style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
+      <div class="modal-footer"
+        style="padding: 14px 24px; margin-top: 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface-raised);">
         <div style="font-size: 11.5px; color: var(--text-2);">
           Saved to <code>data/presales_leads.json</code>
         </div>
@@ -2249,7 +2598,7 @@
   </div>
 
   <!-- Main JavaScript Logic -->
-  <script src="/static/js/app.js?v=20261104_v24_compact_fit"></script>
+  <script src="/static/js/app.js?v=20261105_v36_fixed"></script>
 </body>
 
 </html>

@@ -1,36 +1,26 @@
 [
   {
-    "timestamp": "2026-11-03T17:55:34.078031Z",
-    "client_org": "Prospective Enterprise / PSU",
-    "contact_name": "Prospective Proposal Request",
-    "capacity_(kw_/_racks)": "250.0 kW / 25 Racks",
-    "budgetary_estimate": "\u20b9 4.64 Cr (\u20b9 464.18 L)",
-    "scope": "Turnkey Tier III Solution Document & Budgetary Offer",
-    "timeline": "16-20 Weeks",
+    "timestamp": "2026-11-05T12:00:00Z",
+    "client_org": "58 Gorkha Training Centre, Happy Valley, Shillong",
+    "contact_name": "58 GTC Procurement Cell",
+    "email": "tenders@nikom.in",
+    "phone": "+91-11-41617890",
+    "capacity": "45 Thin Clients, 3 Servers, 86\" IFPD",
+    "scope": "Turnkey Computer Lab Infrastructure & Networking",
+    "timeline": "30 Days (GeM Contract Mandate)",
     "urgency": "High",
-    "source": "Nikom Assist Proposal Generator"
+    "source": "GeM Bid 9691713 Multi-Doc Audit"
   },
   {
-    "timestamp": "2026-11-03T17:51:29.565987Z",
-    "client_org": "C-DoT / PSU Enterprise Data Centre",
-    "contact_name": "Prospective Proposal Request",
-    "capacity_(kw_/_racks)": "250.0 kW / 25 Racks",
-    "budgetary_estimate": "\u20b9 4.64 Cr (\u20b9 464.18 L)",
-    "scope": "Turnkey Tier III Solution Document & Budgetary Offer",
-    "timeline": "16-20 Weeks",
+    "timestamp": "2026-11-04T08:48:33Z",
+    "client_org": "Centre for Development of Telematics (C-DoT)",
+    "contact_name": "C-DoT Data Centre Group",
+    "email": "bd@nikominfra.com",
+    "phone": "+91-11-41617890",
+    "capacity": "252 kW / 18 Racks",
+    "scope": "Turnkey 200 kVA Modular Power & Precision Infrastructure",
+    "timeline": "24 Weeks",
     "urgency": "High",
-    "source": "Nikom Assist Proposal Generator"
-  },
-  {
-    "timestamp": "2026-11-03T16:18:21.391411Z",
-    "client_org": "DRDO Advanced Computing Lab",
-    "contact_name": "Prospective Client Lead",
-    "email": "dr.sharma@drdo.gov.in",
-    "phone": "+91-9811223344",
-    "capacity_(kw_/_racks)": "200 kW",
-    "scope": "Data Centre Turnkey / Infrastructure Design",
-    "timeline": "Immediate / Discussed in Session",
-    "urgency": "High",
-    "source": "Nikom Assist Consultation Stream"
+    "source": "C-DoT Upgradation Benchmark"
   }
 ]

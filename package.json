@@ -1,0 +1,13 @@
+{
+  "name": "tender-intelligence",
+  "version": "2.0.0",
+  "description": "Nikom Tender Intelligence & Pre-Sales Assistant",
+  "scripts": {
+    "build": "python -m py_compile src/database/db.py src/api/app.py",
+    "start": "python -m uvicorn src.api.app:app --host 0.0.0.0 --port 8000"
+  },
+  "dependencies": {
+    "@neon/config": "^1.11.3",
+    "@neon/env": "^1.6.15"
+  }
+}
