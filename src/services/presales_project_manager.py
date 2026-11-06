@@ -11,6 +11,7 @@ import re
 import uuid
 import json
 import logging
+import threading
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
@@ -138,27 +139,37 @@ class PresalesProject:
 class ProjectManager:
     """
     Manages persistence and operations for multi-document pre-sales projects.
+    Thread-safe and supports concurrent multi-user project access with atomic writes.
     """
+    _lock = threading.RLock()
+
     def __init__(self, projects_file: str = PROJECTS_FILE):
         self.projects_file = projects_file
         self._ensure_storage()
 
     def _ensure_storage(self):
-        if not os.path.exists(self.projects_file):
-            with open(self.projects_file, "w", encoding="utf-8") as f:
-                json.dump({}, f)
+        with self._lock:
+            if not os.path.exists(self.projects_file):
+                temp_file = f"{self.projects_file}.tmp.{uuid.uuid4().hex[:8]}"
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    json.dump({}, f)
+                os.replace(temp_file, self.projects_file)
 
     def _load_all(self) -> Dict[str, Dict[str, Any]]:
-        try:
-            with open(self.projects_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Error loading presales projects: {e}")
-            return {}
+        with self._lock:
+            try:
+                with open(self.projects_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.error(f"Error loading presales projects: {e}")
+                return {}
 
     def _save_all(self, data: Dict[str, Dict[str, Any]]):
-        with open(self.projects_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        with self._lock:
+            temp_file = f"{self.projects_file}.tmp.{uuid.uuid4().hex[:8]}"
+            with open(temp_file, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            os.replace(temp_file, self.projects_file)
 
     def create_project(
         self,
@@ -174,18 +185,20 @@ class ProjectManager:
             tender_id=tender_id,
             stage="input_received"
         )
-        all_p = self._load_all()
-        all_p[project_id] = project.to_dict()
-        self._save_all(all_p)
+        with self._lock:
+            all_p = self._load_all()
+            all_p[project_id] = project.to_dict()
+            self._save_all(all_p)
         logger.info(f"Created presales project {project_id}: '{title}' for {client_org}")
         return project
 
     def get_project(self, project_id: str) -> Optional[PresalesProject]:
-        all_p = self._load_all()
-        data = all_p.get(project_id)
-        if not data:
-            return None
-        return PresalesProject(**data)
+        with self._lock:
+            all_p = self._load_all()
+            data = all_p.get(project_id)
+            if not data:
+                return None
+            return PresalesProject(**data)
 
     def get_or_create_active_project(
         self,
@@ -194,60 +207,64 @@ class ProjectManager:
         client_org: Optional[str] = None,
         tender_id: Optional[str] = None
     ) -> PresalesProject:
-        if project_id:
-            existing = self.get_project(project_id)
-            if existing:
-                return existing
-            # Auto-create with requested project_id so uploads never fail
-            p = PresalesProject(
-                project_id=project_id,
+        with self._lock:
+            if project_id:
+                existing = self.get_project(project_id)
+                if existing:
+                    return existing
+                # Auto-create with requested project_id so uploads never fail
+                p = PresalesProject(
+                    project_id=project_id,
+                    title=title or "Data Centre & Technical Infrastructure Proposal",
+                    client_org=client_org or "Enterprise / Institutional Client",
+                    tender_id=tender_id,
+                    stage="input_received"
+                )
+                all_p = self._load_all()
+                all_p[project_id] = p.to_dict()
+                self._save_all(all_p)
+                logger.info(f"Auto-initialized presales project workspace {project_id}")
+                return p
+
+            # Return most recent project or create new
+            all_p = self._load_all()
+            if all_p:
+                sorted_keys = sorted(
+                    all_p.keys(),
+                    key=lambda k: all_p[k].get("updated_at", ""),
+                    reverse=True
+                )
+                return PresalesProject(**all_p[sorted_keys[0]])
+
+            return self.create_project(
                 title=title or "Data Centre & Technical Infrastructure Proposal",
                 client_org=client_org or "Enterprise / Institutional Client",
-                tender_id=tender_id,
-                stage="input_received"
+                tender_id=tender_id
             )
-            all_p = self._load_all()
-            all_p[project_id] = p.to_dict()
-            self._save_all(all_p)
-            logger.info(f"Auto-initialized presales project workspace {project_id}")
-            return p
-
-        # Return most recent project or create new
-        all_p = self._load_all()
-        if all_p:
-            sorted_keys = sorted(
-                all_p.keys(),
-                key=lambda k: all_p[k].get("updated_at", ""),
-                reverse=True
-            )
-            return PresalesProject(**all_p[sorted_keys[0]])
-
-        return self.create_project(
-            title=title or "Data Centre & Technical Infrastructure Proposal",
-            client_org=client_org or "Enterprise / Institutional Client",
-            tender_id=tender_id
-        )
 
     def save_project(self, project: PresalesProject):
-        project.updated_at = datetime.now(timezone.utc).isoformat()
-        all_p = self._load_all()
-        all_p[project.project_id] = project.to_dict()
-        self._save_all(all_p)
+        with self._lock:
+            project.updated_at = datetime.now(timezone.utc).isoformat()
+            all_p = self._load_all()
+            all_p[project.project_id] = project.to_dict()
+            self._save_all(all_p)
 
     def list_projects(self, limit: int = 50) -> List[Dict[str, Any]]:
-        all_p = self._load_all()
-        projects = list(all_p.values())
-        projects.sort(key=lambda p: p.get("updated_at", ""), reverse=True)
-        return projects[:limit]
+        with self._lock:
+            all_p = self._load_all()
+            projects = list(all_p.values())
+            projects.sort(key=lambda p: p.get("updated_at", ""), reverse=True)
+            return projects[:limit]
 
     def update_stage(self, project_id: str, new_stage: str) -> bool:
-        project = self.get_project(project_id)
-        if not project:
-            return False
-        if new_stage in PresalesProject.STAGES:
-            project.stage = new_stage
-            self.save_project(project)
-            return True
+        with self._lock:
+            project = self.get_project(project_id)
+            if not project:
+                return False
+            if new_stage in PresalesProject.STAGES:
+                project.stage = new_stage
+                self.save_project(project)
+                return True
         return False
 
     def add_uploaded_file(

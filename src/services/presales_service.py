@@ -25,7 +25,9 @@ Grounding & Knowledge Sources:
 import os
 import re
 import json
+import uuid
 import logging
+import threading
 import requests
 from typing import Dict, Any, Optional, List
 from datetime import datetime
@@ -45,6 +47,7 @@ LEADS_DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "presales_leads.json"
 )
+_LEADS_LOCK = threading.RLock()
 
 
 class PresalesAssistantService:
@@ -1436,17 +1439,22 @@ ATTACHED CLIENT DOCUMENTS FOR THIS ENGAGEMENT (Total: {len(all_docs)} documents)
                 }
 
         if parsed:
-            # Save to file
+            # Save to file with thread lock and atomic write
             try:
-                with open(LEADS_DB_PATH, "r", encoding="utf-8") as f:
-                    leads = json.load(f)
-                email = parsed.get("email", "")
-                phone = parsed.get("phone", "")
-                if not any(email and l.get("email") == email and phone and l.get("phone") == phone for l in leads):
-                    leads.insert(0, parsed)
-                    with open(LEADS_DB_PATH, "w", encoding="utf-8") as f:
-                        json.dump(leads, f, indent=2)
-                    logger.info("Successfully recorded pre-sales lead from Nikom Assist.")
+                with _LEADS_LOCK:
+                    leads = []
+                    if os.path.exists(LEADS_DB_PATH):
+                        with open(LEADS_DB_PATH, "r", encoding="utf-8") as f:
+                            leads = json.load(f)
+                    email = parsed.get("email", "")
+                    phone = parsed.get("phone", "")
+                    if not any(email and l.get("email") == email and phone and l.get("phone") == phone for l in leads):
+                        leads.insert(0, parsed)
+                        temp_path = f"{LEADS_DB_PATH}.tmp.{uuid.uuid4().hex[:8]}"
+                        with open(temp_path, "w", encoding="utf-8") as f:
+                            json.dump(leads, f, indent=2)
+                        os.replace(temp_path, LEADS_DB_PATH)
+                        logger.info("Successfully recorded pre-sales lead from Nikom Assist.")
             except Exception as e:
                 logger.warning(f"Could not persist lead: {e}")
 

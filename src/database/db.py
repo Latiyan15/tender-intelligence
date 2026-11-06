@@ -11,6 +11,7 @@ Supports:
 import os
 import json
 import sqlite3
+import threading
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta, timezone
@@ -217,12 +218,48 @@ class UnifiedCursor:
         return iter(self.fetchall())
 
 
-class UnifiedConnection:
-    """Connection wrapper providing a uniform interface for SQLite & PostgreSQL."""
+_PG_POOL: Optional[Any] = None
+_PG_POOL_LOCK = threading.Lock()
+_PG_POOL_URL: Optional[str] = None
 
-    def __init__(self, raw_conn, is_pg: bool = False):
+
+def get_pg_pool(pg_url: str, minconn: int = 2, maxconn: int = 15):
+    """Initializes and returns a thread-safe connection pool for PostgreSQL."""
+    global _PG_POOL, _PG_POOL_URL
+    if _PG_POOL is None or _PG_POOL_URL != pg_url or getattr(_PG_POOL, "closed", False):
+        with _PG_POOL_LOCK:
+            if _PG_POOL is None or _PG_POOL_URL != pg_url or getattr(_PG_POOL, "closed", False):
+                try:
+                    import psycopg2
+                    from psycopg2.pool import ThreadedConnectionPool
+                    from psycopg2.extras import RealDictCursor
+                    if _PG_POOL and not getattr(_PG_POOL, "closed", True):
+                        try:
+                            _PG_POOL.closeall()
+                        except Exception:
+                            pass
+                    _PG_POOL = ThreadedConnectionPool(
+                        minconn=minconn,
+                        maxconn=maxconn,
+                        dsn=pg_url,
+                        cursor_factory=RealDictCursor
+                    )
+                    _PG_POOL_URL = pg_url
+                    logger.info(f"Initialized PostgreSQL ThreadedConnectionPool (min={minconn}, max={maxconn})")
+                except Exception as e:
+                    logger.error(f"Failed to initialize ThreadedConnectionPool: {e}")
+                    raise
+    return _PG_POOL
+
+
+class UnifiedConnection:
+    """Connection wrapper providing a uniform interface for SQLite & PostgreSQL with connection pool return."""
+
+    def __init__(self, raw_conn, is_pg: bool = False, pool: Any = None):
         self._conn = raw_conn
         self.is_pg = is_pg
+        self._pool = pool
+        self._is_closed = False
 
     def cursor(self):
         return UnifiedCursor(self._conn.cursor(), is_pg=self.is_pg)
@@ -231,10 +268,30 @@ class UnifiedConnection:
         self._conn.commit()
 
     def rollback(self):
-        self._conn.rollback()
+        try:
+            self._conn.rollback()
+        except Exception:
+            pass
 
     def close(self):
-        self._conn.close()
+        if self._is_closed:
+            return
+        self._is_closed = True
+        if self._pool is not None:
+            try:
+                # Always rollback any uncommitted transaction before returning to pool
+                self._conn.rollback()
+            except Exception:
+                pass
+            try:
+                self._pool.putconn(self._conn)
+            except Exception as e:
+                logger.warning(f"Error returning connection to pool: {e}")
+        else:
+            try:
+                self._conn.close()
+            except Exception:
+                pass
 
     def executescript(self, script: str):
         if self.is_pg:
@@ -248,11 +305,13 @@ class UnifiedConnection:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type:
-            self.rollback()
-        else:
-            self.commit()
-        self.close()
+        try:
+            if exc_type:
+                self.rollback()
+            else:
+                self.commit()
+        finally:
+            self.close()
 
 
 def get_sqlite_connection(target_path: str) -> sqlite3.Connection:
@@ -266,20 +325,33 @@ def get_sqlite_connection(target_path: str) -> sqlite3.Connection:
 
 
 def get_connection(db_path: Optional[str] = None, custom_url: Optional[str] = None) -> UnifiedConnection:
-    """Create or return a connection (PostgreSQL if DATABASE_URL set and default path, else SQLite)."""
+    """Create or return a connection (PostgreSQL with ThreadedConnectionPool if DATABASE_URL set, else SQLite)."""
     pg_url = custom_url or get_database_url()
     if pg_url and (db_path is None or db_path == DB_PATH):
         try:
-            import psycopg2
-            from psycopg2.extras import RealDictCursor
-            conn = psycopg2.connect(pg_url, cursor_factory=RealDictCursor)
-            return UnifiedConnection(conn, is_pg=True)
+            pool = get_pg_pool(pg_url)
+            conn = pool.getconn()
+            # If the pooled connection was closed or died remotely, discard and re-acquire
+            if getattr(conn, "closed", 0) != 0:
+                try:
+                    pool.putconn(conn, close=True)
+                except Exception:
+                    pass
+                conn = pool.getconn()
+            return UnifiedConnection(conn, is_pg=True, pool=pool)
         except Exception as e:
-            logger.warning(f"Could not connect to PostgreSQL ({e}), falling back to SQLite")
+            logger.warning(f"Could not acquire pooled PostgreSQL connection ({e}), attempting direct connect: {e}")
+            try:
+                import psycopg2
+                from psycopg2.extras import RealDictCursor
+                conn = psycopg2.connect(pg_url, cursor_factory=RealDictCursor)
+                return UnifiedConnection(conn, is_pg=True, pool=None)
+            except Exception as e2:
+                logger.warning(f"Direct PostgreSQL connect also failed ({e2}), falling back to SQLite")
 
     target_path = db_path or DB_PATH
     raw_sqlite = get_sqlite_connection(target_path)
-    return UnifiedConnection(raw_sqlite, is_pg=False)
+    return UnifiedConnection(raw_sqlite, is_pg=False, pool=None)
 
 
 def seed_db_if_empty(conn: UnifiedConnection):
@@ -982,129 +1054,133 @@ class TenderRepository:
     ) -> Dict[str, Any]:
         """Query tenders with rich filtering, time window evaluation, and pagination."""
         conn = self._get_conn()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        now_dt = datetime.now(timezone.utc)
-        now_iso = now_dt.strftime("%Y-%m-%dT%H:%M:%S")
+            now_dt = datetime.now(timezone.utc)
+            now_iso = now_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-        where_clauses = []
-        params = []
+            where_clauses = []
+            params = []
 
-        if category:
-            where_clauses.append("primary_category = ?")
-            params.append(category)
-        if tier:
-            where_clauses.append("highest_tier = ?")
-            params.append(tier)
-        if source:
-            where_clauses.append("portal_source = ?")
-            params.append(source)
-        if is_qualified is not None:
-            where_clauses.append("is_qualified = ?")
-            params.append(1 if is_qualified else 0)
-        if workflow_status and workflow_status != "all":
-            if workflow_status == "expired":
+            if category:
+                where_clauses.append("primary_category = ?")
+                params.append(category)
+            if tier:
+                where_clauses.append("highest_tier = ?")
+                params.append(tier)
+            if source:
+                where_clauses.append("portal_source = ?")
+                params.append(source)
+            if is_qualified is not None:
+                where_clauses.append("is_qualified = ?")
+                params.append(1 if is_qualified else 0)
+            if workflow_status and workflow_status != "all":
+                if workflow_status == "expired":
+                    where_clauses.append("(submission_deadline IS NOT NULL AND submission_deadline != '' AND submission_deadline < ?)")
+                    params.append(now_iso)
+                else:
+                    where_clauses.append("workflow_status = ?")
+                    params.append(workflow_status)
+            if is_watchlisted is not None:
+                where_clauses.append("is_watchlisted = ?")
+                params.append(1 if is_watchlisted else 0)
+
+            # Time window filter (24h, 48h, 7d, 30d, all)
+            if time_window and time_window != "all":
+                hours = 24
+                if time_window == "24h":
+                    hours = 24
+                elif time_window == "48h":
+                    hours = 48
+                elif time_window == "7d":
+                    hours = 24 * 7
+                elif time_window == "30d":
+                    hours = 24 * 30
+
+                cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
+                where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
+                params.extend([cutoff, cutoff])
+
+            # Expiry status filter (active, expired, all)
+            if expiry_status == "active":
+                where_clauses.append("(submission_deadline IS NULL OR submission_deadline = '' OR submission_deadline >= ?)")
+                params.append(now_iso)
+            elif expiry_status == "expired":
                 where_clauses.append("(submission_deadline IS NOT NULL AND submission_deadline != '' AND submission_deadline < ?)")
                 params.append(now_iso)
-            else:
-                where_clauses.append("workflow_status = ?")
-                params.append(workflow_status)
-        if is_watchlisted is not None:
-            where_clauses.append("is_watchlisted = ?")
-            params.append(1 if is_watchlisted else 0)
 
-        # Time window filter (24h, 48h, 7d, 30d, all)
-        if time_window and time_window != "all":
-            hours = 24
-            if time_window == "24h":
-                hours = 24
-            elif time_window == "48h":
-                hours = 48
-            elif time_window == "7d":
-                hours = 24 * 7
-            elif time_window == "30d":
-                hours = 24 * 30
+            if search:
+                where_clauses.append("(title LIKE ? OR authority LIKE ? OR tender_id LIKE ?)")
+                p = f"%{search}%"
+                params.extend([p, p, p])
 
-            cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
-            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
-            params.extend([cutoff, cutoff])
+            where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
-        # Expiry status filter (active, expired, all)
-        if expiry_status == "active":
-            where_clauses.append("(submission_deadline IS NULL OR submission_deadline = '' OR submission_deadline >= ?)")
-            params.append(now_iso)
-        elif expiry_status == "expired":
-            where_clauses.append("(submission_deadline IS NOT NULL AND submission_deadline != '' AND submission_deadline < ?)")
-            params.append(now_iso)
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {where_sql}", params)
+            total = cursor.fetchone()["cnt"]
 
-        if search:
-            where_clauses.append("(title LIKE ? OR authority LIKE ? OR tender_id LIKE ?)")
-            p = f"%{search}%"
-            params.extend([p, p, p])
+            tier_order_clause = """
+                CASE t.highest_tier
+                    WHEN 'A' THEN 1
+                    WHEN 'B' THEN 2
+                    WHEN 'C' THEN 3
+                    WHEN 'D' THEN 4
+                    ELSE 5
+                END ASC
+            """
+            allowed_sort = ["published_date", "estimated_cost_inr", "submission_deadline", "created_at"]
+            sort_field = f"t.{sort_by}" if sort_by in allowed_sort else "t.published_date"
+            order_dir = "ASC" if order.lower() == "asc" else "DESC"
 
-        where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+            offset = (page - 1) * page_size
+            query_sql = f"""
+                SELECT t.*,
+                    (SELECT COUNT(*) FROM keyword_matches km WHERE km.tender_id_ref = t.id) as matches_count,
+                    (SELECT COUNT(*) FROM tender_documents td WHERE td.tender_id_ref = t.id) as documents_count
+                FROM tenders t
+                {where_sql}
+                ORDER BY {tier_order_clause}, {sort_field} {order_dir} NULLS LAST
+                LIMIT ? OFFSET ?
+            """
+            cursor.execute(query_sql, params + [page_size, offset])
+            rows = cursor.fetchall()
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {where_sql}", params)
-        total = cursor.fetchone()["cnt"]
+            items = []
+            for r in rows:
+                d = dict(r)
+                d["is_qualified"] = bool(d["is_qualified"])
+                d["uncertain"] = bool(d["uncertain"])
+                d["is_watchlisted"] = bool(d.get("is_watchlisted", 0))
+                d["workflow_status"] = d.get("workflow_status") or "new"
+                d["user_notes"] = d.get("user_notes") or ""
+                d["assigned_to"] = d.get("assigned_to") or ""
+                d["is_expired"] = is_deadline_expired(d.get("submission_deadline"), now_iso)
+                items.append(d)
 
-        tier_order_clause = """
-            CASE t.highest_tier
-                WHEN 'A' THEN 1
-                WHEN 'B' THEN 2
-                WHEN 'C' THEN 3
-                WHEN 'D' THEN 4
-                ELSE 5
-            END ASC
-        """
-        allowed_sort = ["published_date", "estimated_cost_inr", "submission_deadline", "created_at"]
-        sort_field = f"t.{sort_by}" if sort_by in allowed_sort else "t.published_date"
-        order_dir = "ASC" if order.lower() == "asc" else "DESC"
-
-        offset = (page - 1) * page_size
-        query_sql = f"""
-            SELECT t.*,
-                (SELECT COUNT(*) FROM keyword_matches km WHERE km.tender_id_ref = t.id) as matches_count,
-                (SELECT COUNT(*) FROM tender_documents td WHERE td.tender_id_ref = t.id) as documents_count
-            FROM tenders t
-            {where_sql}
-            ORDER BY {tier_order_clause}, {sort_field} {order_dir} NULLS LAST
-            LIMIT ? OFFSET ?
-        """
-        cursor.execute(query_sql, params + [page_size, offset])
-        rows = cursor.fetchall()
-
-        items = []
-        for r in rows:
-            d = dict(r)
-            d["is_qualified"] = bool(d["is_qualified"])
-            d["uncertain"] = bool(d["uncertain"])
-            d["is_watchlisted"] = bool(d.get("is_watchlisted", 0))
-            d["workflow_status"] = d.get("workflow_status") or "new"
-            d["user_notes"] = d.get("user_notes") or ""
-            d["assigned_to"] = d.get("assigned_to") or ""
-            d["is_expired"] = is_deadline_expired(d.get("submission_deadline"), now_iso)
-            items.append(d)
-
-        conn.close()
-        return {
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "items": items
-        }
+            return {
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "items": items
+            }
+        finally:
+            conn.close()
 
     def count_tenders(self, is_qualified: Optional[bool] = None) -> int:
         """Count total or qualified tenders in the database."""
         conn = self._get_conn()
-        cursor = conn.cursor()
-        if is_qualified is not None:
-            cursor.execute("SELECT COUNT(*) as cnt FROM tenders WHERE is_qualified = ?", (1 if is_qualified else 0,))
-        else:
-            cursor.execute("SELECT COUNT(*) as cnt FROM tenders")
-        row = cursor.fetchone()
-        cnt = row["cnt"] if row else 0
-        conn.close()
-        return cnt
+        try:
+            cursor = conn.cursor()
+            if is_qualified is not None:
+                cursor.execute("SELECT COUNT(*) as cnt FROM tenders WHERE is_qualified = ?", (1 if is_qualified else 0,))
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM tenders")
+            row = cursor.fetchone()
+            cnt = row["cnt"] if row else 0
+            return cnt
+        finally:
+            conn.close()
 
     def sync_seed_tenders(self, force: bool = False) -> Dict[str, Any]:
         """
@@ -1241,35 +1317,36 @@ class TenderRepository:
     def get_tender(self, tender_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve full details of a tender including keyword matches and evidence."""
         conn = self._get_conn()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM tenders WHERE tender_id = ?", (tender_id,))
-        row = cursor.fetchone()
-        if not row:
+            cursor.execute("SELECT * FROM tenders WHERE tender_id = ?", (tender_id,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+
+            now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+            tender = dict(row)
+            tender["is_qualified"] = bool(tender["is_qualified"])
+            tender["uncertain"] = bool(tender["uncertain"])
+            tender["is_watchlisted"] = bool(tender.get("is_watchlisted", 0))
+            tender["workflow_status"] = tender.get("workflow_status") or "new"
+            tender["user_notes"] = tender.get("user_notes") or ""
+            tender["assigned_to"] = tender.get("assigned_to") or ""
+            tender["is_expired"] = is_deadline_expired(tender.get("submission_deadline"), now_iso)
+
+            cursor.execute("SELECT * FROM keyword_matches WHERE tender_id_ref = ?", (tender["id"],))
+            tender["matches"] = [dict(m) for m in cursor.fetchall()]
+
+            cursor.execute("SELECT * FROM tender_documents WHERE tender_id_ref = ?", (tender["id"],))
+            tender["documents"] = [dict(d) for d in cursor.fetchall()]
+
+            cursor.execute("SELECT * FROM extracted_fields WHERE tender_id_ref = ?", (tender["id"],))
+            tender["extracted_fields"] = [dict(f) for f in cursor.fetchall()]
+
+            return tender
+        finally:
             conn.close()
-            return None
-
-        now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-        tender = dict(row)
-        tender["is_qualified"] = bool(tender["is_qualified"])
-        tender["uncertain"] = bool(tender["uncertain"])
-        tender["is_watchlisted"] = bool(tender.get("is_watchlisted", 0))
-        tender["workflow_status"] = tender.get("workflow_status") or "new"
-        tender["user_notes"] = tender.get("user_notes") or ""
-        tender["assigned_to"] = tender.get("assigned_to") or ""
-        tender["is_expired"] = is_deadline_expired(tender.get("submission_deadline"), now_iso)
-
-        cursor.execute("SELECT * FROM keyword_matches WHERE tender_id_ref = ?", (tender["id"],))
-        tender["matches"] = [dict(m) for m in cursor.fetchall()]
-
-        cursor.execute("SELECT * FROM tender_documents WHERE tender_id_ref = ?", (tender["id"],))
-        tender["documents"] = [dict(d) for d in cursor.fetchall()]
-
-        cursor.execute("SELECT * FROM extracted_fields WHERE tender_id_ref = ?", (tender["id"],))
-        tender["extracted_fields"] = [dict(f) for f in cursor.fetchall()]
-
-        conn.close()
-        return tender
 
     def update_tender_workflow(
         self,
@@ -1383,126 +1460,128 @@ class TenderRepository:
     def get_dashboard_metrics(self, time_window: Optional[str] = None) -> Dict[str, Any]:
         """Aggregate key metrics for the executive dashboard with time window support."""
         conn = self._get_conn()
-        cursor = conn.cursor()
+        try:
+            cursor = conn.cursor()
 
-        now_dt = datetime.now(timezone.utc)
-        now_iso = now_dt.strftime("%Y-%m-%dT%H:%M:%S")
+            now_dt = datetime.now(timezone.utc)
+            now_iso = now_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-        where_clauses = []
-        params = []
+            where_clauses = []
+            params = []
 
-        if time_window and time_window != "all":
-            hours = 24
-            if time_window == "24h":
+            if time_window and time_window != "all":
                 hours = 24
-            elif time_window == "48h":
-                hours = 48
-            elif time_window == "7d":
-                hours = 24 * 7
-            elif time_window == "30d":
-                hours = 24 * 30
+                if time_window == "24h":
+                    hours = 24
+                elif time_window == "48h":
+                    hours = 48
+                elif time_window == "7d":
+                    hours = 24 * 7
+                elif time_window == "30d":
+                    hours = 24 * 30
 
-            cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
-            where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
-            params.extend([cutoff, cutoff])
+                cutoff = (now_dt - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
+                where_clauses.append("(created_at >= ? OR (published_date IS NOT NULL AND published_date != '' AND published_date >= ?))")
+                params.extend([cutoff, cutoff])
 
-        base_where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+            base_where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
-        def _append_clause(extra: str) -> str:
-            if base_where:
-                return f"{base_where} AND {extra}"
-            return f"WHERE {extra}"
+            def _append_clause(extra: str) -> str:
+                if base_where:
+                    return f"{base_where} AND {extra}"
+                return f"WHERE {extra}"
 
-        cursor.execute(f"SELECT COUNT(*) as total FROM tenders {base_where}", params)
-        total_discovered = cursor.fetchone()["total"]
+            cursor.execute(f"SELECT COUNT(*) as total FROM tenders {base_where}", params)
+            total_discovered = cursor.fetchone()["total"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'direct\' AND is_qualified = 1')}", params)
-        direct_matches = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'direct\' AND is_qualified = 1')}", params)
+            direct_matches = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'indirect_review\'')}", params)
-        indirect_review = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'indirect_review\'')}", params)
+            indirect_review = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'A\'')}", params)
-        tier_a_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'A\'')}", params)
+            tier_a_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'B\'')}", params)
-        tier_b_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'B\'')}", params)
+            tier_b_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'C\'')}", params)
-        tier_c_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'C\'')}", params)
+            tier_c_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'D\'')}", params)
-        tier_d_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'D\'')}", params)
+            tier_d_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT SUM(estimated_cost_inr) as total_val FROM tenders {_append_clause('is_qualified = 1')}", params)
-        val_row = cursor.fetchone()
-        total_pipeline_val = val_row["total_val"] or 0.0
+            cursor.execute(f"SELECT SUM(estimated_cost_inr) as total_val FROM tenders {_append_clause('is_qualified = 1')}", params)
+            val_row = cursor.fetchone()
+            total_pipeline_val = val_row["total_val"] or 0.0
 
-        cursor.execute(f"SELECT LOWER(portal_source) as portal_source, COUNT(*) as cnt FROM tenders {base_where} GROUP BY LOWER(portal_source) ORDER BY cnt DESC", params)
-        sources_breakdown = [
-            {"name": row["portal_source"], "count": row["cnt"]}
-            for row in cursor.fetchall()
-        ]
+            cursor.execute(f"SELECT LOWER(portal_source) as portal_source, COUNT(*) as cnt FROM tenders {base_where} GROUP BY LOWER(portal_source) ORDER BY cnt DESC", params)
+            sources_breakdown = [
+                {"name": row["portal_source"], "count": row["cnt"]}
+                for row in cursor.fetchall()
+            ]
 
-        cursor.execute(f"SELECT title, authority FROM tenders {base_where}", params)
-        all_tenders_meta = cursor.fetchall()
-        sectors_map = {
-            "Government": 0,
-            "Defence": 0,
-            "Enterprise / Commercial": 0,
-            "Energy & Utilities": 0,
-            "Transport": 0
-        }
-        for r in all_tenders_meta:
-            text = ((r["title"] or "") + " " + (r["authority"] or "")).lower()
-            if any(k in text for k in ["air force", "army", "navy", "defence", "defense", "armoured", "ordnance", "cantonment", "military", "mes", "crpf", "bsf", "cisf", "itbp"]):
-                sectors_map["Defence"] += 1
-            elif any(k in text for k in ["railway", "metro", "transport", "airport", "aai", "highway", "nhai", "port", "shipping", "irctc", "rvnl"]):
-                sectors_map["Transport"] += 1
-            elif any(k in text for k in ["power", "energy", "solar", "grid", "electricity", "discom", "ntpc", "transco", "gencor", "oil", "gas", "ongc", "iocl", "bpcl", "gail", "hydel", "thermal"]):
-                sectors_map["Energy & Utilities"] += 1
-            elif any(k in text for k in ["bank", "rbi", "sbi", "insurance", "lic", "commercial", "enterprise", "telecom", "bsnl", "limited", "corp", "exchange", "bse", "nse", "ltd"]):
-                sectors_map["Enterprise / Commercial"] += 1
-            else:
-                sectors_map["Government"] += 1
+            cursor.execute(f"SELECT title, authority FROM tenders {base_where}", params)
+            all_tenders_meta = cursor.fetchall()
+            sectors_map = {
+                "Government": 0,
+                "Defence": 0,
+                "Enterprise / Commercial": 0,
+                "Energy & Utilities": 0,
+                "Transport": 0
+            }
+            for r in all_tenders_meta:
+                text = ((r["title"] or "") + " " + (r["authority"] or "")).lower()
+                if any(k in text for k in ["air force", "army", "navy", "defence", "defense", "armoured", "ordnance", "cantonment", "military", "mes", "crpf", "bsf", "cisf", "itbp"]):
+                    sectors_map["Defence"] += 1
+                elif any(k in text for k in ["railway", "metro", "transport", "airport", "aai", "highway", "nhai", "port", "shipping", "irctc", "rvnl"]):
+                    sectors_map["Transport"] += 1
+                elif any(k in text for k in ["power", "energy", "solar", "grid", "electricity", "discom", "ntpc", "transco", "gencor", "oil", "gas", "ongc", "iocl", "bpcl", "gail", "hydel", "thermal"]):
+                    sectors_map["Energy & Utilities"] += 1
+                elif any(k in text for k in ["bank", "rbi", "sbi", "insurance", "lic", "commercial", "enterprise", "telecom", "bsnl", "limited", "corp", "exchange", "bse", "nse", "ltd"]):
+                    sectors_map["Enterprise / Commercial"] += 1
+                else:
+                    sectors_map["Government"] += 1
 
-        sectors_breakdown = [{"name": k, "count": v} for k, v in sectors_map.items() if v > 0]
+            sectors_breakdown = [{"name": k, "count": v} for k, v in sectors_map.items() if v > 0]
 
-        cursor.execute(f"SELECT workflow_status, COUNT(*) as cnt FROM tenders {base_where} GROUP BY workflow_status", params)
-        wf_rows = cursor.fetchall()
-        workflow_counts = {"new": 0, "under_review": 0, "considered": 0, "reviewed": 0, "rejected": 0}
-        for r in wf_rows:
-            st = r["workflow_status"] or "new"
-            workflow_counts[st] = r["cnt"]
+            cursor.execute(f"SELECT workflow_status, COUNT(*) as cnt FROM tenders {base_where} GROUP BY workflow_status", params)
+            wf_rows = cursor.fetchall()
+            workflow_counts = {"new": 0, "under_review": 0, "considered": 0, "reviewed": 0, "rejected": 0}
+            for r in wf_rows:
+                st = r["workflow_status"] or "new"
+                workflow_counts[st] = r["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('is_watchlisted = 1')}", params)
-        watchlisted_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('is_watchlisted = 1')}", params)
+            watchlisted_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NOT NULL AND submission_deadline != \'\' AND submission_deadline < ?)')}", params + [now_iso])
-        expired_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NOT NULL AND submission_deadline != \'\' AND submission_deadline < ?)')}", params + [now_iso])
+            expired_count = cursor.fetchone()["cnt"]
 
-        cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NULL OR submission_deadline = \'\' OR submission_deadline >= ?)')}", params + [now_iso])
-        active_count = cursor.fetchone()["cnt"]
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NULL OR submission_deadline = \'\' OR submission_deadline >= ?)')}", params + [now_iso])
+            active_count = cursor.fetchone()["cnt"]
 
-        conn.close()
-        return {
-            "total_discovered": total_discovered,
-            "total_tenders": total_discovered,
-            "direct_matches": direct_matches,
-            "indirect_review": indirect_review,
-            "tier_a_count": tier_a_count,
-            "tier_b_count": tier_b_count,
-            "tier_c_count": tier_c_count,
-            "tier_d_count": tier_d_count,
-            "total_pipeline_value_inr": total_pipeline_val,
-            "sources_breakdown": sources_breakdown,
-            "sectors_breakdown": sectors_breakdown,
-            "workflow_counts": workflow_counts,
-            "watchlisted_count": watchlisted_count,
-            "expired_count": expired_count,
-            "active_count": active_count,
-            "time_window": time_window or "all"
-        }
+            return {
+                "total_discovered": total_discovered,
+                "total_tenders": total_discovered,
+                "direct_matches": direct_matches,
+                "indirect_review": indirect_review,
+                "tier_a_count": tier_a_count,
+                "tier_b_count": tier_b_count,
+                "tier_c_count": tier_c_count,
+                "tier_d_count": tier_d_count,
+                "total_pipeline_value_inr": total_pipeline_val,
+                "sources_breakdown": sources_breakdown,
+                "sectors_breakdown": sectors_breakdown,
+                "workflow_counts": workflow_counts,
+                "watchlisted_count": watchlisted_count,
+                "expired_count": expired_count,
+                "active_count": active_count,
+                "time_window": time_window or "all"
+            }
+        finally:
+            conn.close()
 
     def start_source_run(self, source_name: str) -> int:
         conn = self._get_conn()

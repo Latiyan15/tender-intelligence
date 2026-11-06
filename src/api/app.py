@@ -5,6 +5,9 @@ Nikom Tender Discovery & Extraction - FastAPI Backend Application
 import os
 import re
 import logging
+import asyncio
+import threading
+import anyio
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request, UploadFile, File, Form
@@ -41,7 +44,40 @@ keyword_matcher = KeywordMatcher()
 doc_manager = DocumentManager(db_repo=repo)
 bedrock_service = BedrockTenderService()
 drafting_service = DraftingService(db_repo=repo, doc_manager=doc_manager)
-_ai_analysis_cache: dict = {}
+class ThreadSafeBoundedCache:
+    """Thread-safe in-memory cache with LRU eviction and maximum capacity."""
+    def __init__(self, maxsize: int = 500):
+        self._cache: Dict[str, Any] = {}
+        self._lock = threading.RLock()
+        self._maxsize = maxsize
+
+    def get(self, key: str, default: Any = None) -> Any:
+        with self._lock:
+            return self._cache.get(key, default)
+
+    def set(self, key: str, value: Any):
+        with self._lock:
+            if len(self._cache) >= self._maxsize and key not in self._cache:
+                try:
+                    oldest = next(iter(self._cache))
+                    del self._cache[oldest]
+                except Exception:
+                    pass
+            self._cache[key] = value
+
+    def __contains__(self, key: str) -> bool:
+        with self._lock:
+            return key in self._cache
+
+    def __getitem__(self, key: str) -> Any:
+        with self._lock:
+            return self._cache[key]
+
+    def __setitem__(self, key: str, value: Any):
+        self.set(key, value)
+
+
+_ai_analysis_cache = ThreadSafeBoundedCache(maxsize=500)
 
 class GenerateDocRequest(BaseModel):
     doc_key: str
@@ -1337,7 +1373,7 @@ def get_bedrock_status():
 
 
 @app.post("/api/tenders/{tender_id:path}/ai-analysis")
-def get_or_run_ai_feasibility(tender_id: str, req: Optional[AIAnalysisRequest] = None):
+async def get_or_run_ai_feasibility(tender_id: str, req: Optional[AIAnalysisRequest] = None):
     """
     Runs or retrieves deep AWS Bedrock (Claude Sonnet) Feasibility and Eligibility evaluation.
     Grounds evaluation with both tender metadata and extracted PDF documents.
@@ -1366,7 +1402,11 @@ def get_or_run_ai_feasibility(tender_id: str, req: Optional[AIAnalysisRequest] =
         logger.warning(f"Could not load PDF text for AI analysis: {e}")
 
     try:
-        analysis = bedrock_service.analyze_tender_feasibility(tender, document_text=doc_text)
+        analysis = await anyio.to_thread.run_sync(
+            bedrock_service.analyze_tender_feasibility,
+            tender,
+            doc_text
+        )
         _ai_analysis_cache[tender_id] = analysis
         return analysis
     except Exception as e:
@@ -1375,7 +1415,7 @@ def get_or_run_ai_feasibility(tender_id: str, req: Optional[AIAnalysisRequest] =
 
 
 @app.post("/api/tenders/{tender_id:path}/ai-chat")
-def ask_ai_tender_copilot(tender_id: str, req: AIChatRequest):
+async def ask_ai_tender_copilot(tender_id: str, req: AIChatRequest):
     """
     Interactive RFP Copilot allowing bidding engineers to ask specific questions about tender specs and clauses.
     """
@@ -1402,7 +1442,12 @@ def ask_ai_tender_copilot(tender_id: str, req: AIChatRequest):
         logger.warning(f"Could not load PDF text for AI copilot: {e}")
 
     try:
-        res = bedrock_service.ask_tender_copilot(tender, req.question.strip(), document_text=doc_text)
+        res = await anyio.to_thread.run_sync(
+            bedrock_service.ask_tender_copilot,
+            tender,
+            req.question.strip(),
+            doc_text
+        )
         return res
     except Exception as e:
         logger.error(f"Error in Bedrock Copilot chat: {e}")
@@ -1686,17 +1731,18 @@ async def presales_upload_document(file: UploadFile = File(...)):
 
 
 @app.post("/api/presales/chat")
-def presales_chat(req: PresalesChatRequest):
+async def presales_chat(req: PresalesChatRequest):
     """Interactive conversational session with Nikom Assist (Pre-Sales Engineering Agent)."""
     try:
         tender_ctx = repo.get_tender(req.tender_id) if req.tender_id else None
-        res = presales_service.chat(
-            messages=req.messages,
-            scenario=req.scenario,
-            tender_context=tender_ctx,
-            document_context=req.document_context,
-            documents=req.documents,
-            project_id=req.project_id
+        res = await anyio.to_thread.run_sync(
+            presales_service.chat,
+            req.messages,
+            req.scenario,
+            tender_ctx,
+            req.document_context,
+            req.documents,
+            req.project_id
         )
         return res
     except Exception as e:
@@ -1705,19 +1751,25 @@ def presales_chat(req: PresalesChatRequest):
 
 
 @app.post("/api/presales/chat-stream")
-def presales_chat_stream(req: PresalesChatRequest):
+async def presales_chat_stream(req: PresalesChatRequest):
     """Streaming conversational session with Nikom Assist (Pre-Sales Engineering Agent) via SSE."""
     try:
         tender_ctx = repo.get_tender(req.tender_id) if req.tender_id else None
-        generator = presales_service.chat_stream(
-            messages=req.messages,
-            scenario=req.scenario,
-            tender_context=tender_ctx,
-            document_context=req.document_context,
-            documents=req.documents,
-            project_id=req.project_id
-        )
-        return StreamingResponse(generator, media_type="text/event-stream")
+
+        async def event_generator():
+            generator = presales_service.chat_stream(
+                messages=req.messages,
+                scenario=req.scenario,
+                tender_context=tender_ctx,
+                document_context=req.document_context,
+                documents=req.documents,
+                project_id=req.project_id
+            )
+            for chunk in generator:
+                yield chunk
+                await asyncio.sleep(0)
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
     except Exception as e:
         logger.error(f"Error in presales chat stream: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -2101,7 +2153,7 @@ def presales_download_summary(
 
 
 @app.get("/api/tenders/{tender_id:path}/bidding-checklist")
-def get_tender_bidding_checklist(tender_id: str):
+async def get_tender_bidding_checklist(tender_id: str):
     """Returns the comprehensive bidding operations checklist and uncommon trap clauses radar."""
     tender = repo.get_tender(tender_id)
     if not tender:
@@ -2123,7 +2175,11 @@ def get_tender_bidding_checklist(tender_id: str):
                 except Exception:
                     pass
 
-    checklist_data = bedrock.get_bidding_checklist_and_traps(tender, doc_text)
+    checklist_data = await anyio.to_thread.run_sync(
+        bedrock.get_bidding_checklist_and_traps,
+        tender,
+        doc_text
+    )
     return checklist_data
 
 
