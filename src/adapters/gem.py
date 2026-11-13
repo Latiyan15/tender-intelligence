@@ -122,10 +122,11 @@ class GemAdapter(BaseAdapter):
                         self._csrf_timestamp = now
                         return token
                 except Exception as e:
-                    logger.debug(f"GeM session init attempt {attempt + 1}: {e}")
+                    logger.warning(f"GeM session init attempt {attempt + 1} failed: {e}")
                     if attempt == 0:
                         time.sleep(0.5)
 
+            logger.error("Failed to obtain CSRF token from GeM — proxy may be unreachable")
             self.stats['errors'] += 1
             return self._cached_csrf or ''
 
@@ -214,7 +215,7 @@ class GemAdapter(BaseAdapter):
                 records.append(tender)
 
         except Exception as e:
-            logger.debug(f"GeM query note for '{term}' p.{page}: {e}")
+            logger.warning(f"GeM fetch failed for '{term}' page {page}: {e}")
 
         return records
 
