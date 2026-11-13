@@ -33,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger("gem_sheets_sync")
 
 SPREADSHEET_ID = "14E4wx6nD8-21w29wsxWUycd2t5obKQyKcrCmypNRALk"
-SHEET_GID = 822830685
+SHEET_GID = 0  # "Live GeM Bids" tab
 
 # Focused search terms for Nikom's 8 business groups
 NIKOM_SEARCH_TERMS = [
