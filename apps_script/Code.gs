@@ -7,7 +7,8 @@
  */
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
-var SHEET_NAME = "Priority bids - EOD";
+var SHEET_NAME = "Live GeM Bids";
+var DATA_START_ROW = 5; // Rows 1-3 metadata, row 4 headers, row 5 first data
 
 var SEARCH_TERMS = [
   "precision air conditioning", "precision air conditioner",
@@ -274,8 +275,8 @@ function syncGemTenders() {
   // Read existing bid numbers for dedup (column B)
   var lastRow = sheet.getLastRow();
   var existingBids = {};
-  if (lastRow > 1) {
-    var bidCol = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+  if (lastRow >= DATA_START_ROW) {
+    var bidCol = sheet.getRange(DATA_START_ROW, 2, lastRow - DATA_START_ROW + 1, 1).getValues();
     for (var i = 0; i < bidCol.length; i++) {
       if (bidCol[i][0]) existingBids[bidCol[i][0].toString().trim()] = true;
     }
@@ -374,7 +375,7 @@ function syncGemTenders() {
 
   if (newRows.length > 0) {
     // Auto-number
-    var startNum = lastRow; // next row number (1-based, after header)
+    var startNum = lastRow - DATA_START_ROW + 2; // next serial number
     for (var r = 0; r < newRows.length; r++) {
       newRows[r][0] = startNum + r;
     }
@@ -400,16 +401,17 @@ function syncGemTenders() {
 
 function updateDaysLeft_(sheet) {
   var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
+  if (lastRow < DATA_START_ROW) return;
 
   // Column D = closing date, Column F = days left
-  var closingDates = sheet.getRange(2, 4, lastRow - 1, 1).getValues();
+  var numRows = lastRow - DATA_START_ROW + 1;
+  var closingDates = sheet.getRange(DATA_START_ROW, 4, numRows, 1).getValues();
   var daysCol = [];
   for (var i = 0; i < closingDates.length; i++) {
     var val = closingDates[i][0] ? closingDates[i][0].toString() : "";
     daysCol.push([daysLeft_(val)]);
   }
-  sheet.getRange(2, 6, daysCol.length, 1).setValues(daysCol);
+  sheet.getRange(DATA_START_ROW, 6, daysCol.length, 1).setValues(daysCol);
   Logger.log("Updated Days left for " + daysCol.length + " rows");
 }
 

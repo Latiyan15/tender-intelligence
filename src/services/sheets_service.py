@@ -19,6 +19,8 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
+DATA_START_ROW = 5  # Rows 1-3 metadata, row 4 headers, row 5 first data
+
 COLUMN_HEADERS = [
     "#",
     "GeM bid number",
@@ -44,7 +46,7 @@ class SheetsService:
     def __init__(
         self,
         spreadsheet_id: str,
-        sheet_gid: int = 822830685,
+        sheet_gid: int = 0,  # "Live GeM Bids" tab
         credentials_json: Optional[str] = None,
         credentials_path: Optional[str] = None,
     ):
@@ -99,7 +101,7 @@ class SheetsService:
         try:
             col_values = self.worksheet.col_values(2)  # Column B
             bids = set()
-            for val in col_values[1:]:  # Skip header
+            for val in col_values[DATA_START_ROW - 1:]:  # Skip metadata + header rows
                 cleaned = val.strip()
                 if cleaned and cleaned.startswith("GEM/"):
                     bids.add(cleaned)
@@ -114,7 +116,7 @@ class SheetsService:
         try:
             col_values = self.worksheet.col_values(1)  # Column A
             max_num = 0
-            for val in col_values[1:]:
+            for val in col_values[DATA_START_ROW - 1:]:
                 try:
                     num = int(val.strip())
                     max_num = max(max_num, num)
@@ -176,11 +178,11 @@ class SheetsService:
         """Recalculate 'Days left' (column F) for all rows based on today's date."""
         try:
             all_data = self.worksheet.get_all_values()
-            if len(all_data) <= 1:
+            if len(all_data) < DATA_START_ROW:
                 return 0
 
             updates = []
-            for row_idx, row in enumerate(all_data[1:], start=2):  # 1-indexed, skip header
+            for row_idx, row in enumerate(all_data[DATA_START_ROW - 1:], start=DATA_START_ROW):
                 if len(row) < 6:
                     continue
                 closing_str = row[3]  # Column D (0-indexed: col 3)
@@ -207,13 +209,13 @@ class SheetsService:
         """
         try:
             all_data = self.worksheet.get_all_values()
-            if len(all_data) <= 1:
+            if len(all_data) < DATA_START_ROW:
                 return 0
 
             rows_to_delete = []
             cutoff = datetime.now() - timedelta(days=grace_days)
 
-            for row_idx, row in enumerate(all_data[1:], start=2):
+            for row_idx, row in enumerate(all_data[DATA_START_ROW - 1:], start=DATA_START_ROW):
                 if len(row) < 4:
                     continue
                 closing_str = row[3]
