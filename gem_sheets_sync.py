@@ -146,9 +146,49 @@ def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
     }
 
 
+def check_proxy_connectivity() -> bool:
+    """Quick check if the configured proxy can reach GeM. Returns True if reachable."""
+    import urllib.request
+    import urllib.parse
+    from src.utils.http_client import get_configured_proxy
+
+    proxy = get_configured_proxy()
+    if not proxy:
+        logger.info("No proxy configured — connecting directly to GeM")
+        return True
+
+    logger.info(f"Testing proxy connectivity to GeM...")
+    try:
+        proxy_handler = urllib.request.ProxyHandler({'http': proxy, 'https': proxy})
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        opener = urllib.request.build_opener(proxy_handler, urllib.request.HTTPSHandler(context=ctx))
+        req = urllib.request.Request(
+            "https://bidplus.gem.gov.in/all-bids",
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        res = opener.open(req, timeout=15)
+        status = res.getcode()
+        logger.info(f"Proxy connectivity OK (HTTP {status})")
+        return True
+    except Exception as e:
+        logger.error(f"Proxy connectivity FAILED: {e}")
+        return False
+
+
 def discover_gem_bids() -> list:
     """Run GeM discovery with Nikom-focused search terms."""
     logger.info("Starting GeM bid discovery...")
+
+    # Check proxy first; if it fails, try without proxy
+    if not check_proxy_connectivity():
+        logger.warning("Proxy unreachable — retrying direct connection without proxy")
+        os.environ.pop("PROXY_URL", None)
+        os.environ.pop("SOCKS_PROXY", None)
+        os.environ.pop("ALL_PROXY", None)
+
     adapter = GemAdapter()
     tenders = adapter.discover_tenders(
         max_tenders=500,
@@ -204,10 +244,10 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
     # Phase 1: Discover bids from GeM
     tenders = discover_gem_bids()
     if not tenders:
-        logger.warning("No tenders discovered — check proxy and GeM availability")
+        logger.error("No tenders discovered — proxy is likely unreachable from this runner")
         if sheets:
             sheets.update_days_left()
-        return
+        sys.exit(1)
 
     # Phase 2: Deduplicate against existing sheet data
     existing_bids = sheets.get_existing_bid_numbers() if sheets else set()
