@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 import json
+import time
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -98,12 +99,16 @@ def format_gem_date(raw_date: str) -> str:
     return raw_date
 
 
-def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
+def tender_to_sheet_row(tender, bid_number: str, llm_fields: Dict[str, Any] = None) -> Dict[str, Any]:
     """Convert a TenderRecord from the GemAdapter into a sheet-ready dict."""
+    llm = llm_fields or {}
     title = tender.title or ""
     scope = ""
     if tender.scope_of_work and hasattr(tender.scope_of_work, "raw_text"):
         scope = tender.scope_of_work.raw_text or ""
+
+    # Use scope from detail page if available, fall back to title
+    display_scope = scope if scope else title
 
     group_label, nikom_role = classify_bid(title, scope)
 
@@ -117,21 +122,46 @@ def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
 
     buyer = tender.issuing_organization or ""
 
+    # Estimated value: prefer HTML-scraped, then LLM-extracted
     est_value = ""
     if tender.estimated_value and hasattr(tender.estimated_value, "normalized_value"):
         val = tender.estimated_value.normalized_value
         if val:
             est_value = round(val / 100000, 2) if val > 10000 else val
+    if not est_value and llm.get("estimated_value_lakh"):
+        est_value = llm["estimated_value_lakh"]
 
+    # EMD: prefer HTML-scraped, then LLM-extracted
     emd = ""
     if tender.emd_amount and hasattr(tender.emd_amount, "normalized_value"):
         val = tender.emd_amount.normalized_value
         if val:
             emd = round(val / 100000, 2) if val > 10000 else val
+    if not emd and llm.get("emd_lakh"):
+        emd = llm["emd_lakh"]
+
+    # Experience: prefer HTML-scraped, then LLM
+    exp_yrs = ""
+    if tender.experience_requirement and hasattr(tender.experience_requirement, "raw_text"):
+        exp_yrs = tender.experience_requirement.raw_text or ""
+    if not exp_yrs and llm.get("experience_years") is not None:
+        exp_yrs = llm["experience_years"]
+
+    # Turnover: prefer HTML-scraped, then LLM
+    turnover = ""
+    if tender.minimum_turnover and hasattr(tender.minimum_turnover, "normalized_value"):
+        val = tender.minimum_turnover.normalized_value
+        if val:
+            turnover = round(val / 100000, 2) if val > 10000 else val
+    if not turnover and llm.get("min_turnover_lakh") is not None:
+        turnover = llm["min_turnover_lakh"]
+
+    # Remarks: use LLM summary if available
+    remarks = llm.get("remarks") or f"Auto-discovered {datetime.now().strftime('%d-%b-%Y')}"
 
     return {
         "bid_number": bid_number,
-        "scope": title,
+        "scope": display_scope,
         "closing_date": closing_date,
         "doc_link": doc_link,
         "buyer": buyer,
@@ -140,9 +170,9 @@ def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
         "eligibility": "Not started",
         "est_value_lakh": est_value,
         "emd_lakh": emd,
-        "experience_yrs": "",
-        "min_turnover_lakh": "",
-        "remarks": f"Auto-discovered {datetime.now().strftime('%d-%b-%Y')}",
+        "experience_yrs": exp_yrs,
+        "min_turnover_lakh": turnover,
+        "remarks": remarks,
     }
 
 
@@ -178,8 +208,8 @@ def check_proxy_connectivity() -> bool:
         return False
 
 
-def discover_gem_bids() -> list:
-    """Run GeM discovery with Nikom-focused search terms."""
+def discover_gem_bids():
+    """Run GeM discovery with Nikom-focused search terms. Returns (tenders, adapter)."""
     logger.info("Starting GeM bid discovery...")
 
     # Check proxy first; if it fails, try without proxy
@@ -209,7 +239,7 @@ def discover_gem_bids() -> list:
             relevant.append(t)
 
     logger.info(f"Filtered to {len(relevant)} Nikom-relevant bids")
-    return relevant
+    return relevant, adapter
 
 
 def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: bool = False):
@@ -242,7 +272,7 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
         return
 
     # Phase 1: Discover bids from GeM
-    tenders = discover_gem_bids()
+    tenders, adapter = discover_gem_bids()
     if not tenders:
         logger.error("No tenders discovered — proxy is likely unreachable from this runner")
         if sheets:
@@ -251,40 +281,85 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
 
     # Phase 2: Deduplicate against existing sheet data
     existing_bids = sheets.get_existing_bid_numbers() if sheets else set()
+    new_tenders = [t for t in tenders if t.tender_id not in existing_bids]
+    logger.info(f"New bids to enrich: {len(new_tenders)} (out of {len(tenders)} discovered)")
+
+    # Phase 3: Enrich each new bid with detail page + LLM analysis
+    enrichment_svc = None
+    try:
+        from src.services.bid_enrichment_service import BidEnrichmentService
+        enrichment_svc = BidEnrichmentService()
+        if enrichment_svc.is_configured():
+            logger.info("Bedrock LLM enrichment enabled")
+        else:
+            logger.warning("Bedrock not configured — skipping LLM enrichment")
+            enrichment_svc = None
+    except Exception as e:
+        logger.warning(f"Could not initialize enrichment service: {e}")
+
     new_bids = []
-    for t in tenders:
+    for idx, t in enumerate(new_tenders, 1):
         bid_num = t.tender_id
-        if bid_num not in existing_bids:
-            row = tender_to_sheet_row(t, bid_num)
-            new_bids.append(row)
+        logger.info(f"Enriching bid {idx}/{len(new_tenders)}: {bid_num}")
 
-    logger.info(f"New bids to add: {len(new_bids)} (out of {len(tenders)} discovered)")
+        # Stage 1: Fetch detail page and extract HTML fields
+        try:
+            adapter.get_tender_details(t)
+        except Exception as e:
+            logger.warning(f"Detail fetch failed for {bid_num}: {e}")
 
-    # Phase 3: Append to sheet
+        # Stage 2: LLM extraction from detail page text
+        llm_fields = {}
+        if enrichment_svc:
+            page_text = ""
+            for doc in t.documents:
+                if doc.extracted_text:
+                    page_text = doc.extracted_text
+                    break
+            if page_text:
+                try:
+                    llm_fields = enrichment_svc.extract_bid_fields(
+                        bid_number=bid_num,
+                        title=t.title or "",
+                        buyer=t.issuing_organization or "",
+                        page_text=page_text,
+                    )
+                except Exception as e:
+                    logger.warning(f"LLM enrichment failed for {bid_num}: {e}")
+
+        row = tender_to_sheet_row(t, bid_num, llm_fields)
+        new_bids.append(row)
+        time.sleep(1)
+
+    logger.info(f"New bids to add: {len(new_bids)}")
+
+    # Phase 4: Write to sheet
     if dry_run:
         logger.info("[DRY RUN] Would append these bids:")
         for bid in new_bids[:10]:
-            logger.info(f"  {bid['bid_number']} | {bid['scope'][:60]} | {bid['group']}")
+            logger.info(f"  {bid['bid_number']} | {bid['scope'][:60]} | {bid['group']} | est={bid['est_value_lakh']} | emd={bid['emd_lakh']}")
         if len(new_bids) > 10:
             logger.info(f"  ... and {len(new_bids) - 10} more")
     else:
         appended = sheets.append_bids(new_bids)
-        logger.info(f"Appended {appended} new bids to the sheet")
+        logger.info(f"Inserted {appended} new bids into the sheet")
 
-        # Phase 4: Update "Days left" for all rows
+        # Phase 5: Update "Days left" for all rows
         updated = sheets.update_days_left()
         logger.info(f"Updated 'Days left' for {updated} rows")
 
-        # Phase 5: Optionally remove expired bids
+        # Phase 6: Optionally remove expired bids
         if remove_expired:
             removed = sheets.remove_expired_bids(grace_days=1)
             logger.info(f"Removed {removed} expired bids")
 
+    enriched_count = sum(1 for b in new_bids if b.get("est_value_lakh") or not b.get("remarks", "").startswith("Auto"))
     duration = (datetime.now() - start_time).total_seconds()
     logger.info("=" * 60)
     logger.info(f"SYNC COMPLETE in {duration:.1f}s")
     logger.info(f"  Discovered: {len(tenders)}")
     logger.info(f"  New:        {len(new_bids)}")
+    logger.info(f"  Enriched:   {enriched_count} (with detail page + LLM)")
     logger.info(f"  Skipped:    {len(tenders) - len(new_bids)} (already in sheet)")
     logger.info("=" * 60)
 
