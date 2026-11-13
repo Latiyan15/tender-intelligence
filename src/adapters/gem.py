@@ -1,8 +1,7 @@
 """
-Government e-Marketplace (GeM) Portal Adapter — Production Grade
-Scrapes active bids from bidplus.gem.gov.in using concurrent keyword workers,
-session CSRF management, and the high-throughput all-bids-data JSON API.
-Guarantees broad coverage across all 22 Nikom infrastructure keyword categories.
+Government e-Marketplace (GeM) Portal Adapter
+Scrapes active bids from bidplus.gem.gov.in using sequential keyword searches
+with retry/backoff, session CSRF management, and the all-bids-data JSON API.
 """
 
 import json
@@ -14,7 +13,6 @@ import urllib.parse
 import http.cookiejar
 from typing import List, Optional, Set
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from src.adapters.base import BaseAdapter
 from src.models.tender import (
@@ -114,7 +112,7 @@ class GemAdapter(BaseAdapter):
                         'User-Agent': self.headers['User-Agent'],
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
                     })
-                    self.opener.open(req, timeout=6.0)
+                    self.opener.open(req, timeout=15.0)
                     cookies = {c.name: c.value for c in self.cj}
                     token = cookies.get('csrf_gem_cookie', '')
                     if token:
@@ -130,8 +128,8 @@ class GemAdapter(BaseAdapter):
             self.stats['errors'] += 1
             return self._cached_csrf or ''
 
-    def _fetch_keyword_page(self, term: str, page: int, csrf_token: str) -> List[TenderRecord]:
-        """Fetch a single page of bids for a specific keyword query."""
+    def _fetch_keyword_page(self, term: str, page: int, csrf_token: str) -> Optional[List[TenderRecord]]:
+        """Fetch a single page of bids. Returns None on network error (retryable)."""
         records: List[TenderRecord] = []
         try:
             cookies = {c.name: c.value for c in self.cj}
@@ -147,7 +145,7 @@ class GemAdapter(BaseAdapter):
             }).encode('utf-8')
 
             req = urllib.request.Request(self.DATA_ENDPOINT, data=payload, headers=self.headers)
-            res = self.opener.open(req, timeout=6.0)
+            res = self.opener.open(req, timeout=15.0)
             raw_json = res.read().decode('utf-8')
             data = json.loads(raw_json)
 
@@ -216,6 +214,7 @@ class GemAdapter(BaseAdapter):
 
         except Exception as e:
             logger.warning(f"GeM fetch failed for '{term}' page {page}: {e}")
+            return None
 
         return records
 
@@ -227,44 +226,34 @@ class GemAdapter(BaseAdapter):
         max_per_term: int = 40,
         **kwargs
     ) -> List[TenderRecord]:
-        """
-        Fetch real bids from GeM all-bids-data endpoint matching Nikom's infrastructure keywords.
-        Executes parallel searches across all 22 keyword categories to ensure complete coverage
-        without missing any business tier, while maintaining ultra-fast execution time (< 4 seconds).
-        """
+        """Fetch bids from GeM matching Nikom's infrastructure keywords (sequential with retry)."""
         tenders: List[TenderRecord] = []
         seen_ids: Set[str] = set()
-        dedup_lock = threading.Lock()
 
         csrf_token = self._init_session()
         terms_to_search = search_terms or self.TARGET_KEYWORDS
 
-        def _search_keyword_worker(term: str) -> List[TenderRecord]:
-            term_records: List[TenderRecord] = []
+        import time as _time
+
+        for term in terms_to_search:
             for p in range(1, pages + 1):
-                page_items = self._fetch_keyword_page(term, p, csrf_token)
+                for attempt in range(3):
+                    page_items = self._fetch_keyword_page(term, p, csrf_token)
+                    if page_items is not None:
+                        break
+                    if attempt < 2:
+                        _time.sleep(2 * (attempt + 1))
                 if not page_items:
                     break
-                term_records.extend(page_items)
-                if len(term_records) >= max_per_term or len(page_items) < 10:
+                for t in page_items:
+                    if t.tender_id not in seen_ids:
+                        seen_ids.add(t.tender_id)
+                        tenders.append(t)
+                if len(page_items) < 10:
                     break
-            return term_records
-
-        # Execute keyword searches concurrently with a connection worker pool (6 threads)
-        with ThreadPoolExecutor(max_workers=6) as executor:
-            future_to_term = {executor.submit(_search_keyword_worker, term): term for term in terms_to_search}
-            for future in as_completed(future_to_term):
-                try:
-                    term_results = future.result()
-                    with dedup_lock:
-                        for t in term_results:
-                            if t.tender_id not in seen_ids:
-                                seen_ids.add(t.tender_id)
-                                tenders.append(t)
-                                if len(tenders) >= max_tenders:
-                                    break
-                except Exception as e:
-                    logger.debug(f"Keyword worker error: {e}")
+            _time.sleep(0.5)
+            if len(tenders) >= max_tenders:
+                break
 
         self.stats['tenders_discovered'] = len(tenders)
         logger.info(f"Discovered {len(tenders)} real bids from GeM across {len(terms_to_search)} keyword categories.")
