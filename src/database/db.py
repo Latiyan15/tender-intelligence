@@ -1494,22 +1494,28 @@ class TenderRepository:
             cursor.execute(f"SELECT COUNT(*) as total FROM tenders {base_where}", params)
             total_discovered = cursor.fetchone()["total"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'direct\' AND is_qualified = 1')}", params)
+            direct_clause = _append_clause("primary_category = 'direct' AND is_qualified = 1")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {direct_clause}", params)
             direct_matches = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('primary_category = \'indirect_review\'')}", params)
+            indirect_clause = _append_clause("primary_category = 'indirect_review'")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {indirect_clause}", params)
             indirect_review = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'A\'')}", params)
+            tier_a_clause = _append_clause("highest_tier = 'A'")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {tier_a_clause}", params)
             tier_a_count = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'B\'')}", params)
+            tier_b_clause = _append_clause("highest_tier = 'B'")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {tier_b_clause}", params)
             tier_b_count = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'C\'')}", params)
+            tier_c_clause = _append_clause("highest_tier = 'C'")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {tier_c_clause}", params)
             tier_c_count = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('highest_tier = \'D\'')}", params)
+            tier_d_clause = _append_clause("highest_tier = 'D'")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {tier_d_clause}", params)
             tier_d_count = cursor.fetchone()["cnt"]
 
             cursor.execute(f"SELECT SUM(estimated_cost_inr) as total_val FROM tenders {_append_clause('is_qualified = 1')}", params)
@@ -1556,10 +1562,12 @@ class TenderRepository:
             cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('is_watchlisted = 1')}", params)
             watchlisted_count = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NOT NULL AND submission_deadline != \'\' AND submission_deadline < ?)')}", params + [now_iso])
+            expired_clause = _append_clause("(submission_deadline IS NOT NULL AND submission_deadline != '' AND submission_deadline < ?)")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {expired_clause}", params + [now_iso])
             expired_count = cursor.fetchone()["cnt"]
 
-            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {_append_clause('(submission_deadline IS NULL OR submission_deadline = \'\' OR submission_deadline >= ?)')}", params + [now_iso])
+            active_clause = _append_clause("(submission_deadline IS NULL OR submission_deadline = '' OR submission_deadline >= ?)")
+            cursor.execute(f"SELECT COUNT(*) as cnt FROM tenders {active_clause}", params + [now_iso])
             active_count = cursor.fetchone()["cnt"]
 
             return {
