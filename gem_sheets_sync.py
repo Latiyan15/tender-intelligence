@@ -24,7 +24,11 @@ from typing import Any, Dict, List
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.adapters.gem import GemAdapter
-from src.classifier.gem_classifier import classify_bid, is_nikom_relevant
+from src.classifier.gem_classifier import (
+    classify_bid,
+    score_nikom_relevance,
+    RelevanceVerdict,
+)
 from src.services.sheets_service import SheetsService
 
 logging.basicConfig(
@@ -209,7 +213,10 @@ def check_proxy_connectivity() -> bool:
 
 
 def discover_gem_bids():
-    """Run GeM discovery with Nikom-focused search terms. Returns (tenders, adapter)."""
+    """Run GeM discovery with Nikom-focused search terms.
+
+    Returns (pass_tenders, borderline_tenders, adapter).
+    """
     logger.info("Starting GeM bid discovery...")
 
     # Check proxy first; if it fails, try without proxy
@@ -228,18 +235,38 @@ def discover_gem_bids():
     )
     logger.info(f"GeM API returned {len(tenders)} raw bids")
 
-    # Filter to only Nikom-relevant bids
-    relevant = []
+    # Three-layer relevance scoring
+    passed = []
+    borderline = []
+    rejected = 0
     for t in tenders:
         title = t.title or ""
         scope = ""
         if t.scope_of_work and hasattr(t.scope_of_work, "raw_text"):
             scope = t.scope_of_work.raw_text or ""
-        if is_nikom_relevant(title, scope):
-            relevant.append(t)
+        issuing_org = t.issuing_organization or ""
 
-    logger.info(f"Filtered to {len(relevant)} Nikom-relevant bids")
-    return relevant, adapter
+        result = score_nikom_relevance(title, scope, issuing_org)
+        if result.verdict == RelevanceVerdict.PASS:
+            passed.append(t)
+        elif result.verdict == RelevanceVerdict.BORDERLINE:
+            borderline.append(t)
+        else:
+            rejected += 1
+
+    logger.info(
+        f"Relevance filter: {len(passed)} pass, "
+        f"{len(borderline)} borderline, {rejected} rejected"
+    )
+    return passed, borderline, adapter
+
+
+def _get_page_text(tender) -> str:
+    """Extract detail page text from a tender's documents."""
+    for doc in tender.documents:
+        if doc.extracted_text:
+            return doc.extracted_text
+    return ""
 
 
 def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: bool = False):
@@ -271,9 +298,10 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
             logger.info(f"Updated 'Days left' for {updated} rows")
         return
 
-    # Phase 1: Discover bids from GeM
-    tenders, adapter = discover_gem_bids()
-    if not tenders:
+    # Phase 1: Discover bids from GeM (three-bucket relevance scoring)
+    passed, borderline, adapter = discover_gem_bids()
+    total_discovered = len(passed) + len(borderline)
+    if not passed and not borderline:
         logger.error("No tenders discovered — proxy is likely unreachable from this runner")
         if sheets:
             sheets.update_days_left()
@@ -281,10 +309,14 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
 
     # Phase 2: Deduplicate against existing sheet data
     existing_bids = sheets.get_existing_bid_numbers() if sheets else set()
-    new_tenders = [t for t in tenders if t.tender_id not in existing_bids]
-    logger.info(f"New bids to enrich: {len(new_tenders)} (out of {len(tenders)} discovered)")
+    new_pass = [t for t in passed if t.tender_id not in existing_bids]
+    new_borderline = [t for t in borderline if t.tender_id not in existing_bids]
+    logger.info(
+        f"New bids to enrich: {len(new_pass)} confirmed + "
+        f"{len(new_borderline)} borderline (out of {total_discovered} discovered)"
+    )
 
-    # Phase 3: Enrich each new bid with detail page + LLM analysis
+    # Initialize enrichment service
     enrichment_svc = None
     try:
         from src.services.bid_enrichment_service import BidEnrichmentService
@@ -297,25 +329,20 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
     except Exception as e:
         logger.warning(f"Could not initialize enrichment service: {e}")
 
+    # Phase 3a: Enrich confirmed-relevant bids (detail page + LLM)
     new_bids = []
-    for idx, t in enumerate(new_tenders, 1):
+    for idx, t in enumerate(new_pass, 1):
         bid_num = t.tender_id
-        logger.info(f"Enriching bid {idx}/{len(new_tenders)}: {bid_num}")
+        logger.info(f"Enriching bid {idx}/{len(new_pass)}: {bid_num}")
 
-        # Stage 1: Fetch detail page and extract HTML fields
         try:
             adapter.get_tender_details(t)
         except Exception as e:
             logger.warning(f"Detail fetch failed for {bid_num}: {e}")
 
-        # Stage 2: LLM extraction from detail page text
         llm_fields = {}
         if enrichment_svc:
-            page_text = ""
-            for doc in t.documents:
-                if doc.extracted_text:
-                    page_text = doc.extracted_text
-                    break
+            page_text = _get_page_text(t)
             if page_text:
                 try:
                     llm_fields = enrichment_svc.extract_bid_fields(
@@ -328,8 +355,57 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
                     logger.warning(f"LLM enrichment failed for {bid_num}: {e}")
 
         row = tender_to_sheet_row(t, bid_num, llm_fields)
-        new_bids.append(row)
+        if row["group"] != "0 Unclassified":
+            new_bids.append(row)
         time.sleep(1)
+
+    # Phase 3b: Triage borderline bids (detail page + LLM relevance check)
+    promoted = 0
+    if new_borderline:
+        logger.info(f"Triaging {len(new_borderline)} borderline bids...")
+        for t in new_borderline:
+            bid_num = t.tender_id
+            try:
+                adapter.get_tender_details(t)
+            except Exception:
+                continue
+
+            page_text = _get_page_text(t)
+            if not page_text:
+                continue
+
+            # LLM relevance gate for borderline bids
+            is_relevant = True
+            if enrichment_svc:
+                try:
+                    is_relevant = enrichment_svc.check_bid_relevance(
+                        title=t.title or "",
+                        buyer=t.issuing_organization or "",
+                        page_text=page_text,
+                    )
+                except Exception:
+                    is_relevant = True
+
+            if is_relevant:
+                promoted += 1
+                llm_fields = {}
+                if enrichment_svc:
+                    try:
+                        llm_fields = enrichment_svc.extract_bid_fields(
+                            bid_number=bid_num,
+                            title=t.title or "",
+                            buyer=t.issuing_organization or "",
+                            page_text=page_text,
+                        )
+                    except Exception:
+                        pass
+                row = tender_to_sheet_row(t, bid_num, llm_fields)
+                if row["group"] != "0 Unclassified":
+                    new_bids.append(row)
+
+            time.sleep(1)
+
+        logger.info(f"Borderline triage: {promoted}/{len(new_borderline)} promoted")
 
     logger.info(f"New bids to add: {len(new_bids)}")
 
@@ -357,10 +433,11 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
     duration = (datetime.now() - start_time).total_seconds()
     logger.info("=" * 60)
     logger.info(f"SYNC COMPLETE in {duration:.1f}s")
-    logger.info(f"  Discovered: {len(tenders)}")
-    logger.info(f"  New:        {len(new_bids)}")
-    logger.info(f"  Enriched:   {enriched_count} (with detail page + LLM)")
-    logger.info(f"  Skipped:    {len(tenders) - len(new_bids)} (already in sheet)")
+    logger.info(f"  Discovered:  {total_discovered}")
+    logger.info(f"  New:         {len(new_bids)}")
+    logger.info(f"  Enriched:    {enriched_count} (with detail page + LLM)")
+    logger.info(f"  Promoted:    {promoted} (borderline → confirmed via LLM)")
+    logger.info(f"  Skipped:     {total_discovered - len(new_bids)} (dupes or rejected)")
     logger.info("=" * 60)
 
 

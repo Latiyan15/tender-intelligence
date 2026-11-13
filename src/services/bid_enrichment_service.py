@@ -109,3 +109,45 @@ class BidEnrichmentService:
             logger.warning(f"Bedrock extraction failed for {bid_number}: {e}")
 
         return {}
+
+    def check_bid_relevance(
+        self,
+        title: str,
+        buyer: str,
+        page_text: str,
+    ) -> bool:
+        """Quick binary relevance check for borderline bids.
+
+        Uses minimal tokens for cost efficiency. Returns True on failure
+        (false negatives are worse than false positives).
+        """
+        client = self._get_client()
+        if not client or not page_text:
+            return True
+
+        prompt = (
+            "You are filtering Government e-Marketplace (GeM) bids for "
+            "Nikom InfraSolutions, a company that works in: data centre cooling, "
+            "precision air conditioning, HVAC for server rooms / clean rooms, "
+            "online UPS / DG sets / electrical infrastructure, fire detection AMC, "
+            "server racks & structured cabling, and HPC site-prep.\n\n"
+            f"BID TITLE: {title[:200]}\n"
+            f"BUYER: {buyer[:100]}\n\n"
+            f"DETAIL PAGE TEXT (excerpt):\n{page_text[:3000]}\n\n"
+            "Is this bid relevant to Nikom's business domains listed above? "
+            "Reply with ONLY \"YES\" or \"NO\"."
+        )
+
+        try:
+            res = client.converse(
+                modelId=self.model_id,
+                messages=[{"role": "user", "content": [{"text": prompt}]}],
+                inferenceConfig={"maxTokens": 10, "temperature": 0.0},
+            )
+            raw = res.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+            verdict = "YES" in raw.upper()
+            logger.info(f"Relevance check for '{title[:50]}': {raw.strip()}")
+            return verdict
+        except Exception as e:
+            logger.warning(f"Relevance check failed: {e}")
+            return True
