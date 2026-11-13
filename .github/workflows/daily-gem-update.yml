@@ -9,7 +9,7 @@ on:
 jobs:
   sync-tenders:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -28,8 +28,11 @@ jobs:
         env:
           # Google Service Account credentials (JSON string stored as GitHub secret)
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
-          # Indian SOCKS5 proxy for accessing gov.in portals
+          # Indian HTTP proxy for accessing gov.in portals
           PROXY_URL: ${{ secrets.PROXY_URL }}
+          # AWS Bedrock for LLM-powered bid enrichment
+          BEDROCK_API_KEY: ${{ secrets.BEDROCK_API_KEY }}
+          AWS_REGION: ap-southeast-2
         run: python gem_sheets_sync.py --remove-expired
 
       - name: Log completion

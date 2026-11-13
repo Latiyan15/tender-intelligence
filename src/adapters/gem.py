@@ -6,12 +6,14 @@ with retry/backoff, session CSRF management, and the all-bids-data JSON API.
 
 import json
 import logging
+import re
 import ssl
 import threading
+import time
 import urllib.request
 import urllib.parse
 import http.cookiejar
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 from datetime import datetime
 
 from src.adapters.base import BaseAdapter
@@ -233,8 +235,6 @@ class GemAdapter(BaseAdapter):
         csrf_token = self._init_session()
         terms_to_search = search_terms or self.TARGET_KEYWORDS
 
-        import time as _time
-
         for term in terms_to_search:
             for p in range(1, pages + 1):
                 for attempt in range(3):
@@ -242,7 +242,7 @@ class GemAdapter(BaseAdapter):
                     if page_items is not None:
                         break
                     if attempt < 2:
-                        _time.sleep(2 * (attempt + 1))
+                        time.sleep(2 * (attempt + 1))
                 if not page_items:
                     break
                 for t in page_items:
@@ -251,7 +251,7 @@ class GemAdapter(BaseAdapter):
                         tenders.append(t)
                 if len(page_items) < 10:
                     break
-            _time.sleep(0.5)
+            time.sleep(0.5)
             if len(tenders) >= max_tenders:
                 break
 
@@ -259,6 +259,159 @@ class GemAdapter(BaseAdapter):
         logger.info(f"Discovered {len(tenders)} real bids from GeM across {len(terms_to_search)} keyword categories.")
         return tenders[:max_tenders]
 
+    def _fetch_detail_page(self, url: str) -> Optional[str]:
+        """Fetch a bid detail page HTML. Returns None on failure."""
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(url, headers={
+                    'User-Agent': self.headers['User-Agent'],
+                    'Accept': 'text/html,application/xhtml+xml,*/*'
+                })
+                res = self.opener.open(req, timeout=15.0)
+                return res.read().decode('utf-8', errors='replace')
+            except Exception as e:
+                logger.warning(f"Detail page fetch attempt {attempt + 1} failed for {url}: {e}")
+                if attempt == 0:
+                    time.sleep(2)
+        return None
+
+    def _parse_detail_html(self, html: str, tender: TenderRecord) -> str:
+        """Parse bid detail page HTML, populate tender fields. Returns page text for LLM."""
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(html, 'lxml')
+        page_text = soup.get_text(separator='\n', strip=True)
+
+        for table in soup.find_all('table'):
+            for row in table.find_all('tr'):
+                cells = row.find_all(['td', 'th'])
+                if len(cells) >= 2:
+                    label = cells[0].get_text(strip=True).lower()
+                    value = cells[1].get_text(strip=True)
+                    if not value or len(value) < 2:
+                        continue
+                    self._map_detail_field(label, value, tender)
+
+        for dl in soup.find_all('dl'):
+            dts = dl.find_all('dt')
+            dds = dl.find_all('dd')
+            for dt, dd in zip(dts, dds):
+                label = dt.get_text(strip=True).lower()
+                value = dd.get_text(strip=True)
+                if value:
+                    self._map_detail_field(label, value, tender)
+
+        # Also scan div pairs with label/value classes common in GeM pages
+        for div in soup.find_all('div', class_=re.compile(r'col-|row|field|detail', re.I)):
+            text = div.get_text(strip=True)
+            if ':' in text and len(text) < 500:
+                parts = text.split(':', 1)
+                if len(parts) == 2:
+                    self._map_detail_field(parts[0].strip().lower(), parts[1].strip(), tender)
+
+        return page_text[:15000]
+
+    def _map_detail_field(self, label: str, value: str, tender: TenderRecord):
+        """Map a label-value pair from the detail page to tender fields."""
+        if not value or len(value) < 2:
+            return
+
+        if any(kw in label for kw in ['estimated value', 'tender value', 'bid value', 'total value']):
+            if not tender.estimated_value:
+                parsed_val = self._parse_inr_value(value)
+                tender.estimated_value = ExtractedField(
+                    field_name="estimated_value",
+                    raw_text=value[:200],
+                    normalized_value=parsed_val,
+                    evidence_location=tender.detail_url,
+                    status=FieldStatus.PRESENT_EXTRACTED,
+                    confidence=0.8
+                )
+        elif any(kw in label for kw in ['emd', 'earnest money', 'bid security']):
+            if not tender.emd_amount:
+                parsed_val = self._parse_inr_value(value)
+                tender.emd_amount = ExtractedField(
+                    field_name="emd_amount",
+                    raw_text=value[:200],
+                    normalized_value=parsed_val,
+                    evidence_location=tender.detail_url,
+                    status=FieldStatus.PRESENT_EXTRACTED,
+                    confidence=0.8
+                )
+        elif any(kw in label for kw in ['scope', 'description', 'work description', 'item description']):
+            if not tender.scope_of_work:
+                tender.scope_of_work = ExtractedField(
+                    field_name="scope_of_work",
+                    raw_text=value[:3000],
+                    evidence_location=tender.detail_url,
+                    status=FieldStatus.PRESENT_EXTRACTED,
+                    confidence=0.7
+                )
+        elif any(kw in label for kw in ['quantity', 'qty']):
+            tender.quantities.append(ExtractedField(
+                field_name="quantity",
+                raw_text=value[:200],
+                evidence_location=tender.detail_url,
+                status=FieldStatus.PRESENT_EXTRACTED
+            ))
+        elif any(kw in label for kw in ['turnover', 'annual turnover']):
+            if not tender.minimum_turnover:
+                tender.minimum_turnover = ExtractedField(
+                    field_name="minimum_turnover",
+                    raw_text=value[:200],
+                    normalized_value=self._parse_inr_value(value),
+                    evidence_location=tender.detail_url,
+                    status=FieldStatus.PRESENT_EXTRACTED
+                )
+        elif any(kw in label for kw in ['experience', 'past experience', 'similar work']):
+            if not tender.experience_requirement:
+                tender.experience_requirement = ExtractedField(
+                    field_name="experience_requirement",
+                    raw_text=value[:200],
+                    evidence_location=tender.detail_url,
+                    status=FieldStatus.PRESENT_EXTRACTED
+                )
+
+    @staticmethod
+    def _parse_inr_value(text: str) -> Optional[float]:
+        """Extract a numeric INR value from text like '₹12,34,567' or '12.5 Lakh'."""
+        if not text:
+            return None
+        cleaned = text.replace('₹', '').replace(',', '').strip()
+        # Handle "X Lakh" or "X Cr"
+        m = re.search(r'([\d.]+)\s*(?:lakh|lac)', cleaned, re.I)
+        if m:
+            return float(m.group(1)) * 100000
+        m = re.search(r'([\d.]+)\s*(?:cr|crore)', cleaned, re.I)
+        if m:
+            return float(m.group(1)) * 10000000
+        m = re.search(r'[\d.]+', cleaned)
+        if m:
+            try:
+                return float(m.group(0))
+            except ValueError:
+                pass
+        return None
+
     def get_tender_details(self, tender: TenderRecord) -> TenderRecord:
-        """Details already included in GeM JSON doc."""
+        """Fetch the bid detail page and extract structured fields."""
+        if not tender.detail_url:
+            return tender
+
+        html = self._fetch_detail_page(tender.detail_url)
+        if not html:
+            return tender
+
+        page_text = self._parse_detail_html(html, tender)
+
+        # Store the page text for LLM enrichment
+        if tender.documents:
+            tender.documents[0].extracted_text = page_text
+        else:
+            tender.documents.append(DocumentRecord(
+                doc_type="detail_page",
+                url=tender.detail_url,
+                text_extracted=True,
+                extracted_text=page_text
+            ))
+
         return tender

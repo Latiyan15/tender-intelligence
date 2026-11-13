@@ -126,9 +126,18 @@ class SheetsService:
         except Exception:
             return 1
 
+    def _find_last_data_row(self) -> int:
+        """Find the last row containing bid data (before summary/notes)."""
+        col_b = self.worksheet.col_values(2)  # Column B: GeM bid numbers
+        last_data_row = DATA_START_ROW - 1
+        for idx, val in enumerate(col_b[DATA_START_ROW - 1:], start=DATA_START_ROW):
+            if val.strip().startswith("GEM/"):
+                last_data_row = idx
+        return last_data_row
+
     def append_bids(self, bids: List[Dict[str, Any]]) -> int:
         """
-        Append new bid rows to the sheet.
+        Insert new bid rows right after the last data row (before summary/notes).
         Each bid dict should have keys matching the column structure.
         Returns count of rows appended.
         """
@@ -163,15 +172,17 @@ class SheetsService:
             rows.append(row)
 
         try:
-            self.worksheet.append_rows(
+            insert_at = self._find_last_data_row() + 1
+            self.worksheet.insert_rows(
                 rows,
+                row=insert_at,
                 value_input_option="USER_ENTERED",
-                insert_data_option="INSERT_ROWS",
+                inherit_from_before=True,
             )
-            logger.info(f"Appended {len(rows)} new bids to the sheet")
+            logger.info(f"Inserted {len(rows)} new bids at row {insert_at}")
             return len(rows)
         except Exception as e:
-            logger.error(f"Failed to append rows: {e}")
+            logger.error(f"Failed to insert rows: {e}")
             return 0
 
     def update_days_left(self) -> int:
