@@ -52,7 +52,7 @@ Add these two secrets:
 | Secret Name | Value |
 |---|---|
 | `GOOGLE_SHEETS_CREDENTIALS` | The **entire contents** of the downloaded JSON key file (paste the full JSON) |
-| `PROXY_URL` | Your Indian SOCKS5 proxy, e.g. `socks5h://140.238.243.61:1080` |
+| `PROXY_URL` | Your Indian HTTP proxy, e.g. `http://34.100.244.79:80` |
 
 ### Step 4: Push and Enable
 
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 
 # Set credentials (option A: env var with JSON content)
 export GOOGLE_SHEETS_CREDENTIALS='{"type":"service_account",...}'
-export PROXY_URL=socks5h://140.238.243.61:1080
+export PROXY_URL=http://34.100.244.79:80
 
 # Or (option B: path to the JSON key file)
 export GOOGLE_SHEETS_CREDENTIALS_PATH=/path/to/key.json
@@ -119,9 +119,9 @@ Each new row auto-fills these columns:
 ## Proxy Notes
 
 Indian government portals (`eprocure.gov.in`, `gem.gov.in`) block non-Indian IPs.
-The SOCKS5 proxy at `140.238.243.61:1080` routes traffic through Mumbai.
+The HTTP proxy at `34.100.244.79:80` routes traffic through Google Cloud Mumbai.
 
 If you need a more reliable proxy, consider:
-- A VPS in India (Oracle Cloud Mumbai free tier, AWS ap-south-1)
+- A VPS in India (Google Cloud Mumbai, AWS ap-south-1)
 - A residential proxy service with Indian IPs
 - Running the script directly on an Indian server (skip the proxy)
