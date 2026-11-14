@@ -30,8 +30,6 @@ jobs:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           # Indian HTTP proxy for accessing gov.in portals
           PROXY_URL: ${{ secrets.PROXY_URL }}
-          # Google Gemini Flash for LLM-powered bid enrichment (free tier)
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python gem_sheets_sync.py --remove-expired
 
       - name: Log completion
