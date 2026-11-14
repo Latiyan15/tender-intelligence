@@ -401,7 +401,7 @@ def score_nikom_relevance(
                 signals.append(f"buyer:{org_re.pattern}")
                 break
 
-    if best_score >= 0.5:
+    if best_score >= 0.6:
         verdict = RelevanceVerdict.PASS
     elif best_score >= 0.3:
         verdict = RelevanceVerdict.BORDERLINE

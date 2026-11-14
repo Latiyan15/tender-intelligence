@@ -155,13 +155,6 @@ class GemAdapter(BaseAdapter):
             if not docs:
                 return records
 
-            if docs and not getattr(self, '_fields_logged', False):
-                self._fields_logged = True
-                sample = docs[0]
-                logger.info(f"Solr doc has {len(sample)} fields: {sorted(sample.keys())}")
-                for k, v in sorted(sample.items()):
-                    logger.info(f"  {k}: {type(v).__name__} = {str(v)[:200]}")
-
             for d in docs:
                 t_id_list = d.get('b_bid_number', [])
                 t_id = t_id_list[0] if t_id_list else f"GEM_{d.get('id', '')}"
@@ -281,45 +274,6 @@ class GemAdapter(BaseAdapter):
                 if attempt == 0:
                     time.sleep(2)
         return None
-
-    def fetch_bid_pdf_text(self, numeric_id: str) -> str:
-        """Download the bid PDF and extract text. Returns text or empty string."""
-        url = f"https://bidplus.gem.gov.in/showbidDocument/{numeric_id}"
-        pdf_bytes = None
-        for attempt in range(2):
-            try:
-                req = urllib.request.Request(url, headers={
-                    'User-Agent': self.headers['User-Agent'],
-                    'Accept': 'application/pdf,*/*',
-                })
-                res = self.opener.open(req, timeout=20.0)
-                pdf_bytes = res.read()
-                if not pdf_bytes or not pdf_bytes[:5] == b'%PDF-':
-                    logger.warning(f"PDF response for {numeric_id} is not a valid PDF ({len(pdf_bytes or b'')} bytes)")
-                    pdf_bytes = None
-                    continue
-                break
-            except Exception as e:
-                logger.warning(f"PDF download attempt {attempt + 1} failed for {numeric_id}: {e}")
-                if attempt == 0:
-                    time.sleep(3)
-
-        if not pdf_bytes:
-            return ""
-
-        try:
-            import io
-            from pypdf import PdfReader
-            reader = PdfReader(io.BytesIO(pdf_bytes))
-            pages_text = []
-            for i, page in enumerate(reader.pages[:30]):
-                pages_text.append(page.extract_text() or "")
-            full_text = "\n".join(pages_text)
-            logger.info(f"Extracted {len(full_text)} chars from PDF for bid {numeric_id} ({len(reader.pages)} pages)")
-            return full_text
-        except Exception as e:
-            logger.warning(f"PDF text extraction failed for {numeric_id}: {e}")
-            return ""
 
     def _parse_detail_html(self, html: str, tender: TenderRecord) -> str:
         """Parse bid detail page HTML, populate tender fields. Returns page text for LLM."""
