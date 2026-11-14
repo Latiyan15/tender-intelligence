@@ -1,25 +1,22 @@
 """
-LLM-powered bid enrichment using AWS Bedrock Claude.
+LLM-powered bid enrichment using Google Gemini Flash.
 Extracts structured fields (est. value, EMD, experience, turnover, remarks)
 from GeM bid detail page text.
 
-Supports two auth paths:
-  1. boto3 (AWS CLI profile / IAM credentials) — for local development
-  2. Bearer token via BEDROCK_API_KEY env var — for CI / GitHub Actions
+Uses Gemini 2.0 Flash free tier (15 RPM, 1500 RPD, 1M TPM).
 """
 
 import json
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-import requests
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL_ID = "au.anthropic.claude-sonnet-4-6"
-DEFAULT_REGION = "ap-southeast-2"
+DEFAULT_MODEL = "gemini-2.0-flash"
 
 EXTRACTION_PROMPT = """You are analyzing a Government e-Marketplace (GeM) bid for Nikom InfraSolutions.
 Extract the following fields from the bid detail page text below. Return ONLY valid JSON.
@@ -42,107 +39,47 @@ Extract and return this JSON (use null for fields you cannot find):
 
 
 class BidEnrichmentService:
-    """Extract structured bid fields using AWS Bedrock Claude."""
+    """Extract structured bid fields using Google Gemini Flash."""
 
     def __init__(self):
-        self.model_id = os.getenv("BEDROCK_MODEL_ID", DEFAULT_MODEL_ID)
-        self.region = os.getenv("AWS_REGION", DEFAULT_REGION)
-        self.api_key = os.getenv("BEDROCK_API_KEY")
-        self.runtime_url = f"https://bedrock-runtime.{self.region}.amazonaws.com"
-        self._boto_client = None
-        self._boto_tested = False
+        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.model_name = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+        self._model = None
 
-    def _get_boto_client(self):
-        """Try to get a boto3 Bedrock client (for local dev with AWS profile)."""
-        if self._boto_tested:
-            return self._boto_client
-        self._boto_tested = True
-        try:
-            import boto3
-            profile = os.getenv("AWS_PROFILE", "tender")
-            try:
-                self._boto_client = boto3.Session(
-                    profile_name=profile, region_name=self.region
-                ).client("bedrock-runtime")
-            except Exception:
-                self._boto_client = boto3.Session(
-                    region_name=self.region
-                ).client("bedrock-runtime")
-            # Validate credentials with a no-op — boto3 creates clients lazily
-            self._boto_client.meta.region_name
-            return self._boto_client
-        except Exception as e:
-            logger.debug(f"boto3 client init failed (will use API key): {e}")
-            self._boto_client = None
-            return None
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+
+    def _get_model(self):
+        if self._model is None and self.api_key:
+            self._model = genai.GenerativeModel(self.model_name)
+        return self._model
 
     def is_configured(self) -> bool:
-        return self._get_boto_client() is not None or bool(self.api_key)
+        return bool(self.api_key)
 
-    def _call_bedrock(
+    def _call_gemini(
         self,
-        messages: List[Dict],
+        prompt: str,
         max_tokens: int = 500,
         temperature: float = 0.0,
     ) -> Optional[str]:
-        """Call Bedrock Converse API. Returns the response text or None on failure.
-
-        Path A: boto3 client.converse() (AWS CLI / IAM credentials)
-        Path B: Raw HTTP POST with Bearer token (BEDROCK_API_KEY)
-        """
-        # Path A: boto3
-        boto_client = self._get_boto_client()
-        if boto_client:
-            try:
-                res = boto_client.converse(
-                    modelId=self.model_id,
-                    messages=messages,
-                    inferenceConfig={"maxTokens": max_tokens, "temperature": temperature},
-                )
-                return (
-                    res.get("output", {})
-                    .get("message", {})
-                    .get("content", [{}])[0]
-                    .get("text", "")
-                )
-            except Exception as e:
-                logger.info(f"boto3 converse failed, trying API key fallback: {e}")
-
-        # Path B: Bearer token
-        if not self.api_key:
-            logger.warning("No Bedrock credentials available (no boto3 and no BEDROCK_API_KEY)")
+        """Call Gemini API. Returns response text or None on failure."""
+        model = self._get_model()
+        if not model:
+            logger.warning("Gemini not configured (no GEMINI_API_KEY)")
             return None
 
-        url = f"{self.runtime_url}/model/{self.model_id}/converse"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        }
-        payload = {
-            "messages": messages,
-            "inferenceConfig": {
-                "maxTokens": max_tokens,
-                "temperature": temperature,
-            },
-        }
-
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=30)
-            if res.status_code == 200:
-                data = res.json()
-                return (
-                    data.get("output", {})
-                    .get("message", {})
-                    .get("content", [{}])[0]
-                    .get("text", "")
-                )
-            else:
-                logger.warning(
-                    f"Bedrock API returned {res.status_code}: {res.text[:200]}"
-                )
-                return None
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                ),
+            )
+            return response.text
         except Exception as e:
-            logger.warning(f"Bedrock API request failed: {e}")
+            logger.warning(f"Gemini API call failed: {e}")
             return None
 
     def extract_bid_fields(
@@ -152,7 +89,7 @@ class BidEnrichmentService:
         buyer: str,
         page_text: str,
     ) -> Dict[str, Any]:
-        """Send detail page text to Claude for structured field extraction.
+        """Send detail page text to Gemini for structured field extraction.
 
         Returns dict with keys: estimated_value_lakh, emd_lakh, experience_years,
         min_turnover_lakh, remarks. Empty dict on failure.
@@ -167,8 +104,7 @@ class BidEnrichmentService:
             page_text=page_text[:12000],
         )
 
-        messages = [{"role": "user", "content": [{"text": prompt}]}]
-        raw = self._call_bedrock(messages, max_tokens=500, temperature=0.0)
+        raw = self._call_gemini(prompt, max_tokens=500, temperature=0.0)
 
         if not raw:
             return {}
@@ -178,14 +114,14 @@ class BidEnrichmentService:
             if m:
                 parsed = json.loads(m.group(0))
                 logger.info(
-                    f"Bedrock extracted: est_value={parsed.get('estimated_value_lakh')}, "
+                    f"Gemini extracted: est_value={parsed.get('estimated_value_lakh')}, "
                     f"emd={parsed.get('emd_lakh')}, "
                     f"exp={parsed.get('experience_years')} yrs, "
                     f"turnover={parsed.get('min_turnover_lakh')}"
                 )
                 return parsed
         except (json.JSONDecodeError, IndexError) as e:
-            logger.warning(f"Failed to parse Bedrock response for {bid_number}: {e}")
+            logger.warning(f"Failed to parse Gemini response for {bid_number}: {e}")
 
         return {}
 
@@ -216,8 +152,7 @@ class BidEnrichmentService:
             "Reply with ONLY \"YES\" or \"NO\"."
         )
 
-        messages = [{"role": "user", "content": [{"text": prompt}]}]
-        raw = self._call_bedrock(messages, max_tokens=10, temperature=0.0)
+        raw = self._call_gemini(prompt, max_tokens=10, temperature=0.0)
 
         if not raw:
             return True
