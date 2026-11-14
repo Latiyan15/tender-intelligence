@@ -65,6 +65,28 @@ _NEGATIVE_CONTEXTS = [re.compile(p, re.IGNORECASE) for p in [
     r"\b(?:stationery|calendar\s+print|uniform\s+supply|steel\s+almirah|wooden\s+chair)\b",
     # Transformer oil / petroleum (not electrical infra)
     r"\b(?:transformer\s+oil|oil\s+filtration|oil\s+bdv|ignition\s+transformer|furnace\s+transformer|pole\s+mounted\s+transformer)\b",
+    # Painting / coating services
+    r"\b(?:painting|paint\s+service|spray\s+paint|anti[\s-]*corros\w+\s+paint)\b",
+    # Water / chemical treatment
+    r"\b(?:water\s+treatment|chemical\s+treatment|sewage|effluent\s+treatment|ro\s+plant|deminerali[sz])\b",
+    # Mining
+    r"\b(?:mines?|mining|colliery|coal\s+handling)\b",
+    # Marine equipment
+    r"\b(?:liferaft|life\s+raft|lifebuoy|life\s+jacket)\b",
+    # Radio / communication sets
+    r"\b(?:radio\s+set|walkie|uhf\s+base|handheld\s+radio|vhf\s+radio)\b",
+    # Tiny portable generators (not DC-grade)
+    r"(?:petrol|kerosene).*(?:generator|genset)|(?:generator|genset).*recoil|\b[1-5]\s*kva\s+.*(?:dg|generator|genset)",
+    # Weighbridge / boom barrier
+    r"\b(?:weighbridge|boom\s+barrier|toll\s+plaza)\b",
+    # Fire engines / fire fighting vehicles (not DC fire suppression)
+    r"\b(?:fire\s+engines?|fire\s+fight\w*|fire\s+tenders?|fire\s+brigade|fire\s+extinguish\w*)\b",
+    # Elevator / escalator
+    r"\b(?:elevator|escalator|passenger\s+lift|goods\s+lift)\b",
+    # Hospital (broad — Nikom does not bid hospital projects)
+    r"\bhospital\b",
+    # Training services
+    r"training\s+on\s+(?:servicing|maintenance|repair)",
 ]]
 
 # ---------------------------------------------------------------------------
@@ -94,11 +116,7 @@ _STRONG_PATTERNS = [(re.compile(p, re.IGNORECASE), hint) for p, hint in [
     (r"\bups\b.*\d+\s*kva", "6 UPS / DG / electrical"),
     (r"\d+\s*kva\b.*\bups\b", "6 UPS / DG / electrical"),
     (r"ups\s+(?:system|batter(?:y|ies))", "6 UPS / DG / electrical"),
-    # DG set / genset
-    (r"(?:diesel|dg)\s+(?:gen|set)", "6 UPS / DG / electrical"),
-    (r"\bdg\s+set\b", "6 UPS / DG / electrical"),
-    (r"\bgenset\b", "6 UPS / DG / electrical"),
-    (r"generator\s+set", "6 UPS / DG / electrical"),
+    # DG set / genset — moved to _WEAK_KEYWORDS for context gating
     # Structured cabling / racks
     (r"structured\s+cabl", "8 Racks & cabling"),
     (r"server\s+rack", "8 Racks & cabling"),
@@ -165,6 +183,29 @@ _WEAK_KEYWORDS = [
             r"\bsignal\b", r"\bozone\b", r"\boxygen\b", r"\bnitrogen\b",
             r"\bhydrogen\b", r"\bfunction\b", r"\blaboratory\b",
             r"\bsteam\b", r"\bportable\b",
+        ]),
+        group_hint="6 UPS / DG / electrical",
+    ),
+    _WeakKW(
+        pattern=re.compile(r"\bdg\s+set\b|\bgenset\b|(?:diesel|dg)\s+(?:gen|set)|generator\s+set", re.IGNORECASE),
+        base_score=0.35,
+        boosts=_compile_list([
+            r"data\s+cent", r"server\s+room", r"\bcritical\s+(?:load|power|facility)",
+            r"\bstandby\b", r"\bbackup\s+power\b", r"\bacoustic\s+enclosure\b",
+            r"\bamf\b", r"\bcpcb\b", r"\bsync\b",
+            r"\bcummins\b", r"\bkirloskar\b",
+            r"\bntpc\b", r"\bnhpc\b", r"power\s*grid",
+            r"\b(?:100|125|160|200|250|320|380|500|625|750|1000|1010|1250|1500|2000)\s*kva\b",
+        ]),
+        rejects=_compile_list([
+            r"\bpainting\b", r"\brecoil\b", r"\bpetrol\b", r"\bkerosene\b",
+            r"\bmines?\b", r"\bmining\b", r"\bcolliery\b",
+            r"\bshelter\b", r"\btower\b(?!.*cooling)", r"\bsnow\b",
+            r"\bweighbridge\b", r"\bboom\s+barrier\b",
+            r"\bfire\s+engines?\b", r"\bfire\s+fight\w*\b", r"\bfire\s+brigade\b",
+            r"\bsingle\s+phase\b", r"\btraining\b", r"\bliferaft\b",
+            r"\b[1-5]\s*kva\b", r"\bhospital\b", r"\bwater\s+treat\b",
+            r"\bradio\b", r"\bescalator\b", r"\belevator\b",
         ]),
         group_hint="6 UPS / DG / electrical",
     ),
@@ -340,16 +381,14 @@ def score_nikom_relevance(
     signals: List[str] = []
     rejects: List[str] = []
 
-    # Layer 1: Negative context
+    # Layer 1: Negative context — always reject, no strong-pattern override
     for neg_re in _NEGATIVE_CONTEXTS:
         if neg_re.search(text):
-            has_strong_override = any(sp.search(text) for sp, _ in _STRONG_PATTERNS)
-            if not has_strong_override:
-                rejects.append(neg_re.pattern)
-                return RelevanceResult(
-                    verdict=RelevanceVerdict.REJECT, score=0.0,
-                    matched_signals=signals, reject_reasons=rejects,
-                )
+            rejects.append(neg_re.pattern)
+            return RelevanceResult(
+                verdict=RelevanceVerdict.REJECT, score=0.0,
+                matched_signals=signals, reject_reasons=rejects,
+            )
 
     # Layer 2: Strong patterns
     for strong_re, group_hint in _STRONG_PATTERNS:

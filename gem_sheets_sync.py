@@ -60,8 +60,6 @@ NIKOM_SEARCH_TERMS = [
     # UPS — online/modular only
     "online UPS",
     "modular UPS",
-    # DG for DC/critical infra
-    "DG set data centre",
     # HPC
     "HPC cluster",
     # AMC for DC equipment
