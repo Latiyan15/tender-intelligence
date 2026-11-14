@@ -16,7 +16,7 @@ import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3.8-flash"
 
 EXTRACTION_PROMPT = """You are analyzing a Government e-Marketplace (GeM) bid for Nikom InfraSolutions.
 Extract the following fields from the bid detail page text below. Return ONLY valid JSON.
