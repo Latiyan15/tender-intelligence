@@ -308,6 +308,17 @@ class GemAdapter(BaseAdapter):
                 if len(parts) == 2:
                     self._map_detail_field(parts[0].strip().lower(), parts[1].strip(), tender)
 
+        has_any = any([
+            tender.estimated_value, tender.emd_amount,
+            tender.scope_of_work, tender.quantities,
+            tender.minimum_turnover, tender.experience_requirement,
+        ])
+        if not has_any:
+            logger.info(
+                f"Detail HTML for {tender.tender_id} yielded 0 structured fields "
+                f"(page may be JS-rendered); LLM will extract from {len(page_text)} chars of text"
+            )
+
         return page_text[:15000]
 
     def _map_detail_field(self, label: str, value: str, tender: TenderRecord):
