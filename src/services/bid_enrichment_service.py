@@ -164,7 +164,7 @@ class BidEnrichmentService:
             bid_number=bid_number,
             title=title[:200],
             buyer=buyer[:100],
-            page_text=page_text[:8000],
+            page_text=page_text[:12000],
         )
 
         messages = [{"role": "user", "content": [{"text": prompt}]}]
