@@ -316,7 +316,7 @@ class GemAdapter(BaseAdapter):
         if not has_any:
             logger.info(
                 f"Detail HTML for {tender.tender_id} yielded 0 structured fields "
-                f"(page may be JS-rendered); LLM will extract from {len(page_text)} chars of text"
+                f"(page may be JS-rendered); {len(page_text)} chars of page text available"
             )
 
         return page_text[:15000]
