@@ -269,6 +269,37 @@ def _get_page_text(tender) -> str:
     return ""
 
 
+def _get_numeric_bid_id(tender) -> str:
+    """Extract the numeric bid ID from the detail URL (for PDF download)."""
+    url = tender.detail_url or ""
+    if "/getBidResultView/" in url:
+        return url.split("/getBidResultView/")[-1]
+    return ""
+
+
+def _get_enrichment_text(tender, adapter) -> str:
+    """Get the best available text for LLM enrichment.
+
+    Prefers PDF text (authoritative, complete) over HTML page text
+    (which is usually just ~3KB of JS shell for GeM pages).
+    """
+    page_text = _get_page_text(tender)
+
+    # If detail page text is short (< 5KB), it's likely a JS shell — try PDF
+    if len(page_text) < 5000:
+        numeric_id = _get_numeric_bid_id(tender)
+        if numeric_id:
+            pdf_text = adapter.fetch_bid_pdf_text(numeric_id)
+            if pdf_text and len(pdf_text) > len(page_text):
+                logger.info(
+                    f"Using PDF text ({len(pdf_text)} chars) instead of HTML "
+                    f"({len(page_text)} chars) for {tender.tender_id}"
+                )
+                return pdf_text
+
+    return page_text
+
+
 def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: bool = False):
     """Main sync workflow."""
     start_time = datetime.now()
@@ -342,14 +373,14 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
 
         llm_fields = {}
         if enrichment_svc:
-            page_text = _get_page_text(t)
-            if page_text:
+            enrich_text = _get_enrichment_text(t, adapter)
+            if enrich_text:
                 try:
                     llm_fields = enrichment_svc.extract_bid_fields(
                         bid_number=bid_num,
                         title=t.title or "",
                         buyer=t.issuing_organization or "",
-                        page_text=page_text,
+                        page_text=enrich_text,
                     )
                 except Exception as e:
                     logger.warning(f"LLM enrichment failed for {bid_num}: {e}")
@@ -370,8 +401,8 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
             except Exception:
                 continue
 
-            page_text = _get_page_text(t)
-            if not page_text:
+            enrich_text = _get_enrichment_text(t, adapter)
+            if not enrich_text:
                 continue
 
             # LLM relevance gate for borderline bids
@@ -381,7 +412,7 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
                     is_relevant = enrichment_svc.check_bid_relevance(
                         title=t.title or "",
                         buyer=t.issuing_organization or "",
-                        page_text=page_text,
+                        page_text=enrich_text,
                     )
                 except Exception:
                     is_relevant = True
@@ -395,7 +426,7 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
                             bid_number=bid_num,
                             title=t.title or "",
                             buyer=t.issuing_organization or "",
-                            page_text=page_text,
+                            page_text=enrich_text,
                         )
                     except Exception:
                         pass
@@ -407,6 +438,18 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
 
         logger.info(f"Borderline triage: {promoted}/{len(new_borderline)} promoted")
 
+    # Enrichment coverage summary
+    enriched_count = sum(1 for b in new_bids if b.get("est_value_lakh") or b.get("emd_lakh") or not b.get("remarks", "").startswith("Auto"))
+    est_count = sum(1 for b in new_bids if b.get("est_value_lakh"))
+    emd_count = sum(1 for b in new_bids if b.get("emd_lakh"))
+    turn_count = sum(1 for b in new_bids if b.get("min_turnover_lakh"))
+    exp_count = sum(1 for b in new_bids if b.get("experience_yrs"))
+    logger.info(
+        f"Enrichment coverage ({len(new_bids)} bids): "
+        f"est_value={est_count}, emd={emd_count}, "
+        f"turnover={turn_count}, experience={exp_count}, "
+        f"any_enrichment={enriched_count}"
+    )
     logger.info(f"New bids to add: {len(new_bids)}")
 
     # Phase 4: Write to sheet
