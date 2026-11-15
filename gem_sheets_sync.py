@@ -75,6 +75,16 @@ NIKOM_SEARCH_TERMS = [
     "VESDA",
 ]
 
+# Fallback Indian proxies ranked by uptime then latency.
+# The pipeline tries PROXY_URL first; if it's down, these are tried in order.
+_PROXY_FALLBACKS = [
+    "http://143.110.248.3:3128",       # DigitalOcean India, 95% uptime, 884ms
+    "http://103.51.223.133:8080",      # Galaxynet India, 90% uptime, 1071ms
+    "http://151.185.58.17:80",         # E2E Networks India, 86% uptime, 681ms
+    "http://80.65.208.187:30001",      # Contabo Asia India, 83% uptime, 6004ms
+    "http://82.180.146.251:10800",     # Contabo Asia India, 81% uptime, 1131ms
+]
+
 
 def format_gem_date(raw_date: str) -> str:
     """Convert GeM API date formats to the sheet's format: DD-Mon-YYYY HH:MM"""
@@ -158,36 +168,50 @@ def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
     }
 
 
-def check_proxy_connectivity() -> bool:
-    """Quick check if the configured proxy can reach GeM. Returns True if reachable."""
+def _test_proxy(proxy_url: str) -> bool:
+    """Try to reach GeM through a single proxy. Returns True on success."""
     import urllib.request
-    import urllib.parse
-    from src.utils.http_client import get_configured_proxy
+    import ssl
 
-    proxy = get_configured_proxy()
-    if not proxy:
-        logger.info("No proxy configured — connecting directly to GeM")
-        return True
-
-    logger.info(f"Testing proxy connectivity to GeM...")
     try:
-        proxy_handler = urllib.request.ProxyHandler({'http': proxy, 'https': proxy})
-        import ssl
+        handler = urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url})
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
-        opener = urllib.request.build_opener(proxy_handler, urllib.request.HTTPSHandler(context=ctx))
+        opener = urllib.request.build_opener(handler, urllib.request.HTTPSHandler(context=ctx))
         req = urllib.request.Request(
             "https://bidplus.gem.gov.in/all-bids",
-            headers={'User-Agent': 'Mozilla/5.0'}
+            headers={"User-Agent": "Mozilla/5.0"},
         )
-        res = opener.open(req, timeout=15)
-        status = res.getcode()
-        logger.info(f"Proxy connectivity OK (HTTP {status})")
+        res = opener.open(req, timeout=12)
+        logger.info(f"  {proxy_url} -> OK (HTTP {res.getcode()})")
         return True
     except Exception as e:
-        logger.error(f"Proxy connectivity FAILED: {e}")
+        logger.warning(f"  {proxy_url} -> FAILED ({e})")
         return False
+
+
+def check_proxy_connectivity() -> bool:
+    """Try the primary proxy, then fallbacks. Sets PROXY_URL to the first that works."""
+    from src.utils.http_client import get_configured_proxy
+
+    primary = get_configured_proxy()
+    if not primary:
+        logger.info("No proxy configured — connecting directly to GeM")
+        return True
+
+    candidates = [primary] + [p for p in _PROXY_FALLBACKS if p != primary]
+
+    logger.info(f"Testing proxy connectivity ({len(candidates)} candidates)...")
+    for proxy in candidates:
+        if _test_proxy(proxy):
+            if proxy != primary:
+                logger.info(f"Switching PROXY_URL to working fallback: {proxy}")
+                os.environ["PROXY_URL"] = proxy
+            return True
+
+    logger.error("All proxies failed — no Indian proxy available")
+    return False
 
 
 def discover_gem_bids():
@@ -198,7 +222,7 @@ def discover_gem_bids():
     logger.info("Starting GeM bid discovery...")
 
     if not check_proxy_connectivity():
-        logger.warning("Proxy unreachable — retrying direct connection without proxy")
+        logger.warning("All proxies unreachable — attempting direct (will likely fail)")
         os.environ.pop("PROXY_URL", None)
         os.environ.pop("SOCKS_PROXY", None)
         os.environ.pop("ALL_PROXY", None)
