@@ -61,8 +61,8 @@ _NEGATIVE_CONTEXTS = [re.compile(p, re.IGNORECASE) for p in [
     r"\b(?:road\s+construct|highway|bridge\s+construct|culvert|earthwork|dredging|masonry|plastering|whitewash)\b",
     # Manpower / housekeeping services
     r"\b(?:data\s+entry\s+operator|security\s+guard|safai|sweeper|housekeeping|canteen\s+service|catering|mess\s+service)\b",
-    # Office supplies
-    r"\b(?:stationery|calendar\s+print|uniform\s+supply|steel\s+almirah|wooden\s+chair)\b",
+    # Office supplies / furniture
+    r"\b(?:stationery|calendar\s+print|uniform\s+supply|steel\s+almirah|wooden\s+chair|plastic\s+chair)\b",
     # Transformer oil / petroleum (not electrical infra)
     r"\b(?:transformer\s+oil|oil\s+filtration|oil\s+bdv|ignition\s+transformer|furnace\s+transformer|pole\s+mounted\s+transformer)\b",
     # Painting / coating services
@@ -83,8 +83,13 @@ _NEGATIVE_CONTEXTS = [re.compile(p, re.IGNORECASE) for p in [
     r"\b(?:fire\s+engines?|fire\s+fight\w*|fire\s+tenders?|fire\s+brigade|fire\s+extinguish\w*)\b",
     # Elevator / escalator
     r"\b(?:elevator|escalator|passenger\s+lift|goods\s+lift)\b",
-    # Hospital (broad — Nikom does not bid hospital projects)
+    # Hospital / healthcare (Nikom does not bid hospital or healthcare projects)
     r"\bhospital\b",
+    r"\bhealthcare\b",
+    # Lectern / podium (office AV, not DC infra)
+    r"\blectern\b",
+    # Drone / simulator (not DC infra)
+    r"\bdrone\s+(?:training|simulator)\b",
     # Training services
     r"training\s+on\s+(?:servicing|maintenance|repair)",
 ]]
@@ -110,11 +115,10 @@ _STRONG_PATTERNS = [(re.compile(p, re.IGNORECASE), hint) for p, hint in [
     (r"(?:screw|centrifugal|scroll)\s+chiller", "1 Best fit – cooling & power"),
     (r"chiller\s+plant", "1 Best fit – cooling & power"),
     (r"cooling\s+tower", "1 Best fit – cooling & power"),
-    # Online / modular UPS
-    (r"online\s+ups", "6 UPS / DG / electrical"),
+    # Online / modular UPS — bare "online UPS" moved to _WEAK_KEYWORDS for context gating
     (r"modular\s+ups", "6 UPS / DG / electrical"),
-    (r"\bups\b.*\d+\s*kva", "6 UPS / DG / electrical"),
-    (r"\d+\s*kva\b.*\bups\b", "6 UPS / DG / electrical"),
+    (r"\bups\b.*\b(?:1[0-9]|[2-9][0-9]|\d{3,})\s*kva", "6 UPS / DG / electrical"),
+    (r"\b(?:1[0-9]|[2-9][0-9]|\d{3,})\s*kva\b.*\bups\b", "6 UPS / DG / electrical"),
     (r"ups\s+(?:system|batter(?:y|ies))", "6 UPS / DG / electrical"),
     # DG set / genset — moved to _WEAK_KEYWORDS for context gating
     # Structured cabling / racks
@@ -130,8 +134,7 @@ _STRONG_PATTERNS = [(re.compile(p, re.IGNORECASE), hint) for p, hint in [
     (r"fire\s+hydrant", "7 Fire detection AMC"),
     (r"novec\s+1230", "7 Fire detection AMC"),
     (r"\bvesda\b", "7 Fire detection AMC"),
-    # HPC
-    (r"\bhpc\b", "3 HPC – partner only"),
+    # HPC — bare \bhpc\b moved to _WEAK_KEYWORDS for context gating
     (r"gpu\s+(?:cluster|compute)", "3 HPC – partner only"),
     (r"supercomput", "3 HPC – partner only"),
     # VRF / VRV / ductable
@@ -167,6 +170,8 @@ _WEAK_KEYWORDS = [
             r"\bcourier\b", r"\bdelivery\b", r"\bexpress\b", r"\bparcel\b",
             r"\btraffic\b", r"\bsolar\b", r"\bhome\b", r"\bdomestic\b",
             r"\b600\s*va\b", r"\b800\s*va\b",
+            r"\bprojector\b", r"\bprojection\b", r"\blectern\b", r"\bcamcorder\b",
+            r"\bled\s+tv\b", r"\bvisualizer\b", r"\binteractive\s+panel\b",
         ]),
         group_hint="6 UPS / DG / electrical",
     ),
@@ -345,6 +350,45 @@ _WEAK_KEYWORDS = [
         rejects=[],
         group_hint="1 Best fit – cooling & power",
     ),
+    _WeakKW(
+        pattern=re.compile(r"\bhpc\b", re.IGNORECASE),
+        base_score=0.4,
+        boosts=_compile_list([
+            r"\bcluster\b", r"\bcomput", r"\bserver\b", r"\bworkstation\b",
+            r"\bgpu\b", r"\bnode\b", r"\bprocessor\b", r"\bparallel\b",
+            r"data\s+cent", r"\bcooling\b", r"\brack\b",
+            r"high\s+perform", r"\bsoftware\b", r"\bai\b",
+        ]),
+        rejects=_compile_list([
+            r"\brefinery\b", r"\bhydroprocess", r"\bfccu\b",
+            r"\bquestiona", r"\bstationery\b", r"\bpen\b", r"\bpaper\b",
+            r"\bresistanc", r"\bmosfet\b", r"\bcapacitor\b",
+            r"\btelephone\b", r"\bhorn\b", r"\bjunction\s+box\b",
+            r"EM3090", r"CH\d{5,}", r"\bsegment\b", r"\bpocket\b",
+            r"\bchain\b", r"\bwheel\b", r"\bflush\s+type\b",
+        ]),
+        group_hint="3 HPC – partner only",
+    ),
+    _WeakKW(
+        pattern=re.compile(r"online\s+ups", re.IGNORECASE),
+        base_score=0.45,
+        boosts=_compile_list([
+            r"\b(?:1[0-9]|[2-9][0-9]|\d{3,})\s*kva\b",
+            r"data\s+cent", r"server\s+room", r"\brack\b", r"\bpanel\b",
+            r"\bsubstation\b", r"\bbattery\s+bank\b", r"\bisolation\s+transform",
+            r"\bschneider\b", r"\bvertiv\b", r"\beaten\b", r"\bdelta\b", r"\bapc\b",
+            r"\bmodular\b", r"\bups\s+system\b", r"\bcommission\b",
+        ]),
+        rejects=_compile_list([
+            r"\bchair\b", r"\bfurniture\b", r"\blectern\b",
+            r"\bprojector\b", r"\bprojection\b", r"\bcamcorder\b", r"\bcamera\b",
+            r"\bdrone\b", r"\bsimulator\b",
+            r"\bprinter\b", r"\bled\s+tv\b", r"\bdot\s+matrix\b",
+            r"\binverter\s+(?:with|cum)\b", r"\bvisualizer\b",
+            r"\binteractive\s+panel\b",
+        ]),
+        group_hint="6 UPS / DG / electrical",
+    ),
 ]
 
 # Buyer organizations that frequently procure DC / IT infrastructure
@@ -415,7 +459,7 @@ def score_nikom_relevance(
             if rej_re.search(text):
                 score -= 0.3
                 rejects.append(rej_re.pattern)
-                if score < 0.0:
+                if score <= 0.0:
                     rejected = True
                     break
         if rejected:
