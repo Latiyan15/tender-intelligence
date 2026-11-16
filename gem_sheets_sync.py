@@ -43,10 +43,10 @@ logger = logging.getLogger("gem_sheets_sync")
 SPREADSHEET_ID = "14E4wx6nD8-21w29wsxWUycd2t5obKQyKcrCmypNRALk"
 SHEET_GID = 0  # "Live GeM Bids" tab
 
-# Cyber-security sheet (same service account must be shared on it).
-# TODO: replace with the real cyber sheet ID before the live run.
-CYBER_SPREADSHEET_ID = os.environ.get("CYBER_SPREADSHEET_ID", "PENDING_CYBER_SHEET_ID")
-CYBER_SHEET_GID = int(os.environ.get("CYBER_SHEET_GID", "0"))
+# Cyber-security bids live in a separate TAB of the same spreadsheet as DC
+# (same service account, same 15-column layout). Override via env if needed.
+CYBER_SPREADSHEET_ID = os.environ.get("CYBER_SPREADSHEET_ID", SPREADSHEET_ID)
+CYBER_SHEET_GID = int(os.environ.get("CYBER_SHEET_GID", "159092831"))  # "Cyber" tab
 
 # Tightly-scoped search terms aligned with Nikom's DC/IT infra domain.
 # Broad terms like bare "UPS", "HVAC", "chiller" are intentionally excluded

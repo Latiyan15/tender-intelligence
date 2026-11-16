@@ -33,14 +33,11 @@ jobs:
         run: python gem_sheets_sync.py --remove-expired
 
       - name: Run GeM Sheets Sync (Cyber security)
-        # continue-on-error until the CYBER_SPREADSHEET_ID secret is set — a
-        # missing cyber sheet must not fail the (working) DC sync above.
+        # continue-on-error so a secondary cyber failure never fails the DC sync above.
         continue-on-error: true
         env:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
-          # Set this repo secret to the cyber Google Sheet ID to activate the cyber sync.
-          CYBER_SPREADSHEET_ID: ${{ secrets.CYBER_SPREADSHEET_ID }}
         run: python gem_sheets_sync.py --domain cyber --remove-expired
 
       - name: Log completion
