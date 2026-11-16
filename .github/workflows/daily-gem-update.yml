@@ -33,7 +33,9 @@ jobs:
         run: python gem_sheets_sync.py --remove-expired
 
       - name: Run GeM Sheets Sync (Cyber security)
-        # continue-on-error so a secondary cyber failure never fails the DC sync above.
+        # always() so a DC failure (e.g. proxy down) doesn't skip the cyber sync;
+        # continue-on-error so a cyber failure never fails the overall workflow.
+        if: always()
         continue-on-error: true
         env:
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
