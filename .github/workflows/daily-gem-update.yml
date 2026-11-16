@@ -24,13 +24,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run GeM Sheets Sync
+      - name: Run GeM Sheets Sync (DC infrastructure)
         env:
           # Google Service Account credentials (JSON string stored as GitHub secret)
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           # Indian HTTP proxy for accessing gov.in portals
           PROXY_URL: ${{ secrets.PROXY_URL }}
         run: python gem_sheets_sync.py --remove-expired
+
+      - name: Run GeM Sheets Sync (Cyber security)
+        # continue-on-error so a secondary cyber failure never fails the DC sync above.
+        continue-on-error: true
+        env:
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+        run: python gem_sheets_sync.py --domain cyber --remove-expired
 
       - name: Log completion
         if: always()

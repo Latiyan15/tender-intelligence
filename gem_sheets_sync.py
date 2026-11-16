@@ -28,6 +28,10 @@ from src.classifier.gem_classifier import (
     score_nikom_relevance,
     RelevanceVerdict,
 )
+from src.classifier.cyber_classifier import (
+    classify_cyber_bid,
+    score_cyber_relevance,
+)
 from src.services.sheets_service import SheetsService
 
 logging.basicConfig(
@@ -38,6 +42,11 @@ logger = logging.getLogger("gem_sheets_sync")
 
 SPREADSHEET_ID = "14E4wx6nD8-21w29wsxWUycd2t5obKQyKcrCmypNRALk"
 SHEET_GID = 0  # "Live GeM Bids" tab
+
+# Cyber-security bids live in a separate TAB of the same spreadsheet as DC
+# (same service account, same 15-column layout). Override via env if needed.
+CYBER_SPREADSHEET_ID = os.environ.get("CYBER_SPREADSHEET_ID", SPREADSHEET_ID)
+CYBER_SHEET_GID = int(os.environ.get("CYBER_SHEET_GID", "159092831"))  # "Cyber" tab
 
 # Tightly-scoped search terms aligned with Nikom's DC/IT infra domain.
 # Broad terms like bare "UPS", "HVAC", "chiller" are intentionally excluded
@@ -75,6 +84,43 @@ NIKOM_SEARCH_TERMS = [
     "VESDA",
 ]
 
+# Cyber-security search terms (GeM). Specific product/service names keep the
+# noise down the same way the DC terms do — bare "security" is intentionally
+# excluded because it pulls in guards, CCTV and security-deposit bids.
+CYBER_SEARCH_TERMS = [
+    # SOC / SIEM / monitoring
+    "SIEM",
+    "security operations centre",
+    "SOAR",
+    # Network security
+    "next generation firewall",
+    "firewall appliance",
+    "web application firewall",
+    "unified threat management",
+    "DDoS protection",
+    "intrusion prevention system",
+    # Endpoint & threat defense
+    "endpoint detection and response",
+    "endpoint security",
+    "antivirus",
+    "anti ransomware",
+    # Identity & access
+    "privileged access management",
+    "identity and access management",
+    "multi factor authentication",
+    # Data security
+    "data loss prevention",
+    "hardware security module",
+    # VAPT / audit / compliance
+    "VAPT",
+    "vulnerability assessment penetration testing",
+    "cyber security audit",
+    "ISO 27001",
+    "CERT-In",
+    # General
+    "cyber security",
+]
+
 # Fallback Indian proxies ranked by uptime then latency.
 # The pipeline tries PROXY_URL first; if it's down, these are tried in order.
 _PROXY_FALLBACKS = [
@@ -84,6 +130,27 @@ _PROXY_FALLBACKS = [
     "http://80.65.208.187:30001",      # Contabo Asia India, 83% uptime, 6004ms
     "http://82.180.146.251:10800",     # Contabo Asia India, 81% uptime, 1131ms
 ]
+
+# Domain registry — each entry wires the shared pipeline to a sheet + taxonomy.
+# "dc" preserves the original Nikom behaviour exactly; "cyber" is the new one.
+DOMAINS = {
+    "dc": {
+        "label": "Nikom DC infrastructure",
+        "spreadsheet_id": SPREADSHEET_ID,
+        "sheet_gid": SHEET_GID,
+        "search_terms": NIKOM_SEARCH_TERMS,
+        "score_fn": score_nikom_relevance,
+        "classify_fn": classify_bid,
+    },
+    "cyber": {
+        "label": "Cyber security",
+        "spreadsheet_id": CYBER_SPREADSHEET_ID,
+        "sheet_gid": CYBER_SHEET_GID,
+        "search_terms": CYBER_SEARCH_TERMS,
+        "score_fn": score_cyber_relevance,
+        "classify_fn": classify_cyber_bid,
+    },
+}
 
 
 def format_gem_date(raw_date: str) -> str:
@@ -106,7 +173,7 @@ def format_gem_date(raw_date: str) -> str:
     return raw_date
 
 
-def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
+def tender_to_sheet_row(tender, bid_number: str, classify_fn=classify_bid) -> Dict[str, Any]:
     """Convert a TenderRecord from the GemAdapter into a sheet-ready dict."""
     title = tender.title or ""
     scope = ""
@@ -115,7 +182,7 @@ def tender_to_sheet_row(tender, bid_number: str) -> Dict[str, Any]:
 
     display_scope = scope if scope else title
 
-    group_label, nikom_role = classify_bid(title, scope)
+    group_label, nikom_role = classify_fn(title, scope)
 
     closing_date = ""
     if tender.submission_deadline and hasattr(tender.submission_deadline, "raw_text"):
@@ -214,8 +281,8 @@ def check_proxy_connectivity() -> bool:
     return False
 
 
-def discover_gem_bids():
-    """Run GeM discovery with Nikom-focused search terms.
+def discover_gem_bids(search_terms=NIKOM_SEARCH_TERMS, score_fn=score_nikom_relevance):
+    """Run GeM discovery with the given search terms and relevance scorer.
 
     Returns (passed_tenders, adapter). Borderline bids are dropped.
     """
@@ -231,7 +298,7 @@ def discover_gem_bids():
     tenders = adapter.discover_tenders(
         max_tenders=500,
         pages=3,
-        search_terms=NIKOM_SEARCH_TERMS,
+        search_terms=search_terms,
         max_per_term=30,
     )
     logger.info(f"GeM API returned {len(tenders)} raw bids")
@@ -245,7 +312,7 @@ def discover_gem_bids():
             scope = t.scope_of_work.raw_text or ""
         issuing_org = t.issuing_organization or ""
 
-        result = score_nikom_relevance(title, scope, issuing_org)
+        result = score_fn(title, scope, issuing_org)
         if result.verdict == RelevanceVerdict.PASS:
             passed.append(t)
         else:
@@ -255,11 +322,13 @@ def discover_gem_bids():
     return passed, adapter
 
 
-def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: bool = False):
-    """Main sync workflow."""
+def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: bool = False,
+             domain: str = "dc"):
+    """Main sync workflow for the given domain ("dc" or "cyber")."""
+    cfg = DOMAINS[domain]
     start_time = datetime.now()
     logger.info("=" * 60)
-    logger.info("GEM SHEETS SYNC — DAILY TENDER TRACKER UPDATE")
+    logger.info(f"GEM SHEETS SYNC — {cfg['label'].upper()} TENDER TRACKER UPDATE")
     logger.info(f"Run time: {start_time.strftime('%Y-%m-%d %H:%M:%S IST')}")
     logger.info("=" * 60)
 
@@ -268,10 +337,16 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
         logger.info("[DRY RUN] Skipping Google Sheets connection")
         sheets = None
     else:
+        if not cfg["spreadsheet_id"] or cfg["spreadsheet_id"].startswith("PENDING"):
+            logger.error(
+                f"No spreadsheet configured for domain '{domain}'. "
+                f"Set CYBER_SPREADSHEET_ID before running the cyber sync."
+            )
+            sys.exit(1)
         try:
             sheets = SheetsService(
-                spreadsheet_id=SPREADSHEET_ID,
-                sheet_gid=SHEET_GID,
+                spreadsheet_id=cfg["spreadsheet_id"],
+                sheet_gid=cfg["sheet_gid"],
             )
         except Exception as e:
             logger.error(f"Failed to connect to Google Sheets: {e}")
@@ -285,7 +360,7 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
         return
 
     # Phase 1: Discover bids from GeM (strict relevance scoring, no borderline)
-    passed, adapter = discover_gem_bids()
+    passed, adapter = discover_gem_bids(cfg["search_terms"], cfg["score_fn"])
     if not passed:
         logger.error("No tenders discovered — proxy is likely unreachable from this runner")
         if sheets:
@@ -308,7 +383,7 @@ def run_sync(dry_run: bool = False, days_only: bool = False, remove_expired: boo
         except Exception as e:
             logger.warning(f"Detail fetch failed for {bid_num}: {e}")
 
-        row = tender_to_sheet_row(t, bid_num)
+        row = tender_to_sheet_row(t, bid_num, cfg["classify_fn"])
         if row["group"] != "0 Unclassified":
             new_bids.append(row)
         time.sleep(1)
@@ -363,12 +438,19 @@ def main():
         action="store_true",
         help="Remove bids past their closing date",
     )
+    parser.add_argument(
+        "--domain",
+        choices=sorted(DOMAINS.keys()),
+        default="dc",
+        help="Which tender domain to sync (default: dc)",
+    )
     args = parser.parse_args()
 
     run_sync(
         dry_run=args.dry_run,
         days_only=args.days_only,
         remove_expired=args.remove_expired,
+        domain=args.domain,
     )
 
 
