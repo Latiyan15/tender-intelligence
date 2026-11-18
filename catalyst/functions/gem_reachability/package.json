@@ -1,0 +1,7 @@
+{
+  "name": "gem_reachability",
+  "version": "1.0.0",
+  "description": "Spike: prove GeM is reachable from Catalyst India DC without a proxy",
+  "main": "index.js",
+  "dependencies": {}
+}
