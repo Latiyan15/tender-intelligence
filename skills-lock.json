@@ -1,0 +1,138 @@
+{
+  "version": 2,
+  "skills": {
+    "catalyst-appsail": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-appsail/SKILL.md",
+      "computedHash": "fe76fc59b68e88f3a867ee2cdd16d90a543708c5d887bcf543a56b3597cba23a"
+    },
+    "catalyst-authentication": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-authentication/SKILL.md",
+      "computedHash": "dcd9d59e0562b54f38e4be3552e4b0140fca06c2b962a1ea14abd74e67873911"
+    },
+    "catalyst-basics": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-basics/SKILL.md",
+      "computedHash": "e19ffc4c42538da15c3e13cb0909fbf7472f5cada2e2473034cb346750de1b85"
+    },
+    "catalyst-by-zoho": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-by-zoho/SKILL.md",
+      "computedHash": "678f1aa107b68d3432d1ec96c4ae313a8b99126d92fb04a8fc96b3a9c637ca76"
+    },
+    "catalyst-cache": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-cache/SKILL.md",
+      "computedHash": "fa0961efd13aeba3d730c2f5a548fb1623f3c33259f674021e57009c0a7464a8"
+    },
+    "catalyst-datastore": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-datastore/SKILL.md",
+      "computedHash": "395894885a0204e46d546f7246789b0657e6525e1bf200272f13ad759ed2933d"
+    },
+    "catalyst-datastreams": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-datastreams/SKILL.md",
+      "computedHash": "67cd25e82e89ed7b34cb0dcd278d3a7135c48d5595d65ae0849b3f65d030ffca"
+    },
+    "catalyst-functions": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-functions/SKILL.md",
+      "computedHash": "13598334c86173cf6a1c7308954740effda59f16780555374f460bc295392085"
+    },
+    "catalyst-job-scheduling": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-job-scheduling/SKILL.md",
+      "computedHash": "2e6c8278ba317b605e9c33219d6865b55a657063f6e859118b76d2d8f7104fab"
+    },
+    "catalyst-nosql": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-nosql/SKILL.md",
+      "computedHash": "7d5fa5514e97fba484b07024c2eb43a6164d3d78ba91f795f4dabd55eddffecf"
+    },
+    "catalyst-pricing": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-pricing/SKILL.md",
+      "computedHash": "24af15781db0dea91631287854746bf9c5a6fad6e1448dd5e08a4cce8970903f"
+    },
+    "catalyst-quickml": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-quickml/SKILL.md",
+      "computedHash": "4ae5941b3c6b1c9e083b852cddb7727980508afaef4e4c2403503b467f04b458"
+    },
+    "catalyst-sdk": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-sdk/SKILL.md",
+      "computedHash": "4271b2146601c9b2a15a96838c84f69ae2a2706742e99b885cbc99845f180f00"
+    },
+    "catalyst-signals": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-signals/SKILL.md",
+      "computedHash": "c875fac6025a84e3b644ee58b178d51828464701b5c8255d52624c107df6b56a"
+    },
+    "catalyst-slate": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-slate/SKILL.md",
+      "computedHash": "2156e4e50872d59c7d0e4b9b8a26797da78976aa0de20e255ae65c2395b3d795"
+    },
+    "catalyst-smartbrowz": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-smartbrowz/SKILL.md",
+      "computedHash": "208fb04b53d8edf9d30befe83e7bf7a60e2608205e79aae8f131ab470086b0b6"
+    },
+    "catalyst-stratus": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-stratus/SKILL.md",
+      "computedHash": "939cdea54a8e3d980d6d96d50ed59d85797e5350d7becc63cd6060bbb636b8c0"
+    },
+    "catalyst-zia": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-zia/SKILL.md",
+      "computedHash": "ffb5ad89c919cdbf2f77ebcc54ad1ee257187672a9505358b22e318d155fab27"
+    },
+    "catalyst-zoho-mcp": {
+      "source": "catalystbyzoho/agent-skills",
+      "commit": "4b6047fbf5fccdae12483f3ffd5f39cb582365a9",
+      "sourceType": "github",
+      "skillPath": "skills/catalyst-zoho-mcp/SKILL.md",
+      "computedHash": "b78999501c821b2d56a444176f6c953510c83e79c52cd52398201309128892c0"
+    }
+  }
+}
