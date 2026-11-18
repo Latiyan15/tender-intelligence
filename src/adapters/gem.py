@@ -278,7 +278,12 @@ class GemAdapter(BaseAdapter):
     def _parse_detail_html(self, html: str, tender: TenderRecord) -> str:
         """Parse bid detail page HTML, populate tender fields. Returns page text for LLM."""
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(html, 'lxml')
+        # Prefer lxml where available (GitHub runner); fall back to the stdlib
+        # parser so the Catalyst bundle needs no native lxml build.
+        try:
+            soup = BeautifulSoup(html, 'lxml')
+        except Exception:
+            soup = BeautifulSoup(html, 'html.parser')
         page_text = soup.get_text(separator='\n', strip=True)
 
         for table in soup.find_all('table'):

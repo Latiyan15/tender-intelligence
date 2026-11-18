@@ -124,3 +124,10 @@ data/proposals/
 data/presentations/
 
 scratch/
+
+# Catalyst CLI-generated + build-assembled artifacts (not source of truth)
+.catalystrc
+catalyst.json
+/functions/
+**/.build/
+.tmp_gem_build/
